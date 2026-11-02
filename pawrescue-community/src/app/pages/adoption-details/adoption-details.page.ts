@@ -1,7 +1,10 @@
 
 import {
   Component,
+  OnInit,
   OnDestroy,
+  ChangeDetectorRef,
+  NgZone,
   inject
 } from '@angular/core';
 
@@ -35,12 +38,14 @@ import {
 
 import {
   firstValueFrom,
+  Subscription,
   timeout
 } from 'rxjs';
 
 import {
   PetAdoptionService,
-  AdoptionPost
+  AdoptionPost,
+  AdoptionRequestStatus
 } from '../../services/pet-adoption';
 
 // =====================================
@@ -62,7 +67,7 @@ import {
     IonSpinner
   ]
 })
-export class AdoptionDetailsPage implements OnDestroy {
+export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
   // =====================================
   // SERVICES
@@ -77,7 +82,17 @@ export class AdoptionDetailsPage implements OnDestroy {
   private readonly router =
     inject(Router);
 
+  private readonly zone = inject(NgZone);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   private destroyed = false;
+  private firstIonicEntrance = true;
+  private routeSubscription?: Subscription;
+
+  // Used to disregard stale responses when the route changes.
+  private loadSerial = 0;
+  private activeLoadId: number | null = null;
+
 
   // =====================================
   // PET DETAILS
@@ -85,7 +100,8 @@ export class AdoptionDetailsPage implements OnDestroy {
 
   post: AdoptionPost | null = null;
 
-  loading = false;
+  // Do not show the HTML retry state before initial loading starts.
+  loading = true;
 
   errorMessage = '';
 
@@ -100,6 +116,9 @@ export class AdoptionDetailsPage implements OnDestroy {
   submitting = false;
 
   requested = false;
+
+  // The server is authoritative: a resident may only request a pet once.
+  existingRequestStatus: AdoptionRequestStatus | null = null;
 
   requestUncertain = false;
 
@@ -133,122 +152,273 @@ export class AdoptionDetailsPage implements OnDestroy {
   }
 
   // =====================================
-  // PAGE LIFECYCLE
+  // UI CHANGE DETECTION
   // =====================================
 
+  private updateUI(callback: () => void): void {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.zone.run(() => {
+      callback();
+      this.cdr.detectChanges();
+    });
+  }
+
+  // =====================================
+  // INITIAL LOAD AND IONIC LIFECYCLE
+  // =====================================
+
+  ngOnInit(): void {
+    // paramMap emits immediately on first navigation and again if
+    // Angular reuses this component for a different adoption ID.
+    this.routeSubscription = this.route.paramMap.subscribe(() => {
+      this.requested = false;
+      this.existingRequestStatus = null;
+      this.requestUncertain = false;
+      this.message = '';
+      this.successMessage = '';
+      void this.load();
+    });
+  }
+
   ionViewWillEnter(): void {
+    // The first request is already started by ngOnInit().
+    // Don't send a duplicate request during the first transition.
+    if (this.firstIonicEntrance) {
+      this.firstIonicEntrance = false;
+      return;
+    }
 
+    // Refresh existing details when returning to the page.
     void this.load();
-
   }
 
   ionViewDidLeave(): void {
-
     this.viewerOpen = false;
-
   }
 
   // =====================================
-  // LOAD PET ADOPTION DETAILS
+  // SHOW STATUS OF AN EXISTING APPLICATION
+  // =====================================
+
+  private existingRequestMessage(status: AdoptionRequestStatus): string {
+    switch (status) {
+      case 'pending':
+        return 'You have already submitted an adoption request for this pet. ' +
+          'Status: Pending review by the pet owner. View My Adoptions to track it.';
+      case 'approved':
+        return 'You have already submitted an adoption request for this pet. ' +
+          'Status: Approved. The owner has selected your application. ' +
+          'The adoption will be completed after the pet is handed over.';
+      case 'rejected':
+        return 'You have already submitted an adoption request for this pet. ' +
+          'Status: Not approved. Check My Adoptions for your request details.';
+      case 'cancelled':
+        return 'You previously submitted an adoption request for this pet. ' +
+          'Status: Cancelled. View My Adoptions for details.';
+      case 'completed':
+        return 'You have already submitted an adoption request for this pet. ' +
+          'Status: Completed. This adoption has been confirmed.';
+      default:
+        return 'You have already submitted an adoption request for this pet. ' +
+          'View My Adoptions to check its status.';
+    }
+  }
+
+  // =====================================
+  // LOAD PET DETAILS AND CHECK SENT REQUESTS
   // =====================================
 
   async load(): Promise<void> {
-
-    if (this.loading) {
+    if (this.destroyed) {
       return;
     }
 
-    const id = Number(
-      this.route.snapshot.paramMap.get('id')
-    );
-
-    if (
-      !Number.isInteger(id) ||
-      id < 1
-    ) {
-
-      this.post = null;
-
-      this.errorMessage =
-        'Invalid adoption post ID.';
-
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (!Number.isSafeInteger(id) || id < 1) {
+      ++this.loadSerial;
+      this.activeLoadId = null;
+      this.updateUI(() => {
+        this.loading = false;
+        this.post = null;
+        this.errorMessage = 'Invalid adoption post ID.';
+      });
       return;
     }
 
-    this.loading = true;
+    // Ionic may call both ngOnInit and ionViewWillEnter. Only one
+    // in-flight load for the same pet is allowed.
+    if (this.activeLoadId === id) {
+      return;
+    }
 
-    this.errorMessage = '';
+    const currentLoad = ++this.loadSerial;
+    this.activeLoadId = id;
+    const mine = this.route.snapshot.queryParamMap.get('mine') === '1';
+    const samePet = Number(this.post?.id) === id;
 
-    this.post = null;
+    this.updateUI(() => {
+      this.loading = true;
+      this.errorMessage = '';
+
+      if (!samePet) {
+        this.post = null;
+        this.photoIndex = 0;
+        this.viewerOpen = false;
+        this.requested = false;
+        this.existingRequestStatus = null;
+        this.requestUncertain = false;
+        this.successMessage = '';
+      }
+    });
+
+    // Start both GET requests together so the request-status lookup does
+    // not add a second sequential network delay. It MUST complete before
+    // displaying the application form; otherwise repeat applicants may
+    // briefly see a form for a pet they already requested.
+    const sentLookup = mine
+      ? Promise.resolve({ response: null, error: null })
+      : firstValueFrom(
+          this.adoption.getRequests('sent').pipe(timeout(15000))
+        ).then(
+          response => ({ response, error: null }),
+          error => ({ response: null, error })
+        );
 
     try {
-
-      // If opened from My Adoptions,
-      // retrieve the owner's post.
-
-      const mine =
-        this.route.snapshot.queryParamMap
-          .get('mine') === '1';
-
       const response = await firstValueFrom(
-        this.adoption
-          .getPosts(
-            'all',
-            mine ? 'mine' : 'community',
-            'all',
-            id
-          )
-          .pipe(timeout(15000))
+        this.adoption.getPosts(
+          'all',
+          mine ? 'mine' : 'community',
+          'all',
+          id
+        ).pipe(timeout(15000))
       );
 
-      if (this.destroyed) {
+      if (this.destroyed || currentLoad !== this.loadSerial) {
         return;
       }
 
-      if (!response.success) {
-
-        this.errorMessage =
-          response.message ||
-          'Unable to load adoption details.';
-
+      if (!response.success || !Array.isArray(response.posts)) {
+        this.updateUI(() => {
+          this.post = null;
+          this.errorMessage =
+            response.message || 'Unable to load adoption details.';
+        });
         return;
       }
 
-      this.post =
-        response.posts?.find(
-          item => item.id === id
-        ) || null;
+      const matchingPost = response.posts.find(
+        item => Number(item.id) === id
+      ) || null;
 
-      this.photoIndex = 0;
-
-      this.viewerOpen = false;
-
-      if (!this.post) {
-
-        this.errorMessage =
-          'This adoption post is unavailable or could not be found.';
-
+      if (!matchingPost) {
+        this.updateUI(() => {
+          this.post = null;
+          this.errorMessage =
+            'This adoption post could not be found or is no longer visible.';
+        });
+        return;
       }
 
+      // The pet information can be rendered as soon as it arrives,
+      // while the form remains locked until the sent-request lookup ends.
+      this.updateUI(() => {
+        this.post = matchingPost;
+        this.photoIndex = 0;
+        this.viewerOpen = false;
+        this.errorMessage = '';
+      });
+
+      if (matchingPost.is_owner) {
+        this.updateUI(() => {
+          this.requested = false;
+          this.existingRequestStatus = null;
+          this.requestUncertain = false;
+          this.successMessage = '';
+        });
+        return;
+      }
+
+      const { response: sentResponse, error: sentError } = await sentLookup;
+      if (this.destroyed || currentLoad !== this.loadSerial) {
+        return;
+      }
+
+      if (
+        sentError ||
+        !sentResponse ||
+        !sentResponse.success ||
+        !Array.isArray(sentResponse.requests)
+      ) {
+        // Fail closed: do not show a new-submission form when the app
+        // cannot confirm whether this resident has already applied.
+        console.warn(
+          '[PawRescue Adoption Details] Unable to verify sent requests:',
+          sentError || sentResponse
+        );
+        this.updateUI(() => {
+          if (!this.requested) {
+            this.requestUncertain = true;
+            this.errorMessage =
+              'Unable to check your existing adoption requests. ' +
+              'Please view My Adoptions before submitting a new request.';
+          }
+        });
+        return;
+      }
+
+      const existing = sentResponse.requests.find(
+        item => Number(item.adoption_id) === id
+      );
+
+      this.updateUI(() => {
+        if (existing) {
+          this.requested = true;
+          this.requestUncertain = false;
+          this.existingRequestStatus = existing.status;
+          this.successMessage = this.existingRequestMessage(existing.status);
+          this.errorMessage = '';
+        } else {
+          this.requested = false;
+          this.existingRequestStatus = null;
+          this.requestUncertain = false;
+          this.successMessage = '';
+        }
+      });
     } catch (error: any) {
-
-      if (!this.destroyed) {
-
-        this.errorMessage =
-          error.status === 401
-            ? 'Session expired. Please log in again.'
-            : 'Unable to load adoption details. Check your connection.';
-
+      if (this.destroyed || currentLoad !== this.loadSerial) {
+        return;
       }
 
+      console.error('[PawRescue Adoption Details] Load failed:', error);
+      this.updateUI(() => {
+        this.post = null;
+        if (error?.status === 401) {
+          this.errorMessage = 'Session expired. Please log in again.';
+        } else if (error?.status === 403) {
+          this.errorMessage = 'You do not have access to this adoption post.';
+        } else if (error?.status === 404) {
+          this.errorMessage = 'This adoption post could not be found.';
+        } else if (error?.name === 'TimeoutError') {
+          this.errorMessage =
+            'Loading pet details took too long. Check your connection and try again.';
+        } else {
+          this.errorMessage =
+            error?.error?.message ||
+            'Unable to load adoption details. Check your connection.';
+        }
+      });
     } finally {
-
-      if (!this.destroyed) {
-        this.loading = false;
+      if (!this.destroyed && currentLoad === this.loadSerial) {
+        this.activeLoadId = null;
+        this.updateUI(() => {
+          this.loading = false;
+        });
       }
-
     }
-
   }
 
   // =====================================
@@ -348,141 +518,152 @@ export class AdoptionDetailsPage implements OnDestroy {
 
   async sendRequest(): Promise<void> {
 
-    // Prevent invalid and duplicate requests.
+    // One POST only. Never create a second request while the first
+    // is pending or its result is uncertain.
+    const pet = this.post;
 
     if (
-      !this.post ||
-      this.post.is_owner ||
-      this.post.status !== 'available' ||
-      this.loading ||
+      !pet ||
+      pet.is_owner ||
+      pet.status !== 'available' ||
       this.submitting ||
+      this.loading ||
       this.requested ||
-      this.requestUncertain
+      this.requestUncertain ||
+      this.destroyed
     ) {
       return;
     }
 
-    this.errorMessage = '';
+    const requestMessage = this.message.trim();
 
-    this.successMessage = '';
-
-    const requestMessage =
-      this.message.trim();
-
-    // =====================================
-    // VALIDATE MESSAGE
-    // =====================================
-
-    if (
-      requestMessage.length < 10 ||
-      requestMessage.length > 2000
-    ) {
-
-      this.errorMessage =
-        'Please write an adoption message between 10 and 2000 characters.';
-
+    if (requestMessage.length < 10 || requestMessage.length > 2000) {
+      this.updateUI(() => {
+        this.errorMessage =
+          'Please write an adoption message between 10 and 2000 characters.';
+      });
       return;
     }
 
-    // =====================================
-    // CONFIRM REQUEST
-    // =====================================
-
+    // Confirm before sending to prevent accidental applications.
     const confirmed = window.confirm(
-      `Are you sure you want to submit an adoption request for ${this.post.pet_name}?`
+      `Are you sure you want to submit an adoption request for ${pet.pet_name}?`
     );
 
-    if (!confirmed) {
+    if (!confirmed || this.destroyed) {
       return;
     }
 
-    this.submitting = true;
+    const adoptionId = Number(pet.id);
+
+    // Immediately display the button spinner, including on Android.
+    this.updateUI(() => {
+      this.errorMessage = '';
+      this.successMessage = '';
+      this.submitting = true;
+    });
+
+    const startedAt = performance.now();
 
     try {
-
-      // =====================================
-      // SEND REQUEST TO BACKEND
-      // =====================================
-
+      // No extra GET or automatic retry: a POST may reach the server
+      // even when the client eventually loses the response.
       const response = await firstValueFrom(
         this.adoption
-          .submitRequest(
-            this.post.id,
-            requestMessage
-          )
+          .submitRequest(adoptionId, requestMessage)
           .pipe(timeout(20000))
       );
 
-      if (this.destroyed) {
+      if (
+        this.destroyed ||
+        Number(this.route.snapshot.paramMap.get('id')) !== adoptionId
+      ) {
         return;
       }
 
-      if (response.success) {
-
-        this.requested = true;
-
-        this.successMessage =
-          'Adoption request submitted successfully! You can track your application in My Adoptions.';
-
-      } else {
-
-        this.errorMessage =
-          response.message ||
-          'Unable to submit adoption request.';
-
-      }
+      this.updateUI(() => {
+        if (response.success) {
+          this.requested = true;
+          this.existingRequestStatus = 'pending';
+          this.requestUncertain = false;
+          this.successMessage =
+            'Adoption request submitted successfully! You can track your application in My Adoptions.';
+        } else {
+          this.errorMessage =
+            response.message || 'Unable to submit adoption request.';
+        }
+      });
 
     } catch (error: any) {
 
-      if (this.destroyed) {
+      if (
+        this.destroyed ||
+        Number(this.route.snapshot.paramMap.get('id')) !== adoptionId
+      ) {
         return;
       }
 
-      if (error.status === 409) {
+      this.updateUI(() => {
+        const status = error?.status;
+        const serverMessage = String(error?.error?.message || '').trim();
+        const lowerMessage = serverMessage.toLowerCase();
 
-        // A duplicate request or an unavailable pet.
+        if (status === 409) {
+          // A known "unavailable" response is NOT an uncertain request.
+          // Hide the form and show the existing unavailable-pet UI.
+          const unavailableStatus =
+            lowerMessage.includes('already been adopted')
+              ? 'adopted'
+              : lowerMessage.includes('reserved')
+                ? 'reserved'
+                : lowerMessage.includes('listing is closed')
+                  ? 'closed'
+                  : null;
 
-        this.errorMessage =
-          error.error?.message ||
-          'This adoption request cannot be submitted.';
-
-        this.requestUncertain = true;
-
-      } else if (
-        error.status === 400 ||
-        error.status === 403 ||
-        error.status === 404
-      ) {
-
-        this.errorMessage =
-          error.error?.message ||
-          'Unable to submit adoption request.';
-
-      } else if (error.status === 401) {
-
-        this.errorMessage =
-          'Session expired. Please log in again.';
-
-      } else {
-
-        // Request may have reached the server.
-        // Avoid automatically submitting again.
-
-        this.requestUncertain = true;
-
-        this.errorMessage =
-          'Unable to confirm your adoption request. Check My Adoptions before trying again.';
-
-      }
+          if (unavailableStatus && this.post) {
+            this.post = { ...this.post, status: unavailableStatus };
+            this.requestUncertain = false;
+            this.errorMessage = serverMessage;
+          } else if (lowerMessage.includes('already requested')) {
+            // Server confirms a previous request exists. Do not treat
+            // a known duplicate as an uncertain submission.
+            this.requested = true;
+            this.requestUncertain = false;
+            this.successMessage =
+              'You have already submitted an adoption request for this pet. ' +
+              'Check My Adoptions for its current status.';
+            this.errorMessage = '';
+          } else {
+            this.requestUncertain = true;
+            this.errorMessage =
+              serverMessage || 'Please check My Adoptions before trying again.';
+          }
+        } else if (status === 400 || status === 403 || status === 404) {
+          this.errorMessage =
+            serverMessage || 'Unable to submit adoption request.';
+        } else if (status === 401) {
+          this.errorMessage = 'Session expired. Please log in again.';
+        } else {
+          // Timeout, network interruption or server failure: the INSERT
+          // may have succeeded. Never automatically send a duplicate POST.
+          this.requestUncertain = true;
+          this.errorMessage =
+            'Unable to confirm your adoption request. Check My Adoptions before trying again.';
+        }
+      });
 
     } finally {
+      // This tells us whether the delay is actually the HTTP/API response.
+      console.info(
+        '[PawRescue Adoption] Submit request duration:',
+        Math.round(performance.now() - startedAt),
+        'ms'
+      );
 
-      if (!this.destroyed) {
+      this.updateUI(() => {
         this.submitting = false;
-      }
-
+      });
     }
-
   }
 
   // =====================================
@@ -522,6 +703,9 @@ export class AdoptionDetailsPage implements OnDestroy {
   ngOnDestroy(): void {
 
     this.destroyed = true;
+    ++this.loadSerial;
+    this.activeLoadId = null;
+    this.routeSubscription?.unsubscribe();
 
   }
 
