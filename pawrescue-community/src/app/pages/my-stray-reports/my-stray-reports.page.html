@@ -1,0 +1,109 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/stray-assistance" text="Back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My Stray Reports</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main class="page-container">
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">STRAY ANIMAL ASSISTANCE</span>
+        <h1>My Stray Reports</h1>
+        <p>Check the reports you've submitted and their current assistance status.</p>
+      </div>
+      <ion-button type="button" fill="outline" size="small"
+        [disabled]="isLoading || isLoadingMore"
+        (click)="refreshReports()">
+        Refresh
+      </ion-button>
+    </div>
+
+    <div class="count-line" *ngIf="hasLoaded && !isLoading">
+      <strong>{{ total }}</strong> {{ total === 1 ? 'report' : 'reports' }} submitted
+    </div>
+
+    <section class="message-card" *ngIf="isLoading" role="status" aria-live="polite">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading your stray animal reports...</p>
+    </section>
+
+    <section class="message-card error-card" *ngIf="!isLoading && errorMessage" role="alert">
+      <h2>Unable to load all reports</h2>
+      <p>{{ errorMessage }}</p>
+      <ion-button type="button" fill="outline" (click)="retry()">
+        Try Again
+      </ion-button>
+    </section>
+
+    <section class="message-card empty-card"
+      *ngIf="!isLoading && !errorMessage && hasLoaded && reports.length === 0">
+      <div class="empty-icon" aria-hidden="true">🐾</div>
+      <h2>No stray reports yet</h2>
+      <p>Reports you submit through Stray Animal Assistance will appear here.</p>
+      <ion-button type="button" (click)="createReport()">Report a Stray Animal</ion-button>
+    </section>
+
+    <section class="report-list" *ngIf="!isLoading && reports.length > 0"
+      aria-label="Your stray animal reports">
+      <article *ngFor="let report of reports; trackBy: trackByReportId" class="report-card">
+        <div class="report-top">
+          <div class="report-identity">
+            <span class="reference">Report #{{ report.id }}</span>
+            <h2>{{ animalLabel(report) }} · {{ reasonLabel(report.assistance_reason) }}</h2>
+            <p class="date-line">Submitted {{ displayDateTime(report.created_at) }}</p>
+          </div>
+          <span class="status-pill" [ngClass]="'status-' + report.status">
+            {{ statusLabel(report.status) }}
+          </span>
+        </div>
+
+        <div class="cover" *ngIf="coverUrl(report) as url; else photoPlaceholder">
+          <img [src]="url" [alt]="'Photo of reported ' + animalLabel(report).toLowerCase()"
+            loading="lazy" (error)="photoFailed(url)" />
+          <span class="photo-count" *ngIf="report.photo_count > 1">
+            {{ report.photo_count }} photos
+          </span>
+        </div>
+        <ng-template #photoPlaceholder>
+          <div class="photo-placeholder">
+            <span aria-hidden="true">🐾</span>
+            <span>No photo available</span>
+          </div>
+        </ng-template>
+
+        <div class="brief-info">
+          <div>
+            <span class="info-label">Location</span>
+            <p>{{ report.location_address }}</p>
+          </div>
+          <div>
+            <span class="info-label">Date observed</span>
+            <p>{{ report.incident_date }}</p>
+          </div>
+        </div>
+
+        <!-- Open a dedicated page; do not expand a dropdown here. -->
+        <ion-button
+          type="button"
+          fill="solid"
+          expand="block"
+          [attr.aria-label]="'View details for stray report ' + report.id"
+          (click)="viewReportDetails(report.id)">
+          View Report Details
+        </ion-button>
+      </article>
+    </section>
+
+    <div class="load-more" *ngIf="!isLoading && hasMore && reports.length > 0">
+      <ion-button type="button" expand="block" fill="outline"
+        [disabled]="isLoadingMore" (click)="loadMore()">
+        <ion-spinner *ngIf="isLoadingMore" name="crescent" class="button-spinner"></ion-spinner>
+        {{ isLoadingMore ? 'Loading more...' : 'Load More Reports' }}
+      </ion-button>
+    </div>
+  </main>
+</ion-content>
