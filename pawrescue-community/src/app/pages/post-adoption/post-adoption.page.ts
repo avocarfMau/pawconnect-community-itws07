@@ -26,15 +26,38 @@ import {
 } from 'ionicons/icons';
 import { Camera, CameraDirection } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { firstValueFrom, timeout } from 'rxjs';
+import {
+  Subscription,
+  timeout,
+  finalize,
+  from,
+  concatMap,
+  switchMap,
+  map
+} from 'rxjs';
 import {
   PetAdoptionService,
   NewAdoptionPost
 } from '../../services/pet-adoption';
 
+// =====================================
+// PAWRESCUE COMMUNITY
+// POST A PET FOR ADOPTION
+// =====================================
+// Fast, safe submission flow:
+// 1. Optimize large gallery photos when the resident selects them, not after submit.
+// 2. Save the listing once and immediately show its confirmed success state.
+// 3. Upload smaller photos in their selected order (first photo stays the cover).
+// Camera photos remain compressed. Do not auto-retry uncertain uploads.
+
 interface SelectedPhoto {
   file: File;
   preview: string;
+  uploaded: boolean;
+  // Retain the original identity when the upload file is recompressed.
+  sourceKey?: string;
+  // Each photo is ready before its individual HTTP upload starts.
+  ready?: Promise<void>;
 }
 
 @Component({
@@ -56,7 +79,12 @@ export class PostAdoptionPage implements OnDestroy {
   private readonly router = inject(Router);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
+
+  private submitRequest?: Subscription;
+  private photoRequest?: Subscription;
   private destroyed = false;
+  // Serialize image processing to avoid decoding 10 large images at once.
+  private photoPreparationQueue: Promise<void> = Promise.resolve();
 
   readonly barangays = [
     'San Bartolome',
@@ -96,6 +124,8 @@ export class PostAdoptionPage implements OnDestroy {
   uploading = false;
   uploadPosition = 0;
   uploadedCount = 0;
+  photoUploaded = false;
+  photoUploadUncertain = false;
   createdId: number | null = null;
   submissionUncertain = false;
   errorMessage = '';
@@ -116,6 +146,7 @@ export class PostAdoptionPage implements OnDestroy {
 
   private get isLocked(): boolean {
     return (
+      this.destroyed ||
       this.saving ||
       this.uploading ||
       this.cameraOpening ||
@@ -124,41 +155,161 @@ export class PostAdoptionPage implements OnDestroy {
     );
   }
 
-  // Add gallery photos. Keep original previews for immediate feedback.
+  // Capacitor callbacks may finish outside Angular change detection.
+  private updateUI(callback: () => void): void {
+    if (this.destroyed) return;
+    this.zone.run(() => {
+      if (this.destroyed) return;
+      callback();
+      this.cdr.detectChanges();
+    });
+  }
+
+  // =====================================
+  // GALLERY PHOTO SELECTION
+  // =====================================
+  // Large gallery images are optimized in advance, while the user finishes
+  // the form. The backend still accepts a normal JPG/PNG/WebP File <= 5 MB.
+  // Smaller originals and any failed conversions remain unchanged.
   onPhotosSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
     input.value = '';
 
     if (this.isLocked) return;
-    this.photoError = '';
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024;
+    let invalidType = 0;
+    let invalidSize = 0;
+    let duplicate = 0;
+    let excessive = 0;
 
     for (const file of files) {
-      if (this.selectedPhotos.length >= this.maxPhotos) {
-        this.photoError = 'Maximum of 10 photos per adoption post.';
-        break;
-      }
-
-      const allowed = [
-        'image/jpeg',
-        'image/png',
-        'image/webp'
-      ].includes(file.type);
-
-      if (!allowed || file.size < 1 || file.size > 5 * 1024 * 1024) {
-        this.photoError =
-          'Each photo must be JPG, PNG, or WebP and no larger than 5 MB.';
+      if (!allowedTypes.includes(file.type)) {
+        invalidType++;
         continue;
       }
 
-      this.selectedPhotos.push({
+      if (file.size < 1 || file.size > maxSize) {
+        invalidSize++;
+        continue;
+      }
+
+      const sourceKey = `${file.name}|${file.size}|${file.lastModified}`;
+      if (this.selectedPhotos.some(photo => photo.sourceKey === sourceKey)) {
+        duplicate++;
+        continue;
+      }
+
+      if (this.selectedPhotos.length >= this.maxPhotos) {
+        excessive++;
+        continue;
+      }
+
+      const photo: SelectedPhoto = {
         file,
-        preview: URL.createObjectURL(file)
-      });
+        preview: URL.createObjectURL(file),
+        uploaded: false,
+        sourceKey
+      };
+      this.selectedPhotos.push(photo);
+
+      // Queue just the optimization: it never creates an adoption post.
+      // A photo may still be preparing if the resident submits immediately.
+      // The upload pipeline awaits only that photo's preparation promise.
+      const preparation = this.photoPreparationQueue
+        .then(() => this.optimizeGalleryPhoto(photo))
+        .catch(error => {
+          // Preserve the original validated photo if optimization fails.
+          console.warn('[PAWRESCUE ADOPTION] Using original gallery photo:', error);
+        });
+      photo.ready = preparation;
+      this.photoPreparationQueue = preparation;
     }
+
+    const messages: string[] = [];
+    if (invalidType) messages.push('Only JPG, PNG, and WebP images are allowed.');
+    if (invalidSize) messages.push('Each photo must be 5 MB or smaller.');
+    if (duplicate) messages.push('Duplicate selected photos were skipped.');
+    if (excessive) messages.push('Maximum of 10 photos per adoption post.');
+
+    this.photoError = messages.join(' ');
+    this.cdr.detectChanges();
   }
 
-  // Android camera. The chosen photo is already optimized for uploading.
+  // Optimize ahead of submission, rather than uploading full-resolution
+  // 3-5 MB gallery photos on a slower network connection.
+  private async optimizeGalleryPhoto(photo: SelectedPhoto): Promise<void> {
+    if (this.destroyed || !this.selectedPhotos.includes(photo)) return;
+
+    const original = photo.file;
+    // Already-small files are unlikely to benefit enough from re-encoding.
+    if (original.size <= 256 * 1024) return;
+
+    const bitmap = await createImageBitmap(original);
+    let optimized: Blob | null = null;
+
+    try {
+      const maxDimension = 1280;
+      const scale = Math.min(
+        1,
+        maxDimension / Math.max(bitmap.width, bitmap.height)
+      );
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Image conversion is not supported.');
+
+      // White background avoids black fill in transparent PNG/WebP images.
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+      optimized = await new Promise<Blob | null>(resolve => {
+        canvas.toBlob(resolve, 'image/jpeg', 0.78);
+      });
+    } finally {
+      bitmap.close();
+    }
+
+    if (
+      this.destroyed ||
+      !this.selectedPhotos.includes(photo) ||
+      !optimized ||
+      optimized.size < 1 ||
+      optimized.size >= original.size ||
+      optimized.size > 5 * 1024 * 1024
+    ) {
+      return;
+    }
+
+    const newName = original.name.replace(/\.[^.]+$/, '') + '-optimized.jpg';
+    const newFile = new File([optimized], newName, { type: 'image/jpeg' });
+    const newPreview = URL.createObjectURL(newFile);
+
+    this.updateUI(() => {
+      if (!this.selectedPhotos.includes(photo)) {
+        URL.revokeObjectURL(newPreview);
+        return;
+      }
+      const previousPreview = photo.preview;
+      photo.file = newFile;
+      photo.preview = newPreview;
+      URL.revokeObjectURL(previousPreview);
+    });
+
+    console.log(
+      '[PAWRESCUE ADOPTION] Gallery photo optimized:',
+      original.size, '->', newFile.size, 'bytes'
+    );
+  }
+
+  // =====================================
+  // NATIVE CAMERA
+  // =====================================
   async takePhoto(): Promise<void> {
     if (this.isLocked) return;
 
@@ -173,8 +324,10 @@ export class PostAdoptionPage implements OnDestroy {
       return;
     }
 
-    this.cameraOpening = true;
-    this.photoError = '';
+    this.updateUI(() => {
+      this.cameraOpening = true;
+      this.photoError = '';
+    });
 
     try {
       const captured = await Camera.takePhoto({
@@ -190,73 +343,47 @@ export class PostAdoptionPage implements OnDestroy {
       }
 
       const response = await fetch(captured.webPath);
-      if (!response.ok) throw new Error('Unable to read camera image.');
-
-      const file = await this.compressPhoto(await response.blob());
-      if (this.destroyed) return;
-
-      if (file.size < 1 || file.size > 5 * 1024 * 1024) {
-        throw new Error('Photo exceeds 5 MB.');
+      if (!response.ok) {
+        throw new Error('Unable to read camera image.');
       }
 
-      this.zone.run(() => {
+      const file = await this.compressCameraPhoto(await response.blob());
+      if (this.destroyed) return;
+      if (file.size < 1 || file.size > 5 * 1024 * 1024) {
+        throw new Error('Camera photo exceeds 5 MB.');
+      }
+
+      this.updateUI(() => {
+        if (this.createdId !== null || this.saving || this.uploading) return;
+        if (this.selectedPhotos.length >= this.maxPhotos) {
+          this.photoError = 'Maximum of 10 photos per adoption post.';
+          return;
+        }
+
         this.selectedPhotos.push({
           file,
-          preview: URL.createObjectURL(file)
+          preview: URL.createObjectURL(file),
+          uploaded: false
         });
-        this.cdr.detectChanges();
       });
     } catch (error: any) {
       const message = String(error?.message || '').toLowerCase();
-      if (!message.includes('cancel') && !this.destroyed) {
-        this.zone.run(() => {
+      const code = String(error?.code || '').toLowerCase();
+      if (!message.includes('cancel') && !code.includes('cancel')) {
+        this.updateUI(() => {
           this.photoError =
             'Unable to capture photo. Check camera permission and try again.';
-          this.cdr.detectChanges();
         });
       }
     } finally {
-      if (!this.destroyed) {
-        this.zone.run(() => {
-          this.cameraOpening = false;
-          this.cdr.detectChanges();
-        });
-      }
+      this.updateUI(() => {
+        this.cameraOpening = false;
+      });
     }
   }
 
-  // Converts large camera photos to an upload-friendly JPEG.
-  private async compressPhoto(blob: Blob): Promise<File> {
-    const result = await this.resizeImage(blob);
-    if (!result) throw new Error('Unable to process camera photo.');
-    return new File(
-      [result],
-      `adoption-camera-${Date.now()}.jpg`,
-      { type: 'image/jpeg' }
-    );
-  }
-
-  // Reduce the upload size without changing the selected photo order.
-  // Keep the original when conversion is unsupported or is not smaller.
-  private async optimizePhoto(file: File): Promise<File> {
-    if (file.size < 250 * 1024) return file;
-
-    try {
-      const converted = await this.resizeImage(file);
-      if (!converted || converted.size >= file.size) return file;
-      return new File(
-        [converted],
-        `${file.name.replace(/\.[^.]+$/, '') || 'adoption-photo'}.jpg`,
-        { type: 'image/jpeg' }
-      );
-    } catch {
-      return file;
-    }
-  }
-
-  // 1280px long side and JPEG compression substantially reduce transfer size
-  // for large phone-camera images. White background avoids black transparent pixels.
-  private async resizeImage(blob: Blob): Promise<Blob | null> {
+  // Camera images are resized once, as in the Report Pet camera flow.
+  private async compressCameraPhoto(blob: Blob): Promise<File> {
     const bitmap = await createImageBitmap(blob);
 
     try {
@@ -268,20 +395,29 @@ export class PostAdoptionPage implements OnDestroy {
       canvas.width = Math.max(1, Math.round(bitmap.width * scale));
       canvas.height = Math.max(1, Math.round(bitmap.height * scale));
 
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return null;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Unable to process camera image.');
 
-      const output = await new Promise<Blob | null>(resolve => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.76);
-      });
-
-      if (!output || output.size < 1 || output.size > 5 * 1024 * 1024) {
-        return null;
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      let result: Blob | null = null;
+      for (const quality of [0.82, 0.7, 0.55]) {
+        result = await new Promise<Blob | null>(resolve => {
+          canvas.toBlob(resolve, 'image/jpeg', quality);
+        });
+        if (result && result.size > 0 && result.size <= 5 * 1024 * 1024) {
+          break;
+        }
       }
-      return output;
+
+      if (!result || result.size < 1 || result.size > 5 * 1024 * 1024) {
+        throw new Error('Unable to compress camera image below 5 MB.');
+      }
+
+      return new File(
+        [result],
+        `adoption-camera-${Date.now()}.jpg`,
+        { type: 'image/jpeg' }
+      );
     } finally {
       bitmap.close();
     }
@@ -289,13 +425,20 @@ export class PostAdoptionPage implements OnDestroy {
 
   removePhoto(index: number): void {
     if (this.isLocked) return;
-    const removed = this.selectedPhotos.splice(index, 1)[0];
-    if (removed) URL.revokeObjectURL(removed.preview);
+    if (!Number.isInteger(index) || index < 0 || index >= this.selectedPhotos.length) {
+      return;
+    }
+
+    const [removed] = this.selectedPhotos.splice(index, 1);
+    URL.revokeObjectURL(removed.preview);
     this.photoError = '';
   }
 
-  async submitPost(): Promise<void> {
-    if (this.isLocked || this.destroyed) return;
+  // =====================================
+  // CREATE ADOPTION POST
+  // =====================================
+  submitPost(): void {
+    if (this.isLocked) return;
 
     this.errorMessage = '';
     this.photoError = '';
@@ -319,14 +462,11 @@ export class PostAdoptionPage implements OnDestroy {
     };
 
     if (!data.pet_name || !data.description || !this.barangays.includes(data.barangay)) {
-      this.errorMessage = 'Please complete the required fields.';
+      this.errorMessage = 'Please complete all required fields.';
       return;
     }
 
-    if (
-      age !== null &&
-      (!Number.isInteger(age) || age < 0 || age > 600)
-    ) {
+    if (age !== null && (!Number.isInteger(age) || age < 0 || age > 600)) {
       this.errorMessage = 'Age must be between 0 and 600 months.';
       return;
     }
@@ -342,86 +482,177 @@ export class PostAdoptionPage implements OnDestroy {
       return;
     }
 
-    // The database insert is the FIRST step. Once confirmed, stop saying
-    // "Saving..." and show the photo-upload progress separately.
-    this.saving = true;
-    try {
-      const result = await firstValueFrom(
-        this.adoption.createPost(data).pipe(timeout(20000))
-      );
-      if (!result.success || !Number.isInteger(result.adoption_id) || result.adoption_id < 1) {
-        this.errorMessage = result.message || 'Unable to create adoption post.';
-        return;
-      }
+    this.updateUI(() => {
+      this.saving = true;
+    });
 
-      this.createdId = result.adoption_id;
-      this.successMessage = 'Adoption post saved successfully.';
-    } catch (error: any) {
-      if (error.status === 400 || error.status === 415) {
-        this.errorMessage = error.error?.message || 'Invalid post details.';
-      } else if (error.status === 401) {
-        this.errorMessage = 'Session expired. Please log in again.';
-      } else {
-        this.submissionUncertain = true;
-        this.errorMessage =
-          'Unable to confirm post creation. Check My Adoptions before submitting again to avoid duplicates.';
-      }
-      return;
-    } finally {
-      this.saving = false;
-    }
+    const start = performance.now();
+    this.submitRequest = this.adoption
+      .createPost(data)
+      .pipe(
+        timeout(20000),
+        finalize(() => {
+          console.log(
+            '[PAWRESCUE ADOPTION] Create post completed in',
+            Math.round(performance.now() - start),
+            'ms'
+          );
+          this.updateUI(() => {
+            this.saving = false;
+          });
+        })
+      )
+      .subscribe({
+        next: response => {
+          const id = Number(response.adoption_id);
+          if (!response.success || !Number.isSafeInteger(id) || id < 1) {
+            this.updateUI(() => {
+              // A success response without an ID might still mean the
+              // post was created; do not submit a second copy blindly.
+              if (response.success) this.submissionUncertain = true;
+              this.errorMessage = response.message ||
+                'Unable to confirm adoption post creation. Check My Adoptions.';
+            });
+            return;
+          }
 
-    // Saving the listing and uploading photos are separate operations.
-    if (this.createdId !== null && this.selectedPhotos.length > 0) {
-      await this.uploadPhotos();
-    }
+          this.updateUI(() => {
+            this.createdId = id;
+            this.errorMessage = '';
+            this.successMessage = this.selectedPhotos.length > 0
+              ? 'Adoption post saved successfully! Uploading selected photos...'
+              : 'Adoption post submitted successfully!';
+          });
+
+          // Do not wait for photo uploads before showing the saved state.
+          if (this.selectedPhotos.length > 0) {
+            this.uploadSelectedPhotos();
+          }
+        },
+        error: error => {
+          this.updateUI(() => {
+            if (error?.status === 401) {
+              this.errorMessage = 'Session expired. Please log in again.';
+            } else if ([400, 403, 413, 415, 422].includes(error?.status)) {
+              this.errorMessage = error?.error?.message ||
+                'Invalid adoption post information.';
+            } else {
+              // A timeout/network/server error can occur after a successful insert.
+              this.submissionUncertain = true;
+              this.errorMessage =
+                'Unable to confirm your adoption post. Check My Adoptions before submitting again to avoid duplicates.';
+            }
+          });
+        }
+      });
   }
 
-  private async uploadPhotos(): Promise<void> {
-    if (this.createdId === null || this.uploading || this.destroyed) return;
+  // =====================================
+  // UPLOAD PHOTOS (PRE-OPTIMIZED, ORIGINAL SELECTION ORDER)
+  // =====================================
+  // Resume only photos that did NOT receive confirmed success.
+  // Never retry a timeout or uncertain upload automatically.
+  uploadSelectedPhotos(): void {
+    if (
+      this.destroyed ||
+      this.createdId === null ||
+      this.selectedPhotos.length === 0 ||
+      this.uploading ||
+      this.photoUploaded ||
+      this.photoUploadUncertain
+    ) {
+      return;
+    }
 
-    this.uploading = true;
-    this.uploadPosition = 0;
-    this.uploadedCount = 0;
+    const pending = this.selectedPhotos.filter(photo => !photo.uploaded);
+    if (pending.length === 0) {
+      this.updateUI(() => { this.photoUploaded = true; });
+      return;
+    }
 
-    try {
-      // Upload sequentially: backend assigns sort_order as each photo arrives.
-      for (let i = 0; i < this.selectedPhotos.length; i++) {
-        if (this.destroyed) break;
+    const adoptionId = this.createdId;
+    this.updateUI(() => {
+      this.uploading = true;
+      this.photoError = '';
+      this.uploadedCount = this.selectedPhotos.filter(photo => photo.uploaded).length;
+      this.uploadPosition = this.uploadedCount + 1;
+    });
 
-        this.uploadPosition = i + 1;
-        const uploadFile = await this.optimizePhoto(this.selectedPhotos[i].file);
+    const start = performance.now();
+    this.photoRequest = from(pending)
+      .pipe(
+        concatMap(photo => {
+          this.updateUI(() => {
+            this.uploadPosition = this.selectedPhotos.indexOf(photo) + 1;
+          });
 
-        try {
-          const result = await firstValueFrom(
-            this.adoption
-              .uploadPhoto(this.createdId, uploadFile)
-              .pipe(timeout(30000))
+          // Await any unfinished background optimization for THIS photo.
+          // Upload sequentially: PHP assigns photo sort_order by arrival,
+          // so parallel requests could unexpectedly change the cover photo.
+          return from(photo.ready ?? Promise.resolve()).pipe(
+            switchMap(() => this.adoption.uploadPhoto(adoptionId, photo.file).pipe(
+              // Start the HTTP timeout when the network request begins,
+              // not while the selected image is still being optimized.
+              timeout(30000),
+              map(response => {
+                if (!response.success) {
+                  throw new Error(response.message || 'Photo upload failed.');
+                }
+                return { photo, response };
+              })
+            ))
           );
+        }),
+        finalize(() => {
+          console.log(
+            '[PAWRESCUE ADOPTION] Upload session completed in',
+            Math.round(performance.now() - start),
+            'ms'
+          );
+          this.updateUI(() => {
+            this.uploading = false;
+          });
+        })
+      )
+      .subscribe({
+        next: ({ photo, response }) => {
+          this.updateUI(() => {
+            photo.uploaded = true;
+            this.uploadedCount = this.selectedPhotos.filter(item => item.uploaded).length;
+            this.photoUploaded = this.selectedPhotos.every(item => item.uploaded);
+            this.photoError = '';
+            this.successMessage = this.photoUploaded
+              ? `Pet adoption post and ${this.uploadedCount} photo(s) submitted successfully!`
+              : `Adoption post saved. Uploading photos (${this.uploadedCount}/${this.selectedPhotos.length})...`;
+          });
+          console.log('[PAWRESCUE ADOPTION] Photo uploaded:', response.photo_path);
+        },
+        error: error => {
+          this.updateUI(() => {
+            const uncertain = error?.name === 'TimeoutError' ||
+              error?.status === 0 ||
+              (typeof error?.status === 'number' && error.status >= 500);
 
-          if (!result.success) {
-            throw new Error(result.message || 'Photo upload failed.');
-          }
-          this.uploadedCount++;
-        } catch (error: any) {
-          this.photoError =
-            `Your pet post is saved, but photo ${i + 1} could not be confirmed. ` +
-            `${error?.error?.message || 'There may be a connection problem.'} ` +
-            'Check My Adoptions before trying again to avoid duplicate photos.';
-          break;
+            this.photoUploadUncertain = uncertain;
+            this.photoUploaded = false;
+            this.uploadedCount = this.selectedPhotos.filter(photo => photo.uploaded).length;
+            this.successMessage =
+              `Adoption post saved. ${this.uploadedCount} of ${this.selectedPhotos.length} photo(s) confirmed uploaded.`;
+
+            if (uncertain) {
+              this.photoError =
+                'The latest photo may already have been saved. Check My Adoptions before trying again to avoid duplicate photos.';
+            } else if (error?.status === 401) {
+              this.photoError = 'Session expired. Please log in again.';
+            } else if (error?.status === 413) {
+              this.photoError = 'Photo is too large. Maximum size is 5 MB.';
+            } else {
+              this.photoError = error?.error?.message || error?.message ||
+                'Unable to upload a photo. Your post and confirmed photos are already saved.';
+            }
+          });
         }
-      }
-    } catch {
-      this.photoError =
-        'Your pet post was saved, but a photo could not be processed. Check My Adoptions.';
-    } finally {
-      this.uploading = false;
-    }
-
-    if (!this.destroyed && !this.photoError && this.uploadedCount === this.selectedPhotos.length) {
-      this.successMessage =
-        `Pet posted successfully with ${this.uploadedCount} photo(s)!`;
-    }
+      });
   }
 
   goBack(): void {
@@ -438,6 +669,9 @@ export class PostAdoptionPage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.submitRequest?.unsubscribe();
+    this.photoRequest?.unsubscribe();
+
     for (const photo of this.selectedPhotos) {
       URL.revokeObjectURL(photo.preview);
     }

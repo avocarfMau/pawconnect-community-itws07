@@ -1,4 +1,3 @@
-
 import { Injectable, inject } from '@angular/core';
 import {
   HttpClient,
@@ -6,7 +5,7 @@ import {
   HttpParams
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Capacitor } from '@capacitor/core';
+import { getApiBaseUrl, getServerBaseUrl } from '../config/ip-config';
 
 // =====================================
 // PAWRESCUE COMMUNITY - ADOPTION SERVICE
@@ -84,6 +83,20 @@ export interface AdoptionRequest {
   owner_id: number;
   requester_name: string;
   owner_name: string;
+
+  // Pickup arrangements are populated only for an approved request.
+  // Keep them optional so older API responses remain compatible while
+  // get_requests.php is being updated in the next step.
+  meeting_location?: string | null;
+  pickup_date?: string | null; // YYYY-MM-DD
+  pickup_time?: string | null; // HH:MM:SS (MySQL TIME)
+}
+
+// The owner fills out these details BEFORE approving an applicant.
+export interface AdoptionPickupDetails {
+  meeting_location: string;
+  pickup_date: string; // YYYY-MM-DD
+  pickup_time: string; // HH:MM or HH:MM:SS
 }
 
 // =====================================
@@ -137,6 +150,28 @@ export interface SubmitAdoptionRequestResponse extends ApiResult {
   status: AdoptionRequestStatus;
 }
 
+export interface RespondToAdoptionRequestResponse extends ApiResult {
+  request_id: number;
+  adoption_id: number;
+  status: 'approved' | 'rejected';
+  listing_status: AdoptionStatus;
+  meeting_location: string | null;
+  pickup_date: string | null;
+  pickup_time: string | null;
+  other_requests_rejected: number;
+  other_applicants_notice: string | null;
+  // Populated by the backend only when a pickup schedule is changed.
+  reschedule_id?: number | null;
+}
+
+// Cache the resolved photo URLs for a post while its photo paths remain
+// unchanged. This prevents repeated URL validation and array recreation
+// when Angular checks the adoption feed/gallery templates.
+interface PhotoUrlCacheEntry {
+  paths: string[];
+  urls: string[];
+}
+
 // =====================================
 // PET ADOPTION SERVICE
 // =====================================
@@ -148,36 +183,13 @@ export class PetAdoptionService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly baseUrl =
-    `http://${this.getBackendHost()}/pawrescue/pawrescue_api`;
+  // Shared backend configuration used by all PawRescue services.
+  private readonly baseUrl = getApiBaseUrl();
+  private readonly serverBaseUrl = getServerBaseUrl();
+  private readonly apiUrl = `${this.baseUrl}/adoption`;
 
-  private readonly apiUrl =
-    `${this.baseUrl}/adoption`;
-
-  // =====================================
-  // BACKEND HOST CONFIGURATION
-  // =====================================
-
-  private getBackendHost(): string {
-
-    if (Capacitor.isNativePlatform()) {
-      return '192.168.100.23';
-    }
-
-    const hostname = window.location.hostname;
-
-    if (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
-      /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
-      /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/.test(hostname)
-    ) {
-      return hostname;
-    }
-
-    return '192.168.100.23';
-  }
+  private readonly photoUrlCache =
+    new WeakMap<AdoptionPost, PhotoUrlCacheEntry>();
 
   // =====================================
   // AUTHORIZATION HEADERS
@@ -261,6 +273,9 @@ export class PetAdoptionService {
       photo.name
     );
 
+    // Keep multipart/form-data and the existing endpoint unchanged.
+    // The page uploads sequentially to preserve its existing photo order.
+    // Do not enable parallel uploads until the PHP backend is reviewed.
     return this.http.post<UploadAdoptionPhotoResponse>(
       `${this.apiUrl}/upload_photo.php`,
       body,
@@ -314,15 +329,76 @@ export class PetAdoptionService {
 
   respondToRequest(
     requestId: number,
-    action: 'approve' | 'reject'
-  ): Observable<ApiResult> {
+    action: 'approve' | 'reject',
+    pickupDetails?: AdoptionPickupDetails
+  ): Observable<RespondToAdoptionRequestResponse> {
 
-    return this.http.post<ApiResult>(
+    // The backend requires all three pickup fields when action=approve.
+    // Keeping this third parameter optional preserves existing component
+    // calls until the owner's approval form is updated. Reject never needs
+    // pickup information.
+    const body: {
+      request_id: number;
+      action: 'approve' | 'reject';
+      meeting_location?: string;
+      pickup_date?: string;
+      pickup_time?: string;
+    } = {
+      request_id: requestId,
+      action
+    };
+
+    if (action === 'approve' && pickupDetails) {
+      body.meeting_location = pickupDetails.meeting_location.trim();
+      body.pickup_date = pickupDetails.pickup_date;
+      body.pickup_time = pickupDetails.pickup_time;
+    }
+
+    return this.http.post<RespondToAdoptionRequestResponse>(
       `${this.apiUrl}/respond_request.php`,
+      body,
       {
-        request_id: requestId,
-        action
-      },
+        headers: this.headers()
+      }
+    );
+  }
+
+  // =====================================
+  // RESCHEDULE APPROVED PET PICKUP
+  // =====================================
+
+  reschedulePickup(
+    requestId: number,
+    pickupDetails: AdoptionPickupDetails,
+    reason = ''
+  ): Observable<RespondToAdoptionRequestResponse> {
+
+    // Reuse respond_request.php. Only the pet owner may reschedule an
+    // approved request while the pet is reserved; PHP validates those rules
+    // and saves the old/new arrangements in one database transaction.
+    const body: {
+      request_id: number;
+      action: 'reschedule';
+      meeting_location: string;
+      pickup_date: string;
+      pickup_time: string;
+      reason?: string;
+    } = {
+      request_id: requestId,
+      action: 'reschedule',
+      meeting_location: pickupDetails.meeting_location.trim(),
+      pickup_date: pickupDetails.pickup_date,
+      pickup_time: pickupDetails.pickup_time
+    };
+
+    const trimmedReason = reason.trim();
+    if (trimmedReason) {
+      body.reason = trimmedReason;
+    }
+
+    return this.http.post<RespondToAdoptionRequestResponse>(
+      `${this.apiUrl}/respond_request.php`,
+      body,
       {
         headers: this.headers()
       }
@@ -360,6 +436,7 @@ export class PetAdoptionService {
       return null;
     }
 
+    // Accept only the existing backend's photo path formats.
     const validPath =
       /^\/(?:pawrescue\/)?pawrescue_api\/uploads\/adoptions\/[a-f0-9]{32}\.(jpg|png|webp)$/;
 
@@ -372,7 +449,7 @@ export class PetAdoptionService {
         ? `/pawrescue${photoPath}`
         : photoPath;
 
-    return `http://${this.getBackendHost()}${normalizedPath}`;
+    return `${this.serverBaseUrl}${normalizedPath}`;
   }
 
   // =====================================
@@ -384,17 +461,31 @@ export class PetAdoptionService {
     const paths = (post.photos || [])
       .map(photo => photo.photo_path);
 
-    if (
-      paths.length === 0 &&
-      post.photo_path
-    ) {
+    if (paths.length === 0 && post.photo_path) {
       paths.push(post.photo_path);
     }
 
-    return Array.from(new Set(paths))
+    const cached = this.photoUrlCache.get(post);
+
+    // Compare the contents, not just the array reference. If photos are
+    // updated in place, their URLs will still refresh correctly.
+    if (
+      cached &&
+      cached.paths.length === paths.length &&
+      paths.every((path, index) => path === cached.paths[index])
+    ) {
+      return cached.urls;
+    }
+
+    const urls = Array.from(new Set(paths))
       .map(path => this.getPhotoUrl(path))
-      .filter(
-        (url): url is string => !!url
-      );
+      .filter((url): url is string => !!url);
+
+    this.photoUrlCache.set(post, {
+      paths,
+      urls
+    });
+
+    return urls;
   }
 }

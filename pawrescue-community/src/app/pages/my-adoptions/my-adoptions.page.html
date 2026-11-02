@@ -562,13 +562,51 @@
 
         </div>
 
-        <p
-          class="approved-note"
-          *ngIf="request.status === 'approved'"
-        >
-          Request approved. Complete the pet handover
-          before marking the adoption as completed.
-        </p>
+        <!-- APPROVED APPLICANT: PICKUP ARRANGEMENTS -->
+        <div *ngIf="request.status === 'approved' || request.status === 'completed'">
+          <p class="approved-note" *ngIf="request.status === 'approved'">
+            Applicant approved. The pet is reserved until you confirm the
+            physical handover.
+          </p>
+
+          <section
+            *ngIf="request.meeting_location && request.pickup_date && request.pickup_time"
+            aria-label="Approved pet pickup details"
+            style="margin: 0 14px 14px; padding: 14px; border: 1px solid #cfe6d3; border-radius: 11px; background: #f3faf4;"
+          >
+            <h4 style="margin: 0 0 10px; color: #1b4332; font-size: 14px; font-weight: 700;">
+              Scheduled Pet Pickup
+            </h4>
+            <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere;">
+              <strong>Meeting Location:</strong> {{ request.meeting_location }}
+            </p>
+            <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6;">
+              <strong>Pickup Date:</strong> {{ request.pickup_date | date:'mediumDate' }}
+            </p>
+            <p style="margin: 0; color: #415449; font-size: 12px; line-height: 1.6;">
+              <strong>Pickup Time:</strong> {{ request.pickup_time.slice(0, 5) }} (Philippine time)
+            </p>
+          </section>
+
+          <!-- Owner can reschedule only an approved request for a reserved pet. -->
+          <div
+            class="request-actions"
+            *ngIf="request.status === 'approved' && request.adoption_status === 'reserved'"
+            style="margin: 0 14px 14px;"
+          >
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="success"
+              (click)="openRescheduleForm(request)"
+              [disabled]="busy"
+              style="width: 100%; margin: 0; --border-radius: 10px; text-transform: none;"
+            >
+              <ion-icon name="refresh-outline" slot="start"></ion-icon>
+              Reschedule Pickup
+            </ion-button>
+          </div>
+        </div>
 
       </article>
 
@@ -680,13 +718,53 @@
             {{ request.created_at | date:'mediumDate' }}
           </p>
 
+          <!-- APPROVED ADOPTER: PICKUP SCHEDULE -->
+          <ng-container *ngIf="request.status === 'approved' || request.status === 'completed'">
+            <p class="approved-note" *ngIf="request.status === 'approved'">
+              Your adoption request has been approved! Please follow the
+              agreed pickup arrangements below.
+            </p>
+
+            <section
+              *ngIf="request.meeting_location && request.pickup_date && request.pickup_time; else pickupNotAvailable"
+              aria-label="Your pet pickup schedule"
+              style="margin-top: 12px; padding: 14px; border: 1px solid #cfe6d3; border-radius: 11px; background: #f3faf4;"
+            >
+              <h4 style="margin: 0 0 10px; color: #1b4332; font-size: 14px; font-weight: 700;">
+                Your Pet Pickup Schedule
+              </h4>
+              <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere;">
+                <strong>Meeting Location:</strong> {{ request.meeting_location }}
+              </p>
+              <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6;">
+                <strong>Pickup Date:</strong> {{ request.pickup_date | date:'mediumDate' }}
+              </p>
+              <p style="margin: 0; color: #415449; font-size: 12px; line-height: 1.6;">
+                <strong>Pickup Time:</strong> {{ request.pickup_time.slice(0, 5) }} (Philippine time)
+              </p>
+            </section>
+
+            <ng-template #pickupNotAvailable>
+              <p style="margin: 10px 0 0; color: #637368; font-size: 12px; line-height: 1.6;">
+                The pickup schedule is not available in this view yet.
+                Please refresh the request details.
+              </p>
+            </ng-template>
+
+            <p *ngIf="request.status === 'completed'"
+               style="margin: 12px 0 0; color: #246e37; font-size: 12px; font-weight: 700;">
+              Adoption completed. Thank you for giving this pet a new home!
+            </p>
+          </ng-container>
+
+          <!-- ANOTHER RESIDENT HAS ALREADY BEEN APPROVED -->
           <p
-            class="approved-note"
-            *ngIf="request.status === 'approved'"
+            *ngIf="request.status === 'rejected' &&
+                   (request.adoption_status === 'reserved' || request.adoption_status === 'adopted')"
+            style="margin: 12px 0 0; padding: 12px; border-radius: 9px; background: #fff4e8; color: #83521c; font-size: 12px; line-height: 1.6;"
           >
-            Your request has been approved.
-            Coordinate the actual handover
-            with the pet owner.
+            Another applicant has already been approved to adopt this pet.
+            Thank you for your interest.
           </p>
 
         </div>
@@ -695,6 +773,310 @@
 
     </section>
 
+  </div>
+
+  <!-- =====================================
+       APPROVAL PICKUP ARRANGEMENT FORM
+       Opens only after the owner taps Approve.
+       The request stays Pending until confirmed.
+  ===================================== -->
+
+  <div
+    *ngIf="approvalRequest as selectedRequest"
+    role="presentation"
+    style="position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(11, 29, 18, 0.68);"
+  >
+    <section
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pickup-dialog-title"
+      style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; padding: 20px; border-radius: 17px; background: #ffffff; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);"
+    >
+      <h2
+        id="pickup-dialog-title"
+        style="margin: 0 0 8px; color: #1b4332; font-size: 20px; font-weight: 700;"
+      >
+        Schedule Pet Pickup
+      </h2>
+
+      <p style="margin: 0 0 18px; color: #637368; font-size: 12px; line-height: 1.6;">
+        Approving <strong>{{ selectedRequest.requester_name }}</strong>
+        for <strong>{{ selectedRequest.pet_name }}</strong>.
+        Set the meeting arrangements before confirming approval.
+        Other pending applicants will be notified that someone was approved.
+      </p>
+
+      <form #pickupFormRef="ngForm" (ngSubmit)="confirmApproval()">
+        <div style="margin-bottom: 14px;">
+          <label
+            for="pickup-meeting-location"
+            style="display: block; margin-bottom: 6px; color: #264432; font-size: 13px; font-weight: 700;"
+          >
+            Meeting Location <span aria-hidden="true" style="color: #b71c1c;">*</span>
+          </label>
+          <input
+            id="pickup-meeting-location"
+            name="meeting_location"
+            type="text"
+            [(ngModel)]="pickupForm.meeting_location"
+            placeholder="e.g., San Leonardo Municipal Plaza"
+            autocomplete="off"
+            minlength="5"
+            maxlength="255"
+            required
+            [disabled]="busy"
+            style="display: block; width: 100%; min-height: 44px; box-sizing: border-box; padding: 11px 12px; border: 1px solid #b9cbbd; border-radius: 9px; background: white; color: #253d2c; font-size: 14px;"
+          />
+          <small style="display: block; margin-top: 5px; color: #69796e; font-size: 11px; line-height: 1.5;">
+            Choose an agreed public meeting place. Do not share a private home address unless necessary.
+          </small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px;">
+          <div>
+            <label
+              for="pickup-date"
+              style="display: block; margin-bottom: 6px; color: #264432; font-size: 13px; font-weight: 700;"
+            >
+              Pickup Date <span aria-hidden="true" style="color: #b71c1c;">*</span>
+            </label>
+            <input
+              id="pickup-date"
+              name="pickup_date"
+              type="date"
+              [(ngModel)]="pickupForm.pickup_date"
+              [min]="minimumPickupDate"
+              required
+              [disabled]="busy"
+              style="display: block; width: 100%; min-height: 44px; box-sizing: border-box; padding: 9px 8px; border: 1px solid #b9cbbd; border-radius: 9px; background: white; color: #253d2c; font-size: 13px;"
+            />
+          </div>
+
+          <div>
+            <label
+              for="pickup-time"
+              style="display: block; margin-bottom: 6px; color: #264432; font-size: 13px; font-weight: 700;"
+            >
+              Pickup Time <span aria-hidden="true" style="color: #b71c1c;">*</span>
+            </label>
+            <input
+              id="pickup-time"
+              name="pickup_time"
+              type="time"
+              [(ngModel)]="pickupForm.pickup_time"
+              required
+              [disabled]="busy"
+              style="display: block; width: 100%; min-height: 44px; box-sizing: border-box; padding: 9px 8px; border: 1px solid #b9cbbd; border-radius: 9px; background: white; color: #253d2c; font-size: 13px;"
+            />
+          </div>
+        </div>
+
+        <p style="margin: 0 0 12px; color: #69796e; font-size: 11px; line-height: 1.5;">
+          All pickup dates and times are in Philippine time (UTC+8).
+        </p>
+
+        <div
+          *ngIf="pickupError"
+          role="alert"
+          style="margin-bottom: 14px; padding: 12px; border-radius: 9px; background: #ffebee; color: #b71c1c; font-size: 12px; line-height: 1.5;"
+        >
+          {{ pickupError }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+          <ion-button
+            type="button"
+            fill="outline"
+            color="medium"
+            (click)="cancelApprovalForm()"
+            [disabled]="busy"
+            style="margin: 0; min-height: 44px; --border-radius: 10px; text-transform: none;"
+          >
+            Cancel
+          </ion-button>
+
+          <ion-button
+            type="submit"
+            class="approve-button"
+            [disabled]="busy || !pickupFormRef.valid"
+            style="margin: 0; min-height: 44px; --border-radius: 10px; text-transform: none;"
+          >
+            <ion-spinner
+              *ngIf="busy"
+              slot="start"
+              name="crescent"
+            ></ion-spinner>
+            {{ busy ? 'Approving...' : 'Confirm Approval' }}
+          </ion-button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- =====================================
+       RESCHEDULE PICKUP FORM
+       Only the owner can change an approved pickup while Reserved.
+       The existing approved request remains Approved.
+  ===================================== -->
+
+  <div
+    *ngIf="rescheduleRequest as scheduledRequest"
+    role="presentation"
+    style="position: fixed; inset: 0; z-index: 10001; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(11, 29, 18, 0.68);"
+  >
+    <section
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reschedule-dialog-title"
+      style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; padding: 20px; border-radius: 17px; background: #ffffff; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);"
+    >
+      <h2
+        id="reschedule-dialog-title"
+        style="margin: 0 0 8px; color: #1b4332; font-size: 20px; font-weight: 700;"
+      >
+        Reschedule Pet Pickup
+      </h2>
+
+      <p style="margin: 0 0 14px; color: #637368; font-size: 12px; line-height: 1.6;">
+        Update the pickup arrangements for
+        <strong>{{ scheduledRequest.pet_name }}</strong> with
+        <strong>{{ scheduledRequest.requester_name }}</strong>.
+        The adoption will remain approved and the pet will stay reserved.
+      </p>
+
+      <div
+        style="margin-bottom: 16px; padding: 12px; border: 1px solid #d2e4d6; border-radius: 9px; background: #f3faf4; color: #405347; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere;"
+        aria-label="Current pickup arrangements"
+      >
+        <strong style="display: block; margin-bottom: 4px; color: #1b4332;">Current Pickup Schedule</strong>
+        <div><strong>Location:</strong> {{ scheduledRequest.meeting_location || 'Not available' }}</div>
+        <div><strong>Date:</strong> {{ scheduledRequest.pickup_date || 'Not available' }}</div>
+        <div><strong>Time:</strong> {{ scheduledRequest.pickup_time?.slice(0, 5) || 'Not available' }} (Philippine time)</div>
+      </div>
+
+      <form #rescheduleFormRef="ngForm" (ngSubmit)="confirmReschedule()">
+        <div style="margin-bottom: 14px;">
+          <label
+            for="reschedule-meeting-location"
+            style="display: block; margin-bottom: 6px; color: #264432; font-size: 13px; font-weight: 700;"
+          >
+            New Meeting Location <span aria-hidden="true" style="color: #b71c1c;">*</span>
+          </label>
+          <input
+            id="reschedule-meeting-location"
+            name="reschedule_meeting_location"
+            type="text"
+            [(ngModel)]="rescheduleForm.meeting_location"
+            placeholder="Enter the agreed meeting place"
+            autocomplete="off"
+            minlength="5"
+            maxlength="255"
+            required
+            [disabled]="busy"
+            style="display: block; width: 100%; min-height: 44px; box-sizing: border-box; padding: 11px 12px; border: 1px solid #b9cbbd; border-radius: 9px; background: white; color: #253d2c; font-size: 14px;"
+          />
+          <small style="display: block; margin-top: 5px; color: #69796e; font-size: 11px; line-height: 1.5;">
+            Choose a safe meeting place agreed upon by both residents.
+          </small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px;">
+          <div>
+            <label
+              for="reschedule-date"
+              style="display: block; margin-bottom: 6px; color: #264432; font-size: 13px; font-weight: 700;"
+            >
+              New Pickup Date <span aria-hidden="true" style="color: #b71c1c;">*</span>
+            </label>
+            <input
+              id="reschedule-date"
+              name="reschedule_pickup_date"
+              type="date"
+              [(ngModel)]="rescheduleForm.pickup_date"
+              [min]="minimumPickupDate"
+              required
+              [disabled]="busy"
+              style="display: block; width: 100%; min-height: 44px; box-sizing: border-box; padding: 9px 8px; border: 1px solid #b9cbbd; border-radius: 9px; background: white; color: #253d2c; font-size: 13px;"
+            />
+          </div>
+
+          <div>
+            <label
+              for="reschedule-time"
+              style="display: block; margin-bottom: 6px; color: #264432; font-size: 13px; font-weight: 700;"
+            >
+              New Pickup Time <span aria-hidden="true" style="color: #b71c1c;">*</span>
+            </label>
+            <input
+              id="reschedule-time"
+              name="reschedule_pickup_time"
+              type="time"
+              [(ngModel)]="rescheduleForm.pickup_time"
+              required
+              [disabled]="busy"
+              style="display: block; width: 100%; min-height: 44px; box-sizing: border-box; padding: 9px 8px; border: 1px solid #b9cbbd; border-radius: 9px; background: white; color: #253d2c; font-size: 13px;"
+            />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label
+            for="reschedule-reason"
+            style="display: block; margin-bottom: 6px; color: #264432; font-size: 13px; font-weight: 700;"
+          >
+            Reason for Rescheduling <span style="color: #69796e; font-weight: 400;">(Optional)</span>
+          </label>
+          <input
+            id="reschedule-reason"
+            name="reschedule_reason"
+            type="text"
+            [(ngModel)]="rescheduleReason"
+            maxlength="255"
+            placeholder="e.g., Unable to meet on the original pickup date"
+            [disabled]="busy"
+            style="display: block; width: 100%; min-height: 44px; box-sizing: border-box; padding: 11px 12px; border: 1px solid #b9cbbd; border-radius: 9px; background: white; color: #253d2c; font-size: 14px;"
+          />
+          <small style="display: block; margin-top: 5px; color: #69796e; font-size: 11px; line-height: 1.5;">
+            The previous and updated pickup arrangements are saved in the schedule history.
+          </small>
+        </div>
+
+        <p style="margin: 0 0 12px; color: #69796e; font-size: 11px; line-height: 1.5;">
+          The new pickup date and time must be in the future (Philippine time, UTC+8).
+        </p>
+
+        <div
+          *ngIf="rescheduleError"
+          role="alert"
+          style="margin-bottom: 14px; padding: 12px; border-radius: 9px; background: #ffebee; color: #b71c1c; font-size: 12px; line-height: 1.5;"
+        >
+          {{ rescheduleError }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+          <ion-button
+            type="button"
+            fill="outline"
+            color="medium"
+            (click)="cancelRescheduleForm()"
+            [disabled]="busy"
+            style="margin: 0; min-height: 44px; --border-radius: 10px; text-transform: none;"
+          >
+            Cancel
+          </ion-button>
+
+          <ion-button
+            type="submit"
+            class="approve-button"
+            [disabled]="busy || !rescheduleFormRef.valid"
+            style="margin: 0; min-height: 44px; --border-radius: 10px; text-transform: none;"
+          >
+            <ion-spinner *ngIf="busy" slot="start" name="crescent"></ion-spinner>
+            {{ busy ? 'Saving...' : 'Save New Schedule' }}
+          </ion-button>
+        </div>
+      </form>
+    </section>
   </div>
 
   <!-- =====================================

@@ -48,30 +48,8 @@
     </header>
 
     <!-- =====================================
-         INTRODUCTION SECTION
-    ===================================== -->
-
-    <section class="adoption-intro">
-
-      <div class="intro-icon">
-        <ion-icon
-          name="paw-outline"
-        ></ion-icon>
-      </div>
-
-      <div class="intro-text">
-        <h2>Find Your New Best Friend</h2>
-
-        <p>
-          Give a loving home to pets waiting
-          for their forever families.
-        </p>
-      </div>
-
-    </section>
-
-    <!-- =====================================
-         ACTION BUTTONS
+         QUICK ACTIONS
+         One posting entry point on this page.
     ===================================== -->
 
     <div class="adoption-actions">
@@ -79,6 +57,7 @@
       <ion-button
         class="post-adoption-button"
         (click)="postPet()"
+        aria-label="Post a pet for adoption"
       >
         <ion-icon
           name="add-outline"
@@ -92,6 +71,7 @@
         class="my-adoptions-button"
         fill="outline"
         (click)="myAdoptions()"
+        aria-label="Manage my adoption posts and requests"
       >
         <ion-icon
           name="list-outline"
@@ -104,19 +84,14 @@
     </div>
 
     <!-- =====================================
-         COMMUNITY FEED HEADER
+         PET LISTINGS
     ===================================== -->
 
     <div class="feed-heading">
-
       <div>
-        <h2>Adoption Community</h2>
-
-        <p>
-          Discover pets looking for a home.
-        </p>
+        <h2>Pets Looking for Homes</h2>
+        <p>Browse pets shared by residents in your community.</p>
       </div>
-
     </div>
 
     <!-- =====================================
@@ -209,6 +184,7 @@
 
     <!-- =====================================
          EMPTY STATE
+         Avoid showing a second "Post a Pet" button.
     ===================================== -->
 
     <div
@@ -219,30 +195,28 @@
         posts.length === 0
       "
     >
-
       <div class="empty-icon">
-        <ion-icon
-          name="paw-outline"
-        ></ion-icon>
+        <ion-icon name="paw-outline"></ion-icon>
       </div>
 
-      <h3>No Pets Found</h3>
+      <h3>
+        {{ selectedFilter === 'all'
+          ? 'No Adoption Listings Yet'
+          : 'No ' + (selectedFilter === 'dog' ? 'Dogs' : 'Cats') + ' Found' }}
+      </h3>
 
       <p>
-        There are currently no pets available
-        under this category.
+        {{ selectedFilter === 'all'
+          ? 'There are no pet listings to show right now. Check back soon.'
+          : 'There are no pets in this category right now. Try viewing all pets.' }}
       </p>
 
       <ion-button
+        *ngIf="selectedFilter !== 'all'"
         fill="outline"
-        (click)="postPet()"
+        (click)="changeFilter('all')"
       >
-        <ion-icon
-          name="add-outline"
-          slot="start"
-        ></ion-icon>
-
-        Post a Pet
+        View All Pets
       </ion-button>
 
     </div>

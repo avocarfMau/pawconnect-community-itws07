@@ -76,7 +76,7 @@
 
     <div
       class="message-box success-message"
-      *ngIf="successMessage"
+      *ngIf="successMessage && !requested"
       role="status"
     >
 
@@ -406,6 +406,7 @@
       <section
         class="details-section request-section"
         *ngIf="
+          !loading &&
           !pet.is_owner &&
           pet.status === 'available' &&
           !requested &&
@@ -519,24 +520,108 @@
       </section>
 
       <!-- =====================================
-           REQUEST SUBMITTED
+           EXISTING ADOPTION REQUEST
+           The TypeScript checks sent requests on page entry.
+           A resident who already applied cannot apply twice.
       ===================================== -->
 
       <section
         class="details-section submitted-section"
-        *ngIf="requested"
+        *ngIf="requested && !pet.is_owner"
+        aria-live="polite"
       >
 
-        <ion-icon
-          name="heart-outline"
-        ></ion-icon>
+        <ion-icon name="heart-outline"></ion-icon>
 
-        <h2>Request Submitted!</h2>
+        <h2 *ngIf="existingRequestStatus === 'pending'">
+          Adoption Request Already Submitted
+        </h2>
 
+        <h2 *ngIf="existingRequestStatus === 'approved'">
+          Your Adoption Request Was Approved!
+        </h2>
+
+        <h2 *ngIf="existingRequestStatus === 'rejected'">
+          Adoption Request Not Approved
+        </h2>
+
+        <h2 *ngIf="existingRequestStatus === 'cancelled'">
+          Previous Adoption Request Cancelled
+        </h2>
+
+        <h2 *ngIf="existingRequestStatus === 'completed'">
+          Adoption Completed
+        </h2>
+
+        <h2 *ngIf="!existingRequestStatus">
+          Adoption Request Already Submitted
+        </h2>
+
+        <!-- Use the existing adoption-status styles; no SCSS edit needed. -->
         <p>
-          Your adoption request has been
-          submitted. You can track its status
-          under My Adoptions.
+          <span
+            class="adoption-status"
+            [class.reserved]="existingRequestStatus === 'pending'"
+            [class.available]="existingRequestStatus === 'approved'"
+            [class.adopted]="existingRequestStatus === 'completed'"
+          >
+            {{ existingRequestStatus === 'pending' ? 'Pending Review' :
+               existingRequestStatus === 'approved' ? 'Approved' :
+               existingRequestStatus === 'rejected' ? 'Not Approved' :
+               existingRequestStatus === 'cancelled' ? 'Cancelled' :
+               existingRequestStatus === 'completed' ? 'Completed' :
+               'Submitted' }}
+          </span>
+        </p>
+
+        <p *ngIf="existingRequestStatus === 'pending'">
+          You have already submitted an adoption request for
+          {{ pet.pet_name || 'this pet' }}.
+          The pet owner has not made a decision yet.
+          You can check your application in My Adoptions.
+        </p>
+
+        <p *ngIf="existingRequestStatus === 'approved'">
+          The pet owner approved your request.
+          Coordinate with the owner for the handover.
+          Adoption is complete only after the handover is confirmed.
+        </p>
+
+        <p
+          *ngIf="
+            existingRequestStatus === 'rejected' &&
+            (pet.status === 'reserved' || pet.status === 'adopted')
+          "
+        >
+          Another applicant has already been approved to adopt this pet.
+          Your previous application was not selected.
+          Thank you for your interest.
+        </p>
+
+        <p
+          *ngIf="
+            existingRequestStatus === 'rejected' &&
+            pet.status !== 'reserved' &&
+            pet.status !== 'adopted'
+          "
+        >
+          The pet owner did not approve your previous application.
+          You can review the request under My Adoptions.
+        </p>
+
+        <p *ngIf="existingRequestStatus === 'cancelled'">
+          Your previous request for this pet was cancelled.
+          View My Adoptions to check its record.
+        </p>
+
+        <p *ngIf="existingRequestStatus === 'completed'">
+          The handover has been confirmed and this adoption is completed.
+          Thank you for giving this pet a home.
+        </p>
+
+        <p *ngIf="!existingRequestStatus">
+          You already have a recorded application for this pet.
+          View My Adoptions to check its current status.
         </p>
 
         <ion-button
@@ -555,7 +640,7 @@
 
       <section
         class="details-section"
-        *ngIf="requestUncertain && !requested"
+        *ngIf="requestUncertain && !requested && pet.status === 'available' && !pet.is_owner"
       >
 
         <h2>Check Your Request Status</h2>
@@ -584,7 +669,8 @@
         class="details-section unavailable-section"
         *ngIf="
           !pet.is_owner &&
-          pet.status !== 'available'
+          pet.status !== 'available' &&
+          !requested
         "
       >
 
