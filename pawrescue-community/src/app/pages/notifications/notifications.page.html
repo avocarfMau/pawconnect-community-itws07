@@ -1,0 +1,176 @@
+<!-- ============================================================
+     PAWRESCUE COMMUNITY - NOTIFICATIONS / RECENT ACTIVITY
+     Companion: notifications.page.ts (Step 72)
+     This page shows the CURRENT STATUS of relevant requests.
+     It does not claim push alerts or persistent unread counts.
+     ============================================================ -->
+<ion-content [fullscreen]="true">
+  <main class="notifications-page">
+
+    <!-- Page header -->
+    <header class="notifications-header">
+      <button
+        type="button"
+        class="notifications-icon-button"
+        (click)="goBack()"
+        aria-label="Back to Home">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+
+      <div class="notifications-header-text">
+        <h1>Notifications</h1>
+        <p>Updates on your community activities</p>
+      </div>
+
+      <button
+        type="button"
+        class="notifications-icon-button"
+        (click)="loadNotifications()"
+        [disabled]="loading"
+        aria-label="Refresh notifications">
+        <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </header>
+
+    <!-- Current status summary; no unread/push claims -->
+    <section class="notifications-summary" aria-label="Activity overview">
+      <div class="notifications-summary-icon">
+        <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+      </div>
+      <div class="notifications-summary-text">
+        <h2>Community Activity</h2>
+        <p>See the latest status of your claims, recoveries, and adoption requests.</p>
+      </div>
+    </section>
+
+    <!-- Compact category dropdown instead of horizontally scrolling filter buttons -->
+    <div class="notifications-filter-panel">
+      <label class="notifications-filter-label" for="notifications-category">
+        Filter activity
+      </label>
+      <div class="notifications-select-wrap">
+        <select
+          id="notifications-category"
+          class="notifications-filter-select"
+          aria-label="Filter notifications by category"
+          [value]="activeFilter"
+          (change)="onFilterChange($event)">
+          <option *ngFor="let filter of filters" [value]="filter.key">
+            {{ filter.label }} ({{ countFor(filter.key) }})
+          </option>
+        </select>
+        <ion-icon name="chevron-down-outline" aria-hidden="true"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Section heading -->
+    <div class="notifications-list-heading">
+      <div>
+        <h2>{{ activeFilter === 'all' ? 'Recent Activity' :
+          activeFilter === 'ownership' ? 'Ownership Claims' :
+          activeFilter === 'recovery' ? 'Lost Pet Recoveries' : 'Pet Adoption' }}</h2>
+        <p>Latest status per request, ordered by most recent update.</p>
+      </div>
+      <span class="notifications-total" *ngIf="!loading || activities.length > 0">
+        {{ filteredActivities.length }} {{ filteredActivities.length === 1 ? 'item' : 'items' }}
+      </span>
+    </div>
+
+    <!-- Full-page loading state -->
+    <div class="notifications-state" *ngIf="loading && activities.length === 0" role="status">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h3>Loading activity...</h3>
+      <p>Checking your claims, recoveries, and adoption requests.</p>
+    </div>
+
+    <!-- Background refresh -->
+    <div class="notifications-refreshing" *ngIf="loading && activities.length > 0" role="status">
+      <ion-spinner name="dots"></ion-spinner>
+      <span>Refreshing activity...</span>
+    </div>
+
+    <!-- Complete or partial loading errors -->
+    <div class="notifications-alert notifications-alert--error" *ngIf="error" role="alert">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <span>{{ error }}</span>
+      <button type="button" (click)="loadNotifications()" [disabled]="loading">Retry</button>
+    </div>
+
+    <div class="notifications-alert notifications-alert--notice" *ngIf="notice && !error" role="status">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <span>{{ notice }}</span>
+    </div>
+
+    <!-- No activity / no activity in the selected filter -->
+    <div class="notifications-state notifications-state--empty"
+      *ngIf="!loading && !error && filteredActivities.length === 0">
+      <ion-icon name="inbox-outline" aria-hidden="true"></ion-icon>
+      <h3>{{ activeFilter === 'all' ? 'No activity yet' : 'No activity in this category' }}</h3>
+      <p *ngIf="activeFilter === 'all'">
+        When you submit or receive claims, lost pet recoveries, or adoption requests,
+        their latest status will appear here.
+      </p>
+      <p *ngIf="activeFilter !== 'all'">
+        Try All Activity to see updates from other community services.
+      </p>
+    </div>
+
+    <!-- Activity cards: only status summaries, no private photo/location data -->
+    <section class="notifications-items" aria-label="Your activity updates"
+      *ngIf="visibleActivities.length > 0">
+      <article class="notifications-card"
+        *ngFor="let item of visibleActivities; trackBy: trackActivity"
+        [attr.data-tone]="item.tone">
+        <div class="notifications-card-icon" [attr.data-category]="item.category">
+          <ion-icon [name]="item.icon" aria-hidden="true"></ion-icon>
+        </div>
+
+        <div class="notifications-card-content">
+          <div class="notifications-card-meta">
+            <span class="notifications-card-category">
+              {{ item.category === 'ownership' ? 'Ownership Claim' :
+                 item.category === 'recovery' ? 'Lost Pet Recovery' : 'Pet Adoption' }}
+            </span>
+            <span class="notifications-card-separator" aria-hidden="true">·</span>
+            <span>{{ item.scope === 'sent' ? 'Sent' : 'Received' }}</span>
+          </div>
+
+          <h3>{{ item.title }}</h3>
+          <p class="notifications-card-description">{{ item.message }}</p>
+
+          <div class="notifications-card-bottom">
+            <span class="notifications-status" [attr.data-tone]="item.tone">
+              {{ item.statusLabel }}
+            </span>
+            <time *ngIf="item.date.getTime() > 0" [attr.datetime]="item.date.toISOString()">
+              <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+              {{ item.date | date:'MMM d, y · h:mm a' }}
+            </time>
+          </div>
+
+          <button type="button" class="notifications-view-button" (click)="openActivity(item)">
+            View Details
+            <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </div>
+      </article>
+    </section>
+
+    <!-- Display more already fetched results -->
+    <div class="notifications-show-more" *ngIf="hasMore">
+      <button type="button" (click)="showMore()">
+        Show More Activity
+        <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+
+    <p class="notifications-updated" *ngIf="updatedAt && !loading">
+      Last refreshed {{ updatedAt | date:'MMM d, y · h:mm a' }}
+    </p>
+
+    <p class="notifications-footnote">
+      Activities load automatically whenever you open this page. You can also tap Refresh.
+      It does not send push notifications or track unread messages yet.
+    </p>
+  </main>
+</ion-content>
