@@ -1,82 +1,137 @@
-
 <?php
-
 // =====================================
 // PAWRESCUE COMMUNITY
-// VERIFY AUTHENTICATED SESSION
+// AUTHENTICATED SESSION / MY ACCOUNT PROFILE
 // =====================================
+// CORS is handled by the existing .htaccess / cors.php.
 
-// =====================================
-// RESPONSE HEADERS
-// =====================================
-
-// CORS is automatically handled by
-// cors.php through .htaccess.
-
-header("Content-Type: application/json; charset=UTF-8");
-header("Cache-Control: no-store");
+header('Content-Type: application/json; charset=UTF-8');
+header('Cache-Control: no-store');
 
 // =====================================
-// ALLOW GET REQUESTS ONLY
+// JSON RESPONSE HELPER
 // =====================================
+function sendProfileResponse(int $status, array $payload): void
+{
+    http_response_code($status);
 
-if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+    $json = json_encode(
+        $payload,
+        JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
+    );
 
-    http_response_code(405);
+    if ($json === false) {
+        http_response_code(500);
+        echo '{"success":false,"message":"Unable to prepare account information."}';
+        exit;
+    }
 
-    header("Allow: GET, OPTIONS");
-
-    echo json_encode([
-        "success" => false,
-        "message" => "Method not allowed."
-    ]);
-
+    echo $json;
     exit;
 }
 
 // =====================================
-// AUTHENTICATION MIDDLEWARE
+// ALLOW GET REQUESTS ONLY
 // =====================================
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
+    header('Allow: GET, OPTIONS');
 
-require_once __DIR__ . "/../middleware/auth_middleware.php";
+    sendProfileResponse(405, [
+        'success' => false,
+        'message' => 'Method not allowed.'
+    ]);
+}
+
+// =====================================
+// AUTHENTICATE SESSION
+// =====================================
+require_once __DIR__ . '/../middleware/auth_middleware.php';
 
 try {
-
-    // Verify token and retrieve user.
+    // Keep this endpoint available to BOTH resident and staff session checks.
+    // The middleware verifies the Bearer token and supplies the database
+    // connection and authenticated user ID.
     $auth = authenticate();
+    $authenticatedUser = $auth['user'] ?? null;
+    $conn = $auth['connection'] ?? null;
 
-    $user = $auth["user"];
+    if (
+        !is_array($authenticatedUser) ||
+        !isset($authenticatedUser['id']) ||
+        !($conn instanceof PDO)
+    ) {
+        throw new RuntimeException('Authenticated session information is incomplete.');
+    }
 
-    // =====================================
-    // SUCCESS RESPONSE
-    // =====================================
+    $userId = (int) $authenticatedUser['id'];
 
-    http_response_code(200);
+    if ($userId <= 0) {
+        sendProfileResponse(401, [
+            'success' => false,
+            'message' => 'Invalid authenticated session.'
+        ]);
+    }
 
-    echo json_encode([
-        "success" => true,
-        "message" => "Authenticated successfully.",
-        "user" => [
-            "id" => (int) $user["id"],
-            "full_name" => $user["full_name"],
-            "email" => $user["email"],
-            "username" => $user["username"],
-            "contact_number" => $user["contact_number"],
-            "role" => $user["role"]
-        ]
-    ]);
-
-} catch (Throwable $e) {
-
-    error_log(
-        "PawRescue Session Verification Error: " .
-        $e->getMessage()
+    // Read the current saved values from the users table so Edit Profile
+    // receives the original name components, rather than attempting to
+    // split full_name (which is unreliable for multi-part names).
+    // This is a single lookup by the authenticated user's ID.
+    $stmt = $conn->prepare(
+        "SELECT id,
+                first_name,
+                middle_name,
+                last_name,
+                full_name,
+                email,
+                username,
+                contact_number,
+                role,
+                status
+         FROM users
+         WHERE id = :user_id
+         LIMIT 1"
     );
 
-    http_response_code(500);
+    $stmt->execute([':user_id' => $userId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    echo json_encode([
-        "success" => false,
-        "message" => "Unable to verify session."
+    if (!$user || $user['status'] !== 'active') {
+        sendProfileResponse(401, [
+            'success' => false,
+            'message' => 'This account is no longer available.'
+        ]);
+    }
+
+    // Barangay is not collected by the existing registration endpoint.
+    // Keep this legacy optional response field without querying a
+    // database column that may not exist.
+    $barangay = $authenticatedUser['barangay'] ?? null;
+
+    sendProfileResponse(200, [
+        'success' => true,
+        'message' => 'Authenticated successfully.',
+        'user' => [
+            'id' => (int) $user['id'],
+            'first_name' => (string) ($user['first_name'] ?? ''),
+            'middle_name' => $user['middle_name'] !== null
+                ? (string) $user['middle_name']
+                : null,
+            'last_name' => (string) ($user['last_name'] ?? ''),
+            'full_name' => (string) $user['full_name'],
+            'email' => (string) $user['email'],
+            'username' => (string) $user['username'],
+            'contact_number' => $user['contact_number'] !== null
+                ? (string) $user['contact_number']
+                : null,
+            'barangay' => is_string($barangay) ? $barangay : null,
+            'role' => (string) $user['role']
+        ]
+    ]);
+} catch (Throwable $e) {
+    error_log('[PawRescue Auth Me] ' . $e->getMessage());
+
+    sendProfileResponse(500, [
+        'success' => false,
+        'message' => 'Unable to verify session or load account information.'
     ]);
 }
