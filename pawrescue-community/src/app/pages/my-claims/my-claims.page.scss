@@ -1,0 +1,1143 @@
+/* ==========================================================
+   PAWRESCUE COMMUNITY — MY CLAIMS
+   Mobile-first visual redesign, consistent with Report a Pet,
+   Lost & Found, and My Reports.
+   UI only: keeps all Angular/ownership workflows unchanged.
+   ========================================================== */
+
+:host {
+  display: block;
+  --claims-green: #2d8038;
+  --claims-green-dark: #23692e;
+  --claims-green-hover: #277232;
+  --claims-green-soft: #e5f4ea;
+  --claims-green-ink: #214936;
+  --claims-ink: #1f4230;
+  --claims-muted: #748579;
+  --claims-border: #dfeae2;
+  --claims-bg: #f5f9f6;
+}
+
+ion-content {
+  --background: var(--claims-bg);
+  --color: var(--claims-ink);
+}
+
+/* PAGE / SAFE-AREA HEADER */
+.claims-page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  min-height: 100%;
+  margin: 0 auto;
+  /* Ionic fullscreen may render behind the Android status bar. */
+  padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 16px
+    max(78px, env(safe-area-inset-bottom, 0px));
+}
+
+.claims-page-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  margin: 0 0 24px;
+}
+
+.claims-page-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.claims-page-heading h1 {
+  margin: 0 0 5px;
+  color: var(--claims-ink);
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -0.35px;
+}
+
+.claims-page-heading p {
+  margin: 0;
+  color: #829087;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.claims-back-button,
+.claims-refresh-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  padding: 0;
+  border: 0;
+  background: var(--claims-green-soft);
+  color: var(--claims-green);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.claims-back-button { border-radius: 50%; }
+.claims-refresh-button {
+  border: 1px solid #d9eae0;
+  border-radius: 12px;
+}
+
+.claims-back-button ion-icon,
+.claims-refresh-button ion-icon { font-size: 23px; }
+
+.claims-back-button:active,
+.claims-refresh-button:active { background: #d5eddd; }
+
+/* TABS — two strong, equally sized choices */
+.claims-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 23px;
+}
+
+.claims-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 49px;
+  padding: 10px 9px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 13px;
+  background: #fff;
+  color: var(--claims-green);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.claims-tab ion-icon { flex: 0 0 auto; font-size: 18px; }
+.claims-tab span:not(.claims-tab-count) { min-width: 0; }
+
+.claims-tab.active {
+  border-color: var(--claims-green);
+  background: var(--claims-green);
+  color: #fff;
+  box-shadow: 0 3px 9px rgba(27, 93, 40, .12);
+}
+
+.claims-tab-count {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 2px 6px;
+  box-sizing: border-box;
+  border-radius: 99px;
+  background: #eaf6ed;
+  color: var(--claims-green);
+  font-size: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.claims-tab.active .claims-tab-count {
+  background: rgba(255, 255, 255, .22);
+  color: #fff;
+}
+
+/* SECTION INTRO */
+.claims-list-section { min-width: 0; }
+.claims-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  margin: 0 0 16px;
+}
+
+.claims-section-heading > div { min-width: 0; }
+.claims-section-heading h2 {
+  margin: 0 0 4px;
+  color: var(--claims-ink);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.claims-section-heading p {
+  margin: 0;
+  color: var(--claims-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.claims-attention-count {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid #f0ddba;
+  border-radius: 99px;
+  background: #fff4e3;
+  color: #8e611d;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+/* EMPTY / LOADING / ERROR */
+.claims-state,
+.claims-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 174px;
+  padding: 23px 17px;
+  box-sizing: border-box;
+  border: 1px solid var(--claims-border);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--claims-muted);
+  text-align: center;
+}
+.claims-state ion-spinner { width: 28px; height: 28px; color: var(--claims-green); }
+.claims-state p,
+.claims-empty p { margin: 0; font-size: 12px; line-height: 1.55; }
+.claims-empty ion-icon { font-size: 40px; color: #87b99a; }
+.claims-empty h3 { margin: 0; color: var(--claims-ink); font-size: 16px; font-weight: 750; }
+.claims-state--small {
+  flex-direction: row;
+  min-height: 0;
+  padding: 12px;
+  font-size: 12px;
+}
+.claims-state--small ion-spinner { width: 17px; height: 17px; }
+
+/* CLAIM PREVIEW CARDS — compact, readable, one clear action */
+.claims-card-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 13px;
+}
+
+.claims-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 1px solid #e1ebe5;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 13px rgba(19, 55, 33, .035);
+}
+
+.claims-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.claims-card-kind {
+  color: #548465;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.claims-card h3 {
+  margin: 0 0 4px;
+  color: var(--claims-green-ink);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.claims-card-meta {
+  margin: 0 0 12px;
+  color: #728477;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.claims-card-next,
+.claims-next-step {
+  min-width: 0;
+  margin: 0 0 13px;
+  padding: 11px 12px;
+  border: 1px solid #dcebe0;
+  border-radius: 11px;
+  background: #f4faf5;
+  color: #486850;
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.claims-card-next-label {
+  display: block;
+  margin: 0 0 4px;
+  color: #318045;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .25px;
+  text-transform: uppercase;
+}
+.claims-card-next p { margin: 0; }
+
+.claims-card-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 10px 14px;
+  border: 1.5px solid var(--claims-green);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--claims-green);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.claims-card-action ion-icon { font-size: 18px; }
+.claims-card-action:active { background: #edf8f0; }
+.claims-card-action--primary {
+  background: var(--claims-green);
+  color: #fff;
+}
+.claims-card-action--primary:active { background: var(--claims-green-dark); }
+
+/* STATUSES */
+.claims-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 99px;
+  background: #f1f4f2;
+  color: #637668;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.claims-status[data-status='pending'] { background: #fff1e2; color: #9a6425; }
+.claims-status[data-status='approved'],
+.claims-status[data-status='pickup_scheduled'] { background: #e9f6ec; color: #237347; }
+.claims-status[data-status='reschedule_requested'] { background: #edf3ff; color: #4167a1; }
+.claims-status[data-status='completed'] { background: #e0f4e7; color: #197447; }
+.claims-status[data-status='rejected'],
+.claims-status[data-status='disputed'] { background: #fff0f0; color: #a84848; }
+.claims-status[data-status='cancelled'] { background: #f0f2f1; color: #68746d; }
+
+.claims-load-more { display: flex; justify-content: center; margin: 18px 0 0; }
+.claims-load-more button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 150px;
+  min-height: 43px;
+  padding: 10px 16px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--claims-green);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.claims-load-more ion-spinner { width: 16px; height: 16px; }
+
+/* PRIVATE DETAILS — screen-safe modal, scrollable body */
+.claims-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: max(10px, env(safe-area-inset-top, 0px)) 12px
+    max(10px, env(safe-area-inset-bottom, 0px));
+  background: rgba(13, 39, 22, .65);
+  backdrop-filter: blur(3px);
+}
+
+.claims-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: min(91dvh, 820px);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #e0ebe3;
+  border-radius: 19px;
+  background: #fff;
+  box-shadow: 0 18px 55px rgba(10, 36, 18, .25);
+}
+
+.claims-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 18px 19px 14px;
+  border-bottom: 1px solid var(--claims-border);
+  background: #fff;
+}
+.claims-dialog-title { min-width: 0; }
+.claims-dialog-title p {
+  margin: 0 0 4px;
+  color: #328049;
+  font-size: 11px;
+  font-weight: 750;
+}
+.claims-dialog-title h2 {
+  margin: 0;
+  color: var(--claims-ink);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.claims-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #dce9e0;
+  border-radius: 10px;
+  background: #eff7f1;
+  color: var(--claims-green);
+  cursor: pointer;
+}
+.claims-dialog-close ion-icon { font-size: 21px; }
+.claims-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 18px 19px 23px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.claims-dialog-body > .claims-status { margin-bottom: 12px; }
+.claims-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  padding: 12px 19px;
+  border-top: 1px solid var(--claims-border);
+  background: #fff;
+}
+
+.claims-next-step { margin-top: 0; margin-bottom: 17px; }
+.claims-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin: 0 0 17px;
+}
+.claims-detail-grid > div {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #e1ebe4;
+  border-radius: 11px;
+  background: #f8fbf9;
+}
+.claims-detail-grid span,
+.claims-detail-grid strong { display: block; overflow-wrap: anywhere; }
+.claims-detail-grid span {
+  margin: 0 0 5px;
+  color: #819187;
+  font-size: 10px;
+}
+.claims-detail-grid strong {
+  color: var(--claims-green-ink);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+.claims-dialog-section {
+  min-width: 0;
+  margin: 0 0 17px;
+  padding: 16px 0 0;
+  border-top: 1px solid #e8f0ea;
+}
+.claims-dialog-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  color: var(--claims-green-ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+.claims-dialog-section h3 ion-icon { font-size: 18px; color: var(--claims-green); }
+.claims-muted {
+  margin: 6px 0 11px;
+  color: #718378;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.claims-prewrap {
+  margin: 0;
+  padding: 12px 13px;
+  border: 1px solid #e1ebe5;
+  border-radius: 11px;
+  background: #f8fbf9;
+  color: #486251;
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.claims-subheading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.claims-subheading h3 { margin: 0; }
+.claims-text-action {
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--claims-green);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.claims-text-action:active { background: #edf8f0; }
+
+/* PRIVATE PHOTO EVIDENCE: photos shown uncropped */
+.claims-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.claims-evidence-grid figure {
+  min-width: 0;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--claims-border);
+  border-radius: 12px;
+  background: #f9fbfa;
+  overflow: hidden;
+}
+.claims-evidence-grid img {
+  display: block;
+  width: 100%;
+  height: 172px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 9px;
+  background: #edf3ee;
+  user-select: none;
+}
+.claims-evidence-grid figcaption {
+  padding: 7px 0 1px;
+  color: #718478;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: center;
+}
+
+/* PICKUP DETAILS / NOTICES */
+.claims-pickup-summary {
+  padding: 12px 13px;
+  border: 1px solid #dcebe0;
+  border-radius: 11px;
+  background: #f5faf6;
+}
+.claims-pickup-summary p {
+  margin: 0 0 7px;
+  color: #506b58;
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.claims-pickup-summary p:last-child { margin-bottom: 0; }
+.claims-pickup-summary strong { color: #285439; font-weight: 750; }
+.claims-notice {
+  display: block;
+  margin: 12px 0;
+  padding: 12px 13px;
+  border: 1px solid #e1eae3;
+  border-radius: 11px;
+  background: #f6f8f6;
+  color: #607568;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.claims-notice--success {
+  border-color: #cbe8d4;
+  background: #edf8f0;
+  color: #266e40;
+}
+.claims-notice--error {
+  border-color: #f1d0cf;
+  background: #fff3f2;
+  color: #ac4040;
+}
+.claims-notice--muted {
+  border-color: #e0e6e2;
+  background: #f3f5f3;
+  color: #65786c;
+}
+.claims-notice button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px 0 0;
+  padding: 6px 9px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.claims-saving {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f3f8f5;
+  color: #567560;
+  font-size: 12px;
+}
+.claims-saving ion-spinner { width: 17px; height: 17px; color: var(--claims-green); }
+
+/* PRIVATE DECISION FORMS */
+.claims-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #e0ebe3;
+  border-radius: 13px;
+  background: #f9fcfa;
+}
+.claims-form h3,
+.claims-form .claims-muted { margin-bottom: 0; }
+.claims-form-field { min-width: 0; }
+.claims-form-field label {
+  display: block;
+  margin: 0 0 8px;
+  color: #344f3c;
+  font-size: 12px;
+  font-weight: 750;
+}
+.claims-form-field input,
+.claims-form-field textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 11px 12px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--claims-ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.claims-form-field textarea { min-height: 82px; resize: vertical; }
+.claims-form-field input:focus,
+.claims-form-field textarea:focus {
+  border-color: var(--claims-green);
+  box-shadow: 0 0 0 3px rgba(45, 128, 56, .12);
+  outline: none;
+}
+.claims-form-field input::placeholder,
+.claims-form-field textarea::placeholder { color: #98a99b; }
+.claims-form-field input[type='date'],
+.claims-form-field input[type='time'] { color-scheme: light; }
+.claims-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+.claims-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 12px;
+}
+.claims-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: 45px;
+  max-width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid transparent;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.claims-button ion-icon { flex: 0 0 auto; font-size: 18px; }
+.claims-button--full { display: flex; width: 100%; }
+.claims-button--primary {
+  border-color: var(--claims-green);
+  background: var(--claims-green);
+  color: #fff;
+}
+.claims-button--primary:active { background: var(--claims-green-dark); }
+.claims-button--outline {
+  border-color: var(--claims-green);
+  background: #fff;
+  color: var(--claims-green);
+}
+.claims-button--outline:active { background: #edf8f0; }
+.claims-button--subtle {
+  border-color: #cfe5d5;
+  background: #edf8f0;
+  color: var(--claims-green);
+}
+.claims-button--danger {
+  border-color: #b84c4c;
+  background: #b84c4c;
+  color: #fff;
+}
+.claims-action-row > .claims-button { flex: 1 1 135px; }
+.claims-handover {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #cae5d1;
+  border-radius: 13px;
+  background: #f2faf4;
+}
+.claims-handover h3 { color: #276f40; }
+
+/* KEYBOARD / TAP ACCESSIBILITY */
+.claims-back-button:focus-visible,
+.claims-refresh-button:focus-visible,
+.claims-tab:focus-visible,
+.claims-card-action:focus-visible,
+.claims-load-more button:focus-visible,
+.claims-dialog-close:focus-visible,
+.claims-text-action:focus-visible,
+.claims-button:focus-visible,
+.claims-notice button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 128, 56, .14);
+}
+.claims-page button:disabled,
+.claims-dialog button:disabled { opacity: .54; cursor: not-allowed; }
+
+/* RESPONSIVE: phone first, larger screens optional */
+@media (min-width: 800px) {
+  .claims-card-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .claims-page {
+    padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 14px
+      max(74px, env(safe-area-inset-bottom, 0px));
+  }
+  .claims-page-header { gap: 11px; margin-bottom: 23px; }
+  .claims-page-heading h1 { font-size: 22px; }
+  .claims-tabs { gap: 9px; margin-bottom: 22px; }
+  .claims-tab { gap: 5px; padding: 9px 5px; font-size: 12px; }
+  .claims-card { padding: 15px; }
+  .claims-dialog-overlay {
+    padding: max(8px, env(safe-area-inset-top, 0px)) 8px
+      max(8px, env(safe-area-inset-bottom, 0px));
+  }
+  .claims-dialog {
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    border-radius: 16px;
+  }
+  .claims-dialog-header { padding: 15px 15px 12px; }
+  .claims-dialog-title h2 { font-size: 18px; }
+  .claims-dialog-body { padding: 15px; }
+  .claims-dialog-footer { padding: 10px 15px 12px; }
+  .claims-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .claims-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .claims-evidence-grid img { height: 145px; }
+}
+
+@media (max-width: 360px) {
+  .claims-page-heading p { font-size: 11px; }
+  .claims-page-header { gap: 9px; }
+  .claims-back-button,
+  .claims-refresh-button { flex-basis: 40px; width: 40px; height: 40px; }
+  .claims-tab { font-size: 11px; gap: 4px; }
+  .claims-tab ion-icon { font-size: 16px; }
+  .claims-tab-count { min-width: 19px; min-height: 19px; padding: 1px 5px; }
+  .claims-action-row { flex-direction: column; }
+  .claims-action-row > .claims-button { width: 100%; flex: 0 0 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .claims-tab,
+  .claims-form-field input,
+  .claims-form-field textarea { transition: none; }
+}
+
+
+/* =============================================================
+   VIEW DETAILS — CLEAR MOBILE INFORMATION HIERARCHY
+   Scope limited to the sent/received claim detail dialogs.
+   Supporting explanations and photos are expandable; active
+   actions, pickup details, and handover controls stay accessible.
+   ============================================================= */
+.claims-dialog-overlay {
+  background: rgba(10, 34, 20, .59);
+  backdrop-filter: blur(3px);
+}
+.claims-dialog {
+  border-color: #e1ebe5;
+  background: #f9fbfa;
+}
+.claims-dialog-header {
+  align-items: center;
+  padding: 18px 20px 17px;
+  background: #fff;
+}
+.claims-dialog-title p {
+  margin-bottom: 5px;
+  font-size: 11px;
+  color: #6b8a73;
+  letter-spacing: .12px;
+}
+.claims-dialog-title h2 {
+  font-size: 20px;
+  line-height: 1.3;
+}
+.claims-dialog-close {
+  flex: 0 0 39px;
+  height: 39px;
+  width: 39px;
+  border-radius: 12px;
+}
+.claims-dialog-body {
+  padding: 18px 18px 27px;
+  background: #f9fbfa;
+}
+.claims-dialog-summary {
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #dcebe1;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(22, 58, 32, .025);
+}
+.claims-dialog-state-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.claims-dialog-state-caption {
+  color: #87968b;
+  font-size: 11px;
+  font-weight: 600;
+}
+.claims-dialog-update-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #2d8038;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .7px;
+}
+.claims-dialog-summary .claims-next-step {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #365c43;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+.claims-overview-label {
+  margin: 0 4px 8px;
+  color: #32523a;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+/* Vertical key/value list instead of three narrow cramped tiles. */
+.claims-dialog-body .claims-detail-grid {
+  display: block;
+  margin: 0 0 14px;
+  padding: 4px 14px;
+  border: 1px solid #e2eae5;
+  border-radius: 14px;
+  background: #fff;
+}
+.claims-dialog-body .claims-detail-grid > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 39px;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid #eef2ef;
+  border-radius: 0;
+  background: none;
+}
+.claims-dialog-body .claims-detail-grid > div:last-child { border-bottom: 0; }
+.claims-dialog-body .claims-detail-grid span {
+  flex: 0 0 38%;
+  margin: 0;
+  font-size: 11px;
+  color: #7b8b7e;
+}
+.claims-dialog-body .claims-detail-grid strong {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+  text-align: right;
+  color: #274b35;
+}
+/* Native, keyboard-accessible accordions: no TS or new actions. */
+.claims-disclosure {
+  overflow: hidden;
+  margin-bottom: 13px;
+  border: 1px solid #e0eae3;
+  border-radius: 14px;
+  background: #fff;
+}
+.claims-disclosure-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 62px;
+  padding: 14px 15px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.claims-disclosure-toggle::-webkit-details-marker { display: none; }
+.claims-disclosure-toggle::marker { content: ''; }
+.claims-disclosure-heading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 4px;
+}
+.claims-disclosure-heading strong {
+  color: #214936;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.claims-disclosure-heading small {
+  color: #839186;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.claims-disclosure-chevron {
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  margin-right: 5px;
+  transform: rotate(45deg);
+  border-right: 2px solid #2d8038;
+  border-bottom: 2px solid #2d8038;
+  transition: transform .18s ease;
+}
+.claims-disclosure[open] .claims-disclosure-chevron {
+  transform: translateY(3px) rotate(225deg);
+}
+.claims-disclosure[open] .claims-disclosure-toggle {
+  border-bottom: 1px solid #e9f0eb;
+  background: #f6fbf7;
+}
+.claims-disclosure-content { padding: 15px; }
+.claims-disclosure-content h4 {
+  margin: 0 0 9px;
+  font-size: 12px;
+  font-weight: 750;
+  color: #3a6147;
+}
+.claims-disclosure-content .claims-prewrap {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  line-height: 1.7;
+  font-size: 12px;
+}
+.claims-disclosure-content .claims-muted:last-child { margin-bottom: 0; }
+.claims-disclosure-content .claims-subheading { margin-bottom: 10px; }
+.claims-disclosure-content .claims-subheading h3 { font-size: 12px; }
+.claims-disclosure:focus-within { border-color: #bcdcc5; }
+.claims-disclosure-toggle:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgba(45,128,56,.32);
+}
+/* Action and arrangement blocks are intentionally separate. */
+.claims-dialog-body > .claims-dialog-section {
+  margin: 0 0 13px;
+  padding: 16px;
+  border: 1px solid #e1eae3;
+  border-radius: 14px;
+  background: #fff;
+}
+.claims-dialog-body > .claims-dialog-section h3 {
+  margin-bottom: 9px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.claims-dialog-section--pickup .claims-pickup-summary,
+.claims-dialog-section--change .claims-pickup-summary {
+  padding: 10px 12px;
+  border-color: #e2ede5;
+  background: #f8fbf9;
+}
+.claims-dialog-body .claims-pickup-summary p {
+  margin: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid #e8f0eb;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.claims-dialog-body .claims-pickup-summary p:last-child {
+  padding-bottom: 0;
+  border: 0;
+}
+.claims-dialog-body .claims-pickup-summary p:first-child { padding-top: 0; }
+.claims-dialog-section--action {
+  border-color: #d4e8da !important;
+  background: #f6fbf7 !important;
+}
+.claims-dialog-section--action .claims-muted {
+  margin-bottom: 14px;
+}
+.claims-decision-hint {
+  border-left: 3px solid #78bd8d;
+  padding-left: 11px;
+}
+.claims-dialog-body > .claims-handover {
+  background: #eefaef;
+  border-color: #bce0c7;
+}
+.claims-dialog-body > .claims-notice {
+  margin: 9px 0 13px;
+}
+.claims-dialog-footer {
+  padding: 12px 19px;
+  background: #fff;
+}
+.claims-dialog-footer .claims-button {
+  min-width: 100px;
+}
+@media (max-width: 520px) {
+  /* Bottom sheet leaves the Android status-bar area unobstructed. */
+  .claims-dialog-overlay {
+    align-items: flex-end;
+    padding: max(54px, env(safe-area-inset-top, 0px)) 0 0;
+  }
+  .claims-dialog {
+    width: 100%;
+    max-height: 100%;
+    border-radius: 21px 21px 0 0;
+    border-bottom: 0;
+  }
+  .claims-dialog-header { padding: 17px 17px 14px; }
+  .claims-dialog-body { padding: 14px 13px 22px; }
+  .claims-dialog-summary { padding: 14px; }
+  .claims-dialog-body > .claims-dialog-section { padding: 14px; }
+  .claims-dialog-body .claims-detail-grid { padding: 4px 12px; }
+  .claims-evidence-grid { gap: 8px; }
+  .claims-evidence-grid img { height: 125px; }
+  /* Long paired labels should stack, not squeeze into two narrow buttons. */
+  .claims-dialog-body .claims-action-row { flex-direction: column; }
+  .claims-dialog-body .claims-action-row > .claims-button {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 46px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .claims-disclosure-chevron { transition: none; }
+}
+
+/* Counts appear beside the active section title, not inside tabs. */
+.claims-heading-with-count {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.claims-heading-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #e8f5ec;
+  border: 1px solid #cde7d5;
+  color: #287c3b;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}

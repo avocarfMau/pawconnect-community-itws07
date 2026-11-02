@@ -41,8 +41,7 @@ import {
   mapOutline,
   closeOutline,
   chevronDownOutline,
-  informationCircleOutline
-} from 'ionicons/icons';
+  informationCircleOutline, addOutline, refreshOutline, imageOutline, calendarOutline, chevronForwardOutline, expandOutline, chevronBackOutline, createOutline } from 'ionicons/icons';
 
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
@@ -119,8 +118,7 @@ export class ReportPetPage implements OnDestroy {
 
   selectedPhotos: SelectedPetPhoto[] = [];
 
-  // Legacy properties remain for the existing single-photo HTML.
-  // They will be replaced with a gallery in the next HTML update.
+  // Legacy preview properties are retained for compatibility.
   selectedPhoto: File | null = null;
 
   photoPreview: string | null = null;
@@ -142,11 +140,95 @@ export class ReportPetPage implements OnDestroy {
   }
 
   // =====================================
+  // THREE STEP REPORT FORM
+  // =====================================
+  formStep: 1 | 2 | 3 = 1;
+  stepError = '';
+
+  private scrollFormToTop(): void {
+    void this.pageContent?.scrollToTop(220);
+  }
+
+  nextStep(): void {
+    if (
+      this.loading || this.uploadingPhoto || this.cameraOpening ||
+      this.submissionUncertain || this.submittedReportId !== null
+    ) {
+      return;
+    }
+
+    this.stepError = '';
+
+    if (this.formStep === 1) {
+      if (!this.form.description.trim()) {
+        this.stepError = 'Please describe the pet before continuing.';
+        return;
+      }
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(this.form.incident_date) ||
+        this.form.incident_date > this.today
+      ) {
+        this.stepError = 'Please select a valid date when the pet was lost or found.';
+        return;
+      }
+      this.formStep = 2;
+      // For Found Pet, start GPS capture on entering Location step.
+      // Residents can retry using the GPS button if permission is denied.
+      if (this.form.report_type === 'found' && !this.foundGpsVerified) {
+        void this.useCurrentLocation();
+      }
+    } else if (this.formStep === 2) {
+      if (this.form.report_type === 'found') {
+        if (this.gettingLocation) {
+          this.stepError = 'Please wait for GPS location capture to finish.';
+          return;
+        }
+        if (!this.foundGpsVerified || this.selectedLatitude === null || this.selectedLongitude === null) {
+          this.stepError = 'Please capture the GPS location where you found the pet before continuing.';
+          return;
+        }
+      } else if (!this.selectedBarangay.trim()) {
+        this.stepError = 'Please select the barangay where your missing pet was last seen.';
+        return;
+      }
+      this.updateLocationAddress();
+      if (this.form.location_address.length > 255) {
+        this.stepError = 'The location is too long. Please shorten the landmark.';
+        return;
+      }
+      // Remove the Leaflet instance before leaving the map step.
+      // Previously selected coordinates are intentionally retained.
+      if (this.showMap) {
+        this.showMap = false;
+        this.destroyMap();
+      }
+      this.formStep = 3;
+    }
+
+    this.scrollFormToTop();
+  }
+
+  previousStep(): void {
+    if (
+      this.loading || this.uploadingPhoto || this.cameraOpening ||
+      this.submissionUncertain || this.submittedReportId !== null
+    ) {
+      return;
+    }
+    this.stepError = '';
+    this.formStep = this.formStep === 3 ? 2 : 1;
+    this.scrollFormToTop();
+  }
+
+  // =====================================
   // LOCATION STATE
   // =====================================
   selectedLatitude: number | null = null;
 
   selectedLongitude: number | null = null;
+
+  // True only after GPS successfully captures the location for a Found Pet.
+  foundGpsVerified = false;
 
   showMap = false;
 
@@ -167,6 +249,9 @@ export class ReportPetPage implements OnDestroy {
   // =====================================
   // MAP CONTAINER
   // =====================================
+  @ViewChild(IonContent)
+  private pageContent?: IonContent;
+
   @ViewChild('locationMap')
   set locationMapElement(
     element: ElementRef<HTMLDivElement> | undefined
@@ -189,7 +274,18 @@ export class ReportPetPage implements OnDestroy {
   selectedBarangay = '';
   landmark = '';
 
-  updateLocationAddress() {
+  updateLocationAddress(): void {
+    if (this.form.report_type === 'found') {
+      // The existing API requires a nonempty location_address even when
+      // exact latitude/longitude are submitted in their own columns.
+      // Do not invent a barangay or a reverse-geocoded street address.
+      this.form.location_address =
+        this.foundGpsVerified && this.selectedLatitude !== null && this.selectedLongitude !== null
+          ? `Found pet GPS: ${this.selectedLatitude.toFixed(7)}, ${this.selectedLongitude.toFixed(7)}`
+          : '';
+      return;
+    }
+
     const barangay = this.selectedBarangay.trim();
     const landmark = this.landmark.trim();
     this.form.location_address = barangay
@@ -197,6 +293,26 @@ export class ReportPetPage implements OnDestroy {
           .filter(Boolean)
           .join(', ')
       : '';
+  }
+
+  onReportTypeChange(type: 'lost' | 'found'): void {
+    this.form.report_type = type;
+    // Do not reuse an old Lost Pet map pin as a Found Pet GPS position,
+    // or vice versa. Keep other pet information already typed.
+    this.locationRequestId++;
+    this.gettingLocation = false;
+    this.showMap = false;
+    this.destroyMap();
+    this.selectedLatitude = null;
+    this.selectedLongitude = null;
+    this.foundGpsVerified = false;
+    this.selectedBarangay = '';
+    this.landmark = '';
+    this.form.location_address = '';
+    this.locationError = '';
+    this.locationMessage = '';
+    this.stepError = '';
+    this.errorMessage = '';
   }
 
   today = this.getLocalDate();
@@ -211,19 +327,72 @@ export class ReportPetPage implements OnDestroy {
   };
 
   constructor() {
-    addIcons({
-      arrowBackOutline,
-      checkmarkCircleOutline,
-      pawOutline,
-      locationOutline,
-      chevronDownOutline,
-      informationCircleOutline,
-      locateOutline,
-      mapOutline,
-      closeOutline,
-      cameraOutline,
-      closeCircleOutline
-    });
+    addIcons({arrowBackOutline,refreshOutline,pawOutline,imageOutline,locationOutline,calendarOutline,chevronForwardOutline,expandOutline,chevronBackOutline,mapOutline,createOutline,checkmarkCircleOutline,closeOutline,chevronDownOutline,informationCircleOutline,locateOutline,cameraOutline,closeCircleOutline,addOutline});
+  }
+
+  // Ionic keeps pages in its router outlet rather than constructing a new
+  // component every time. Reset the prior successful submission on re-entry.
+  ionViewWillEnter(): void {
+    if (!this.loading && !this.uploadingPhoto) {
+      this.resetForNewReport();
+    }
+  }
+
+  private resetForNewReport(): void {
+    // Stop callbacks from a previous visit before discarding its state.
+    this.submitRequest?.unsubscribe();
+    this.photoRequest?.unsubscribe();
+    this.submitRequest = undefined;
+    this.photoRequest = undefined;
+    this.locationRequestId++;
+    this.gettingLocation = false;
+    this.showMap = false;
+    this.destroyMap();
+    this.clearPhotoPreview(); // Revoke photo preview URLs; prevent leaks.
+
+    this.formStep = 1;
+    this.stepError = '';
+    this.today = this.getLocalDate();
+    this.form = {
+      report_type: 'lost',
+      animal_type: 'dog',
+      pet_name: '',
+      description: '',
+      incident_date: '',
+      location_address: ''
+    };
+    this.selectedBarangay = '';
+    this.landmark = '';
+    this.selectedLatitude = null;
+    this.selectedLongitude = null;
+    this.foundGpsVerified = false;
+    this.submittedReportId = null;
+    this.submissionUncertain = false;
+    this.loading = false;
+    this.uploadingPhoto = false;
+    this.cameraOpening = false;
+    this.photoUploaded = false;
+    this.photoUploadUncertain = false;
+    this.uploadedPhotosCount = 0;
+    this.currentPhotoNumber = 0;
+    this.successMessage = '';
+    this.errorMessage = '';
+    this.photoError = '';
+    this.locationMessage = '';
+    this.locationError = '';
+  }
+
+  reportAnotherPet(): void {
+    // Never abandon a pending/uncertain upload: the report may already exist.
+    if (
+      this.submittedReportId === null || this.loading || this.uploadingPhoto ||
+      this.submissionUncertain || this.photoUploadUncertain || this.photoError ||
+      (this.selectedPhotos.length > 0 && !this.photoUploaded)
+    ) {
+      return;
+    }
+    this.resetForNewReport();
+    void this.pageContent?.scrollToTop(0);
   }
 
   // =====================================
@@ -369,10 +538,16 @@ export class ReportPetPage implements OnDestroy {
           position.coords.longitude
         );
 
-        this.locationMessage =
-          'Current GPS location selected. ' +
-          'Please verify that the marker shows ' +
-          'where the pet was lost or found.';
+        if (this.form.report_type === 'found') {
+          this.foundGpsVerified = true;
+          this.updateLocationAddress();
+          this.stepError = '';
+          this.locationMessage = 'GPS location captured for your Found Pet report.';
+        } else {
+          this.locationMessage =
+            'Current GPS location selected. Please verify that the map pin ' +
+            'matches where the missing pet was last seen.';
+        }
       });
 
       console.log(
@@ -659,6 +834,8 @@ export class ReportPetPage implements OnDestroy {
 
     this.selectedLatitude = null;
     this.selectedLongitude = null;
+    this.foundGpsVerified = false;
+    this.updateLocationAddress();
 
     this.locationMessage = '';
     this.locationError = '';
@@ -1037,6 +1214,12 @@ export class ReportPetPage implements OnDestroy {
   // SUBMIT PET REPORT
   // =====================================
   submitReport() {
+    // Enter can submit a form from an earlier step. Never send an
+    // incomplete report to the API before the review step.
+    if (this.formStep !== 3) {
+      this.nextStep();
+      return;
+    }
     if (
       this.loading ||
       this.uploadingPhoto ||
@@ -1070,7 +1253,9 @@ export class ReportPetPage implements OnDestroy {
     if (
       !data.description ||
       !data.incident_date ||
-      !this.selectedBarangay ||
+      (this.form.report_type === 'lost' && !this.selectedBarangay.trim()) ||
+      (this.form.report_type === 'found' &&
+        (!this.foundGpsVerified || data.latitude === null || data.longitude === null)) ||
       !data.location_address
     ) {
       this.errorMessage = 'Please complete all required fields.';
@@ -1364,7 +1549,9 @@ export class ReportPetPage implements OnDestroy {
 
     this.destroyMap();
 
-    this.router.navigateByUrl('/lost-found');
+    void this.router.navigateByUrl('/lost-found').then((navigated) => {
+      if (navigated && !this.destroyed) this.resetForNewReport();
+    });
   }
 
   viewReports() {
@@ -1378,7 +1565,9 @@ export class ReportPetPage implements OnDestroy {
 
     this.destroyMap();
 
-    this.router.navigateByUrl('/lost-found');
+    void this.router.navigateByUrl('/my-reports').then((navigated) => {
+      if (navigated && !this.destroyed) this.resetForNewReport();
+    });
   }
 
   // =====================================

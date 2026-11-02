@@ -1,207 +1,2525 @@
-
 /* =====================================
-   PAGE BACKGROUND
-===================================== */
+ * PAGE BACKGROUND
+ * ===================================== */
 
 ion-content {
+
   --background: #f5f9f6;
+
 }
 
 .page-container {
+
   max-width: 650px;
+
   margin: 0 auto;
+
   padding: 24px 18px 80px;
+
 }
 
 /* =====================================
-   PAGE HEADER
-===================================== */
+ * PAGE HEADER
+ * ===================================== */
 
 .page-header {
+
   display: flex;
+
   align-items: center;
+
   gap: 15px;
+
   margin-bottom: 25px;
 
   h1 {
+
     font-size: 23px;
+
     font-weight: 750;
+
     color: #213d2d;
+
     margin: 0 0 5px;
+
   }
 
   p {
+
     font-size: 12px;
+
     color: #829087;
+
     margin: 0;
+
   }
+
 }
 
 .back-button {
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   width: 42px;
+
   height: 42px;
+
   flex-shrink: 0;
+
   background: white;
+
   border: none;
+
   border-radius: 12px;
+
   color: #267b4e;
+
   cursor: pointer;
 
   ion-icon {
+
     font-size: 23px;
+
   }
 
   &:active {
+
     background: #edf5ef;
+
   }
+
 }
 
 /* =====================================
-   INTRODUCTION BANNER
-===================================== */
+ * INTRODUCTION BANNER
+ * ===================================== */
 
 .info-banner {
+
   display: flex;
+
   align-items: center;
+
   gap: 15px;
+
   background: #e2f4e9;
+
   border-radius: 18px;
+
   padding: 20px;
+
   margin-bottom: 25px;
 
   h2 {
+
     margin: 0 0 7px;
+
     color: #236b47;
+
     font-size: 17px;
+
     font-weight: 700;
+
+  }
+
+  p {
+
+    margin: 0;
+
+    color: #567b65;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+
+  }
+
+}
+
+.banner-icon {
+
+  color: #268554;
+
+  font-size: 36px;
+
+  flex-shrink: 0;
+
+}
+
+/* =====================================
+ * REPORT A PET BUTTON
+ * ===================================== */
+
+.report-button {
+
+  --background: #268554;
+
+  --background-hover: #207448;
+
+  --border-radius: 12px;
+
+  --box-shadow: none;
+
+  height: 50px;
+
+  margin-bottom: 25px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  text-transform: none;
+
+}
+
+/* =====================================
+ * REPORT FILTERS
+ * ===================================== */
+
+.filter-container {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-bottom: 26px;
+
+  button {
+
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 12px 8px;
+
+    border-radius: 12px;
+
+    border: 1px solid #e0e9e3;
+
+    background: white;
+
+    color: #698073;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease, color 0.2s ease;
+
+  }
+
+  button.active {
+
+    background: #268554;
+
+    color: white;
+
+    border-color: #268554;
+
+  }
+
+  button:focus-visible {
+
+    outline: 2px solid #268554;
+
+    outline-offset: 3px;
+
+  }
+
+}
+
+/* =====================================
+ * SECTION HEADER
+ * ===================================== */
+
+.section-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 16px;
+
+  h3 {
+
+    margin: 0;
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: #263c30;
+
+  }
+
+}
+
+.refresh-button {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 38px;
+
+  height: 38px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #e8f5ed;
+
+  color: #268554;
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+  &:active {
+
+    background: #d8eddf;
+
+  }
+
+  &:disabled {
+
+    opacity: 0.5;
+
+    cursor: not-allowed;
+
+  }
+
+}
+
+/* =====================================
+ * REFRESH INDICATOR
+ * ===================================== */
+
+.refresh-status {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  margin-bottom: 15px;
+
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  background: #eaf7ee;
+
+  color: #268554;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  ion-spinner {
+
+    width: 17px;
+
+    height: 17px;
+
+    color: #268554;
+
+  }
+
+}
+
+/* =====================================
+ * PET REPORT CARDS
+ * ===================================== */
+
+.report-card {
+
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 20px;
+
+  margin-bottom: 15px;
+
+  box-shadow: 0 3px 14px rgba(20, 70, 40, 0.05);
+
+  h3 {
+
+    font-size: 19px;
+
+    margin: 12px 0 4px;
+
+    color: #26372e;
+
+    overflow-wrap: anywhere;
+
+  }
+
+}
+
+/* =====================================
+ * PET PHOTO - NO CROPPING
+ * ===================================== */
+
+.pet-photo {
+
+  display: block;
+
+  width: 100%;
+
+  margin-bottom: 16px;
+
+  overflow: hidden;
+
+  border-radius: 14px;
+
+  background: #edf4ef;
+
+  img {
+
+    display: block;
+
+    width: 100%;
+
+    height: auto;
+
+    max-height: none;
+
+    object-fit: contain;
+
+    border-radius: 14px;
+
+  }
+
+  &:empty {
+
+    display: none;
+
+  }
+
+  &:has(img[style*="display: none"]) {
+
+    display: none;
+
+  }
+
+}
+
+/* =====================================
+ * REPORT TYPE AND ANIMAL ICON
+ * ===================================== */
+
+.report-top {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 12px;
+
+}
+
+.animal-icon {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 48px;
+
+  height: 48px;
+
+  background: #f0f6f1;
+
+  border-radius: 12px;
+
+  font-size: 25px;
+
+  flex-shrink: 0;
+
+}
+
+.report-badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  padding: 7px 12px;
+
+  border-radius: 20px;
+
+  white-space: nowrap;
+
+}
+
+.report-badge.lost {
+
+  background: #fff0e7;
+
+  color: #d87533;
+
+}
+
+.report-badge.found {
+
+  background: #e2f4e9;
+
+  color: #268554;
+
+}
+
+/* =====================================
+ * PET INFORMATION
+ * ===================================== */
+
+.animal-type {
+
+  font-size: 12px;
+
+  color: #829087;
+
+  margin: 0;
+
+}
+
+.description {
+
+  font-size: 13px;
+
+  line-height: 1.7;
+
+  color: #526459;
+
+  margin: 15px 0;
+
+  white-space: pre-line;
+
+  overflow-wrap: anywhere;
+
+}
+
+/* =====================================
+ * REPORT LOCATION AND DATE
+ * ===================================== */
+
+.report-details {
+
+  border-top: 1px solid #eef1ee;
+
+  padding-top: 15px;
+
+  div {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 9px;
+
+    font-size: 12px;
+
+    color: #748379;
+
+    margin-bottom: 10px;
+
+    overflow-wrap: anywhere;
+
+  }
+
+  ion-icon {
+
+    color: #268554;
+
+    font-size: 17px;
+
+    flex-shrink: 0;
+
+  }
+
+  span {
+
+    line-height: 1.5;
+
+  }
+
+}
+
+/* =====================================
+ * VIEW LOCATION BUTTON
+ * ===================================== */
+
+.view-location-button {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  width: 100%;
+
+  min-height: 43px;
+
+  margin: 14px 0 8px;
+
+  padding: 11px 14px;
+
+  background: #eaf7ee;
+
+  color: #268554;
+
+  border: 1px solid #c6e6d1;
+
+  border-radius: 11px;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  ion-icon {
+
+    font-size: 19px;
+
+  }
+
+  &:hover {
+
+    background: #dff1e5;
+
+  }
+
+  &:active {
+
+    background: #d3ebdc;
+
+  }
+
+  &:focus-visible {
+
+    outline: 2px solid #268554;
+
+    outline-offset: 3px;
+
+  }
+
+}
+
+/* =====================================
+ * REPORT FOOTER
+ * ===================================== */
+
+.report-footer {
+
+  margin-top: 12px;
+
+  padding-top: 10px;
+
+  border-top: 1px solid #f0f3f0;
+
+  font-size: 11px;
+
+  color: #99a59d;
+
+  overflow-wrap: anywhere;
+
+}
+
+/* =====================================
+ * LOADING, EMPTY AND ERROR STATES
+ * ===================================== */
+
+.loading-state,
+
+.empty-state,
+
+.error-state {
+
+  text-align: center;
+
+  padding: 50px 15px;
+
+  color: #839087;
+
+  ion-icon {
+
+    font-size: 48px;
+
+    color: #9dcbb0;
+
+  }
+
+  ion-spinner {
+
+    color: #268554;
+
+    width: 30px;
+
+    height: 30px;
+
+  }
+
+  h3 {
+
+    color: #344d3d;
+
+    font-size: 17px;
+
+    margin-top: 14px;
+
+  }
+
+  p {
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+  }
+
+}
+
+.error-state {
+
+  color: #d93025;
+
+  p {
+
+    color: #d93025;
+
+  }
+
+  ion-button {
+
+    --color: #268554;
+
+    --border-color: #268554;
+
+    --border-radius: 10px;
+
+    text-transform: none;
+
+  }
+
+}
+
+/* =====================================
+ * LOCATION MAP MODAL OVERLAY
+ * ===================================== */
+
+.report-map-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 10000;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 16px;
+
+  box-sizing: border-box;
+
+  background: rgba(16, 34, 23, 0.65);
+
+  backdrop-filter: blur(3px);
+
+}
+
+/* =====================================
+ * MAP MODAL CONTAINER
+ * ===================================== */
+
+.report-map-modal {
+
+  display: flex;
+
+  flex-direction: column;
+
+  width: 100%;
+
+  max-width: 540px;
+
+  max-height: min(90vh, 780px);
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  box-shadow: 0 14px 45px rgba(10, 40, 20, 0.20);
+
+}
+
+/* =====================================
+ * MAP MODAL HEADER
+ * ===================================== */
+
+.report-map-modal-header {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 20px 20px 12px;
+
+  h2 {
+
+    color: #213d2d;
+
+    font-size: 19px;
+
+    font-weight: 700;
+
+    line-height: 1.4;
+
+    margin: 0 0 5px;
+
+    overflow-wrap: anywhere;
+
+  }
+
+  p {
+
+    color: #829087;
+
+    font-size: 12px;
+
+    margin: 0;
+
+  }
+
+}
+
+.close-map-button {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 36px;
+
+  height: 36px;
+
+  padding: 0;
+
+  background: #eef5f0;
+
+  color: #267b4e;
+
+  border: none;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  ion-icon {
+
+    font-size: 21px;
+
+  }
+
+  &:active {
+
+    background: #deebe2;
+
+  }
+
+}
+
+/* =====================================
+ * MAP MODAL LOCATION DETAILS
+ * ===================================== */
+
+.report-map-location-details {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+
+  margin: 0 20px 15px;
+
+  padding: 12px 14px;
+
+  border-radius: 11px;
+
+  background: #f1f8f3;
+
+  color: #526c59;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+
+  overflow-wrap: anywhere;
+
+  ion-icon {
+
+    flex-shrink: 0;
+
+    margin-top: 2px;
+
+    font-size: 18px;
+
+    color: #268554;
+
+  }
+
+}
+
+/* =====================================
+ * LEAFLET MAP CONTAINER
+ * ===================================== */
+
+.report-map-container {
+
+  width: 100%;
+
+  padding: 0 20px;
+
+  box-sizing: border-box;
+
+}
+
+.report-location-map {
+
+  display: block;
+
+  width: 100%;
+
+  height: 340px;
+
+  min-height: 340px;
+
+  position: relative;
+
+  z-index: 0;
+
+  border: 1px solid #dce8df;
+
+  border-radius: 12px;
+
+  background: #e6eee9;
+
+  overflow: hidden;
+
+}
+
+/* =====================================
+ * MAP INFORMATION
+ * ===================================== */
+
+.report-map-info {
+
+  padding: 15px 20px 5px;
+
+  p {
+
+    margin: 0 0 12px;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+
+    color: #738579;
+
+  }
+
+}
+
+.report-map-coordinates {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  padding: 12px;
+
+  background: #f6faf7;
+
+  border: 1px solid #e4eee6;
+
+  border-radius: 10px;
+
+  span {
+
+    font-size: 12px;
+
+    color: #53695a;
+
+    overflow-wrap: anywhere;
+
+    font-variant-numeric: tabular-nums;
+
+  }
+
+}
+
+/* =====================================
+ * CLOSE MAP ACTION BUTTON
+ * ===================================== */
+
+.close-map-action {
+
+  --background: #268554;
+
+  --background-hover: #207448;
+
+  --border-radius: 11px;
+
+  --box-shadow: none;
+
+  height: 46px;
+
+  margin: 18px 20px 20px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  text-transform: none;
+
+}
+
+/* =====================================
+ * RESPONSIVE MOBILE LAYOUT
+ * ===================================== */
+
+@media (max-width: 400px) {
+
+  .page-container {
+
+    padding: 18px 14px 70px;
+
+  }
+
+  .page-header {
+
+    gap: 12px;
+
+    h1 {
+
+      font-size: 21px;
+
+    }
+
+    p {
+
+      font-size: 11px;
+
+    }
+
+  }
+
+  .info-banner {
+
+    padding: 16px;
+
+    gap: 12px;
+
+    h2 {
+
+      font-size: 15px;
+
+    }
+
+  }
+
+  .report-card {
+
+    padding: 16px;
+
+    h3 {
+
+      font-size: 18px;
+
+    }
+
+  }
+
+  .filter-container {
+
+    gap: 8px;
+
+    button {
+
+      font-size: 12px;
+
+      padding: 11px 6px;
+
+    }
+
+  }
+
+  .report-button {
+
+    font-size: 12px;
+
+  }
+
+  .report-map-overlay {
+
+    padding: 10px;
+
+  }
+
+  .report-map-modal {
+
+    max-height: 92vh;
+
+    border-radius: 16px;
+
+  }
+
+  .report-map-modal-header {
+
+    padding: 16px 15px 10px;
+
+    h2 {
+
+      font-size: 17px;
+
+    }
+
+  }
+
+  .report-map-location-details {
+
+    margin: 0 15px 12px;
+
+  }
+
+  .report-map-container {
+
+    padding: 0 15px;
+
+  }
+
+  .report-location-map {
+
+    height: 280px;
+
+    min-height: 280px;
+
+  }
+
+  .report-map-info {
+
+    padding: 12px 15px 5px;
+
+  }
+
+  .close-map-action {
+
+    margin: 15px 15px 18px;
+
+  }
+
+}
+
+/* =====================================
+ * ACCESSIBILITY
+ * ===================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .filter-container button {
+
+    transition: none;
+
+  }
+
+}
+
+/* =====================================
+ * MULTIPLE PET PHOTOS - POST GALLERY
+ * ===================================== */
+
+.pet-photo-gallery {
+
+  width: 100%;
+
+  margin-bottom: 16px;
+
+  overflow: hidden;
+
+  border: 1px solid #e2ebe5;
+
+  border-radius: 14px;
+
+  background: #f7fbf8;
+
+  touch-action: pan-y;
+
+  .pet-photo {
+
+    position: relative;
+
+    margin-bottom: 0;
+
+    border-radius: 0;
+
+    background: #edf4ef;
+
+  }
+
+}
+
+.pet-photo-view-button {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  position: relative;
+
+  width: 100%;
+
+  min-height: 150px;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 0;
+
+  background: #edf4ef;
+
+  cursor: zoom-in;
+
+  overflow: hidden;
+
+  img {
+
+    display: block;
+
+    width: 100%;
+
+    height: auto;
+
+    max-height: 430px;
+
+    object-fit: contain;
+
+    object-position: center;
+
+    border-radius: 0;
+
+    user-select: none;
+
+    -webkit-user-drag: none;
+
+  }
+
+}
+
+.pet-photo-expand {
+
+  position: absolute;
+
+  top: 11px;
+
+  left: 11px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 32px;
+
+  height: 32px;
+
+  border-radius: 10px;
+
+  background: rgba(16, 34, 23, 0.65);
+
+  color: #ffffff;
+
+  pointer-events: none;
+
+  ion-icon {
+
+    font-size: 18px;
+
+  }
+
+}
+
+.pet-photo-counter {
+
+  position: absolute;
+
+  top: 11px;
+
+  right: 11px;
+
+  z-index: 2;
+
+  padding: 7px 11px;
+
+  border-radius: 20px;
+
+  background: rgba(16, 34, 23, 0.72);
+
+  color: #ffffff;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  font-variant-numeric: tabular-nums;
+
+  pointer-events: none;
+
+}
+
+/* =====================================
+ * PHOTO PREVIOUS / NEXT BUTTONS
+ * ===================================== */
+
+.pet-photo-nav {
+
+  position: absolute;
+
+  top: 50%;
+
+  z-index: 3;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 38px;
+
+  height: 38px;
+
+  padding: 0;
+
+  transform: translateY(-50%);
+
+  border: 1px solid rgba(255, 255, 255, 0.65);
+
+  border-radius: 50%;
+
+  background: rgba(16, 34, 23, 0.62);
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+
+  ion-icon {
+
+    font-size: 24px;
+
+    pointer-events: none;
+
+  }
+
+  &:active {
+
+    background: rgba(16, 34, 23, 0.85);
+
+  }
+
+}
+
+.pet-photo-prev {
+
+  left: 10px;
+
+}
+
+.pet-photo-next {
+
+  right: 10px;
+
+}
+
+/* =====================================
+ * PHOTO DOT POSITION INDICATORS
+ * ===================================== */
+
+.pet-photo-dots,
+
+.photo-viewer-dots {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  padding: 12px 10px;
+
+}
+
+.pet-photo-dot,
+
+.photo-viewer-dot {
+
+  display: block;
+
+  width: 10px;
+
+  height: 10px;
+
+  min-width: 10px;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  background: #c9d9ce;
+
+  cursor: pointer;
+
+  &.active {
+
+    width: 20px;
+
+    border-radius: 20px;
+
+    background: #268554;
+
+  }
+
+}
+
+/* =====================================
+ * FULL-SIZE PHOTO VIEWER OVERLAY
+ * ===================================== */
+
+.photo-viewer-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 10020;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  padding: max(12px, env(safe-area-inset-top)) 14px
+
+    max(12px, env(safe-area-inset-bottom));
+
+  background: rgba(10, 22, 15, 0.90);
+
+  backdrop-filter: blur(5px);
+
+}
+
+.photo-viewer-modal {
+
+  display: flex;
+
+  flex-direction: column;
+
+  width: 100%;
+
+  max-width: 900px;
+
+  max-height: 100%;
+
+  overflow: hidden;
+
+  background: #16251b;
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+
+  border-radius: 18px;
+
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38);
+
+}
+
+.photo-viewer-header {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 16px 18px;
+
+}
+
+.photo-viewer-heading {
+
+  min-width: 0;
+
+  h2 {
+
+    margin: 0 0 5px;
+
+    color: #ffffff;
+
+    font-size: 17px;
+
+    font-weight: 700;
+
+    overflow-wrap: anywhere;
+
+  }
+
+  p {
+
+    margin: 0;
+
+    color: #b9c9bd;
+
+    font-size: 12px;
+
+    font-variant-numeric: tabular-nums;
+
+  }
+
+}
+
+.photo-viewer-close {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 38px;
+
+  height: 38px;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 11px;
+
+  background: rgba(255, 255, 255, 0.12);
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  ion-icon {
+
+    font-size: 23px;
+
+  }
+
+  &:active {
+
+    background: rgba(255, 255, 255, 0.24);
+
+  }
+
+}
+
+.photo-viewer-stage {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  position: relative;
+
+  flex: 1 1 auto;
+
+  min-height: 150px;
+
+  max-height: min(65vh, 650px);
+
+  overflow: hidden;
+
+  background: #0f1912;
+
+  touch-action: pan-y;
+
+}
+
+.photo-viewer-image {
+
+  display: block;
+
+  width: 100%;
+
+  height: auto;
+
+  max-width: 100%;
+
+  max-height: min(65vh, 650px);
+
+  object-fit: contain;
+
+  object-position: center;
+
+  user-select: none;
+
+  -webkit-user-drag: none;
+
+}
+
+.photo-viewer-nav {
+
+  position: absolute;
+
+  top: 50%;
+
+  z-index: 2;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 42px;
+
+  height: 42px;
+
+  padding: 0;
+
+  transform: translateY(-50%);
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  ion-icon {
+
+    font-size: 27px;
+
+    pointer-events: none;
+
+  }
+
+  &:active {
+
+    background: rgba(0, 0, 0, 0.8);
+
+  }
+
+}
+
+.photo-viewer-prev {
+
+  left: 12px;
+
+}
+
+.photo-viewer-next {
+
+  right: 12px;
+
+}
+
+.photo-viewer-dots {
+
+  padding: 15px 12px 8px;
+
+  background: #16251b;
+
+}
+
+.photo-viewer-dot {
+
+  background: #647b6a;
+
+  &.active {
+
+    background: #69d194;
+
+  }
+
+}
+
+.photo-viewer-help {
+
+  margin: 0;
+
+  padding: 0 16px 15px;
+
+  color: #afc2b4;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+
+  text-align: center;
+
+}
+
+/* =====================================
+ * GALLERY BUTTON ACCESSIBILITY
+ * ===================================== */
+
+.pet-photo-view-button,
+
+.pet-photo-nav,
+
+.pet-photo-dot,
+
+.photo-viewer-close,
+
+.photo-viewer-nav,
+
+.photo-viewer-dot {
+
+  &:focus-visible {
+
+    outline: 3px solid #69d194;
+
+    outline-offset: 3px;
+
+  }
+
+}
+
+/* =====================================
+ * MOBILE GALLERY ADJUSTMENTS
+ * ===================================== */
+
+@media (max-width: 400px) {
+
+  .pet-photo-view-button {
+
+    min-height: 130px;
+
+    img {
+
+      max-height: 340px;
+
+    }
+
+  }
+
+  .pet-photo-nav {
+
+    width: 34px;
+
+    height: 34px;
+
+    ion-icon {
+
+      font-size: 21px;
+
+    }
+
+  }
+
+  .photo-viewer-overlay {
+
+    padding-left: 8px;
+
+    padding-right: 8px;
+
+  }
+
+  .photo-viewer-modal {
+
+    border-radius: 13px;
+
+  }
+
+  .photo-viewer-header {
+
+    padding: 12px;
+
+  }
+
+  .photo-viewer-heading h2 {
+
+    font-size: 15px;
+
+  }
+
+  .photo-viewer-stage,
+
+  .photo-viewer-image {
+
+    max-height: 60vh;
+
+  }
+
+  .photo-viewer-nav {
+
+    width: 36px;
+
+    height: 36px;
+
+    ion-icon {
+
+      font-size: 23px;
+
+    }
+
+  }
+
+  .photo-viewer-prev {
+
+    left: 7px;
+
+  }
+
+  .photo-viewer-next {
+
+    right: 7px;
+
+  }
+
+}
+
+/* =====================================
+ * REDUCED MOTION PREFERENCE
+ * ===================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .pet-photo-view-button,
+
+  .pet-photo-nav,
+
+  .photo-viewer-nav {
+
+    scroll-behavior: auto;
+
+    transition: none;
+
+  }
+
+}
+
+/* =====================================
+ * MY REPORTS-ONLY: STATUS AND ACTIONS
+ * Base design intentionally matches Lost & Found.
+ * ===================================== */
+
+.my-report-status {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  margin-top: 10px;
+
+}
+
+.status-badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 7px 12px;
+
+  border-radius: 20px;
+
+  background: #edf0f2;
+
+  color: #52605a;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  line-height: 1.25;
+
+}
+
+.status-badge[data-status="pending"] {
+
+  background: #fff3de;
+
+  color: #95650d;
+
+}
+
+.status-badge[data-status="under_review"],
+
+.status-badge[data-status="in_progress"] {
+
+  background: #e9f1ff;
+
+  color: #386ca6;
+
+}
+
+.status-badge[data-status="resolved"] {
+
+  background: #e2f4e9;
+
+  color: #268554;
+
+}
+
+.status-badge[data-status="closed"] {
+
+  background: #edf0f2;
+
+  color: #64746a;
+
+}
+
+.no-photo {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  min-height: 155px;
+
+  margin-bottom: 16px;
+
+  border: 1px dashed #cddfd3;
+
+  border-radius: 14px;
+
+  background: #f7fbf8;
+
+  color: #8a9c90;
+
+  ion-icon {
+
+    font-size: 38px;
+
+  }
+
+  span {
+
+    font-size: 12px;
+
+  }
+
+}
+
+.report-management-actions {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin-top: 12px;
+
+}
+
+.edit-button,
+
+.resolve-button {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  width: 100%;
+
+  min-height: 43px;
+
+  padding: 11px 14px;
+
+  border: 1px solid #c6e6d1;
+
+  border-radius: 11px;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  ion-icon {
+
+    font-size: 19px;
+
+    flex-shrink: 0;
+
+  }
+
+  &:disabled {
+
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+  }
+
+  &:focus-visible {
+
+    outline: 2px solid #268554;
+
+    outline-offset: 3px;
+
+  }
+
+}
+
+.edit-button {
+
+  background: #eaf7ee;
+
+  color: #268554;
+
+}
+
+.resolve-button {
+
+  border-color: #268554;
+
+  background: #268554;
+
+  color: #ffffff;
+
+  ion-spinner {
+
+    width: 18px;
+
+    height: 18px;
+
+    color: #ffffff;
+
+  }
+
+  &:active {
+
+    background: #207448;
+
+  }
+
+}
+
+.resolved-info,
+
+.closed-info,
+
+.resolve-message {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  padding: 12px;
+
+  border: 1px solid #c6e6d1;
+
+  border-radius: 11px;
+
+  background: #eaf7ee;
+
+  color: #236b47;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  line-height: 1.55;
+
+  text-align: center;
+
+  ion-icon {
+
+    flex-shrink: 0;
+
+    font-size: 20px;
+
+  }
+
+}
+
+.closed-info {
+
+  border-color: #e1e7e3;
+
+  background: #f4f6f4;
+
+  color: #667369;
+
+}
+
+.resolve-message {
+
+  margin-bottom: 16px;
+
+}
+
+.filter-container button:disabled {
+
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+}
+
+.report-button:disabled {
+
+  opacity: 0.6;
+
+}
+
+
+/* =====================================
+ * STEP 18: OWNERSHIP CLAIM MANAGEMENT
+ * Finder inbox, private review and decisions
+ * ===================================== */
+
+.ownership-claims-section {
+  margin: 4px 0 28px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2ebe5;
+  border-radius: 18px;
+  box-shadow: 0 3px 14px rgba(20, 70, 40, 0.05);
+  min-width: 0;
+}
+
+.ownership-claims-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  > div {
+    min-width: 0;
+  }
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 7px;
+    font-size: 18px;
+    font-weight: 750;
+    line-height: 1.35;
+    color: #213d2d;
+
+    ion-icon {
+      flex-shrink: 0;
+      color: #268554;
+      font-size: 21px;
+    }
   }
 
   p {
     margin: 0;
-    color: #567b65;
+    color: #6d8072;
     font-size: 12px;
     line-height: 1.6;
   }
 }
 
-.banner-icon {
-  color: #268554;
-  font-size: 36px;
-  flex-shrink: 0;
-}
-
-/* =====================================
-   REPORT A PET BUTTON
-===================================== */
-
-.report-button {
-  --background: #268554;
-  --background-hover: #207448;
-  --border-radius: 12px;
-  --box-shadow: none;
-  height: 50px;
-  margin-bottom: 25px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: none;
-}
-
-/* =====================================
-   REPORT FILTERS
-===================================== */
-
-.filter-container {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 26px;
-
-  button {
-    flex: 1;
-    min-width: 0;
-    padding: 12px 8px;
-    border-radius: 12px;
-    border: 1px solid #e0e9e3;
-    background: white;
-    color: #698073;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
-  }
-
-  button.active {
-    background: #268554;
-    color: white;
-    border-color: #268554;
-  }
-
-  button:focus-visible {
-    outline: 2px solid #268554;
-    outline-offset: 3px;
-  }
-}
-
-/* =====================================
-   SECTION HEADER
-===================================== */
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-
-  h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: #263c30;
-  }
-}
-
-.refresh-button {
-  display: flex;
+.ownership-claims-refresh {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 38px;
   height: 38px;
-  border: none;
-  border-radius: 10px;
-  background: #e8f5ed;
+  padding: 0;
   color: #268554;
-  font-size: 22px;
+  background: #e8f5ed;
+  border: 1px solid #d2e9da;
+  border-radius: 10px;
   cursor: pointer;
 
-  &:active {
-    background: #d8eddf;
+  ion-icon {
+    font-size: 21px;
   }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  &:active:not(:disabled) {
+    background: #d8eddf;
   }
 }
 
-/* =====================================
-   REFRESH INDICATOR
-===================================== */
+.ownership-claims-privacy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 15px 0;
+  padding: 11px 12px;
+  background: #f0f8f3;
+  border: 1px solid #d9ebde;
+  border-radius: 11px;
+  color: #4c765a;
+  font-size: 11px;
+  line-height: 1.6;
 
-.refresh-status {
+  ion-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #268554;
+    font-size: 17px;
+  }
+}
+
+.ownership-claims-loading,
+.ownership-evidence-loading {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
-  margin-bottom: 15px;
-  padding: 10px 14px;
+  padding: 17px 12px;
+  color: #647d6d;
+  font-size: 12px;
+  line-height: 1.5;
+
+  ion-spinner {
+    width: 19px;
+    height: 19px;
+    color: #268554;
+  }
+}
+
+.ownership-claims-empty {
+  margin: 12px 0 0;
+  padding: 20px 12px;
+  border: 1px dashed #cddfd3;
+  border-radius: 11px;
+  background: #f7fbf8;
+  color: #768b7b;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.ownership-claims-error,
+.ownership-evidence-error {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #f1c7c4;
+  border-radius: 11px;
+  background: #fff4f3;
+  color: #aa3730;
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 4px;
+    border: 0;
+    background: transparent;
+    color: #9d2f2a;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.ownership-claims-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #c6e6d1;
+  border-radius: 11px;
+  background: #eaf7ee;
+  color: #236b47;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  ion-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 18px;
+  }
+}
+
+.ownership-claims-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-top: 14px;
+}
+
+.ownership-inbox-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 1px 2px;
+  font-size: 12px;
+  color: #728475;
+
+  strong {
+    color: #236b47;
+    font-weight: 750;
+  }
+}
+
+.ownership-inbox-card {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #dde9e0;
+  border-radius: 13px;
+  background: #fbfdfb;
+}
+
+.ownership-inbox-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1 1 150px;
+  }
+
+  strong {
+    color: #263e2e;
+    font-size: 14px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  > div > span {
+    color: #788b7d;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+}
+
+.ownership-claim-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #edf0f2;
+  color: #57665e;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.ownership-claim-status[data-status='pending'] {
+  background: #fff3de;
+  color: #966612;
+}
+
+.ownership-claim-status[data-status='approved'],
+.ownership-claim-status[data-status='pickup_scheduled'] {
+  background: #e2f4e9;
+  color: #236b47;
+}
+
+.ownership-claim-status[data-status='reschedule_requested'] {
+  background: #e9f1ff;
+  color: #376da9;
+}
+
+.ownership-claim-status[data-status='completed'] {
+  background: #d9f4e2;
+  color: #196739;
+}
+
+.ownership-claim-status[data-status='rejected'],
+.ownership-claim-status[data-status='disputed'] {
+  background: #fff0ed;
+  color: #ad4439;
+}
+
+.ownership-claim-status[data-status='cancelled'] {
+  background: #f0f1f2;
+  color: #606c64;
+}
+
+.ownership-inbox-claimant {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #596f60;
+
+  ion-icon {
+    color: #268554;
+    font-size: 17px;
+  }
+
+  strong {
+    color: #2c5138;
+    overflow-wrap: anywhere;
+  }
+}
+
+.ownership-inbox-preview {
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 8px 0 14px;
+  color: #5b6e62;
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.ownership-inbox-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #e9f0eb;
+
+  small {
+    color: #899a8d;
+    font-size: 11px;
+  }
+}
+
+.ownership-open-review-button,
+.ownership-review-inline-button,
+.ownership-claims-load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 39px;
+  padding: 9px 13px;
+  border: 1px solid #baddc7;
   border-radius: 10px;
   background: #eaf7ee;
-  color: #268554;
+  color: #236b47;
+  font-family: inherit;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
+  line-height: 1.35;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 17px;
+  }
+
+  &:hover:not(:disabled) {
+    background: #dbefe3;
+  }
+}
+
+.ownership-claims-load-more {
+  width: 100%;
+  margin-top: 14px;
+  background: #ffffff;
 
   ion-spinner {
     width: 17px;
@@ -211,466 +2529,624 @@ ion-content {
 }
 
 /* =====================================
-   PET REPORT CARDS
-===================================== */
+ * CLAIM SUMMARY INSIDE OWN FOUND PET CARDS
+ * ===================================== */
 
-.report-card {
-  background: white;
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 3px 14px rgba(20, 70, 40, 0.05);
+.ownership-report-summary {
+  min-width: 0;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #d6e8da;
+  border-radius: 12px;
+  background: #f4faf6;
+}
 
-  h3 {
+.ownership-report-summary-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 11px;
+  color: #256644;
+  font-size: 13px;
+
+  ion-icon {
     font-size: 19px;
-    margin: 12px 0 4px;
-    color: #26372e;
+  }
+
+  strong {
+    font-weight: 750;
+  }
+}
+
+.ownership-pending-count {
+  margin-left: auto;
+  padding: 4px 9px;
+  border-radius: 15px;
+  background: #fff3de;
+  color: #97650f;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ownership-report-claim {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 11px 0;
+  border-top: 1px solid #dcece0;
+}
+
+.ownership-report-claim-details {
+  display: flex;
+  flex: 1 1 130px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  span {
+    font-size: 12px;
+    font-weight: 650;
+    color: #31523d;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    font-size: 11px;
+    color: #788a7d;
+  }
+}
+
+.ownership-report-guidance {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 11px 0 0;
+  padding: 11px;
+  border-radius: 10px;
+  border: 1px solid #e9d4a7;
+  background: #fff9eb;
+  color: #836027;
+  font-size: 11px;
+  line-height: 1.6;
+
+  ion-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 17px;
+  }
+}
+
+/* =====================================
+ * PRIVATE CLAIM REVIEW OVERLAY
+ * ===================================== */
+
+.ownership-review-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top)) 14px
+    max(12px, env(safe-area-inset-bottom));
+  background: rgba(12, 35, 22, 0.72);
+  backdrop-filter: blur(5px);
+}
+
+.ownership-review-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  max-height: min(89vh, 850px);
+  max-height: min(89dvh, 850px);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #dce9df;
+  border-radius: 21px;
+  background: #ffffff;
+  box-shadow: 0 22px 65px rgba(11, 43, 23, 0.29);
+}
+
+.ownership-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e9f0eb;
+  background: #ffffff;
+
+  > div {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  h2 {
+    margin: 0 0 5px;
+    color: #213d2d;
+    font-size: 19px;
+    font-weight: 750;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    color: #75877a;
+    font-size: 12px;
+    line-height: 1.5;
     overflow-wrap: anywhere;
   }
 }
 
-/* =====================================
-   PET PHOTO - NO CROPPING
-===================================== */
-
-.pet-photo {
-  display: block;
-  width: 100%;
-  margin-bottom: 16px;
-  overflow: hidden;
-  border-radius: 14px;
-  background: #edf4ef;
-
-  img {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: none;
-    object-fit: contain;
-    border-radius: 14px;
-  }
-
-  &:empty {
-    display: none;
-  }
-
-  &:has(img[style*="display: none"]) {
-    display: none;
-  }
-}
-
-/* =====================================
-   REPORT TYPE AND ANIMAL ICON
-===================================== */
-
-.report-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.animal-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: #f0f6f1;
-  border-radius: 12px;
-  font-size: 25px;
-  flex-shrink: 0;
-}
-
-.report-badge {
+.ownership-review-close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 7px 12px;
-  border-radius: 20px;
-  white-space: nowrap;
-}
-
-.report-badge.lost {
-  background: #fff0e7;
-  color: #d87533;
-}
-
-.report-badge.found {
-  background: #e2f4e9;
-  color: #268554;
-}
-
-/* =====================================
-   PET INFORMATION
-===================================== */
-
-.animal-type {
-  font-size: 12px;
-  color: #829087;
-  margin: 0;
-}
-
-.description {
-  font-size: 13px;
-  line-height: 1.7;
-  color: #526459;
-  margin: 15px 0;
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-}
-
-/* =====================================
-   REPORT LOCATION AND DATE
-===================================== */
-
-.report-details {
-  border-top: 1px solid #eef1ee;
-  padding-top: 15px;
-
-  div {
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-    font-size: 12px;
-    color: #748379;
-    margin-bottom: 10px;
-    overflow-wrap: anywhere;
-  }
-
-  ion-icon {
-    color: #268554;
-    font-size: 17px;
-    flex-shrink: 0;
-  }
-
-  span {
-    line-height: 1.5;
-  }
-}
-
-/* =====================================
-   VIEW LOCATION BUTTON
-===================================== */
-
-.view-location-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  width: 100%;
-  min-height: 43px;
-  margin: 14px 0 8px;
-  padding: 11px 14px;
-  background: #eaf7ee;
-  color: #268554;
-  border: 1px solid #c6e6d1;
-  border-radius: 11px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
+  flex-shrink: 0;
+  width: 39px;
+  height: 39px;
+  padding: 0;
+  border: 1px solid #dcece1;
+  border-radius: 12px;
+  background: #ebf7ef;
+  color: #267b4e;
   cursor: pointer;
 
   ion-icon {
+    font-size: 23px;
+  }
+
+  &:active:not(:disabled) {
+    background: #d9efe1;
+  }
+}
+
+.ownership-review-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 20px 22px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #c8ddce transparent;
+}
+
+.ownership-review-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+  margin-bottom: 22px;
+  padding: 16px;
+  border: 1px solid #deede2;
+  border-radius: 15px;
+  background: #f3faf5;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    gap: 5px;
+  }
+
+  span {
+    color: #839488;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  strong {
+    max-width: 100%;
+    color: #264734;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .ownership-claim-status {
+    font-size: 11px;
+    font-weight: 750;
+  }
+}
+
+.ownership-review-section {
+  min-width: 0;
+  padding: 0 0 20px;
+  margin: 0 0 20px;
+  border-bottom: 1px solid #e8f0eb;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 11px;
+    color: #245037;
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.45;
+
+    ion-icon {
+      flex-shrink: 0;
+      font-size: 20px;
+      color: #268554;
+    }
+  }
+
+  p {
+    margin: 7px 0;
+    color: #65786b;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  p strong {
+    color: #345442;
+  }
+}
+
+.ownership-proof-description {
+  margin: 12px 0 0 !important;
+  padding: 13px 15px;
+  border: 1px solid #dce8df;
+  border-radius: 12px;
+  background: #f7faf8;
+  color: #405a48 !important;
+  font-size: 13px !important;
+  line-height: 1.65 !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ownership-linked-report {
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: #edf5f0;
+  color: #3b6e4b !important;
+  font-weight: 600;
+}
+
+.ownership-review-muted {
+  color: #7c8a7f;
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.ownership-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 14px;
+
+  figure {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 8px;
+    border: 1px solid #dce9df;
+    border-radius: 14px;
+    background: #f5faf6;
+    overflow: hidden;
+  }
+
+  img {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: clamp(150px, 38vw, 205px);
+    max-height: none;
+    object-fit: contain; // Full photo remains visible; no cropping of proof details.
+    object-position: center;
+    border-radius: 10px;
+    background: #e7f0ea;
+  }
+
+  figcaption {
+    margin-top: auto;
+    padding: 10px 3px 3px;
+    color: #637a69;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.4;
+    text-align: center;
+  }
+}
+
+.ownership-existing-pickup {
+  padding: 13px 14px;
+  border: 1px solid #cfe5d6;
+  border-radius: 12px;
+  background: #f0f8f3;
+
+  h3 {
+    color: #236b47;
+  }
+}
+
+/* =====================================
+ * APPROVE OR REJECT FORMS
+ * ===================================== */
+
+.ownership-review-actions,
+.ownership-decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ownership-approve-button,
+.ownership-reject-button,
+.ownership-cancel-decision,
+.ownership-submit-decision,
+.ownership-submit-rejection,
+.ownership-use-location {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+  text-align: center;
+  cursor: pointer;
+
+  ion-icon {
+    flex-shrink: 0;
     font-size: 19px;
   }
 
-  &:hover {
-    background: #dff1e5;
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.ownership-approve-button,
+.ownership-submit-decision {
+  flex: 1 1 160px;
+  background: #268554;
+  color: #ffffff;
+  border-color: #268554;
+
+  ion-spinner {
+    color: #ffffff;
   }
 
-  &:active {
-    background: #d3ebdc;
+  &:hover:not(:disabled) {
+    background: #207448;
+  }
+}
+
+.ownership-reject-button,
+.ownership-submit-rejection {
+  flex: 1 1 120px;
+  background: #fff0ee;
+  color: #b44338;
+  border-color: #ecc4be;
+
+  ion-spinner {
+    color: #b44338;
+  }
+
+  &:hover:not(:disabled) {
+    background: #ffe2df;
+  }
+}
+
+.ownership-decision-form {
+  min-width: 0;
+  margin-top: 18px;
+  padding: 17px;
+  border: 1px solid #d5e7da;
+  border-radius: 16px;
+  background: #f8fbf9;
+
+  h3 {
+    margin: 0 0 9px;
+    color: #245737;
+    font-size: 16px;
+    font-weight: 750;
+    line-height: 1.4;
+  }
+
+  label {
+    display: block;
+    margin: 14px 0 7px;
+    color: #365441;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  textarea,
+  input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 45px;
+    padding: 11px 13px;
+    border: 1px solid #c8dacd;
+    border-radius: 11px;
+    outline: none;
+    background: #ffffff;
+    color: #294a34;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    accent-color: #268554;
+
+    &::placeholder {
+      color: #94a498;
+    }
+
+    &:focus-visible {
+      border-color: #268554;
+      box-shadow: 0 0 0 3px rgba(38, 133, 84, 0.13);
+    }
+
+    &:disabled {
+      background: #f1f4f1;
+      color: #87958b;
+    }
+  }
+
+  textarea {
+    min-height: 85px;
+    resize: vertical;
+  }
+}
+
+.ownership-use-location {
+  width: 100%;
+  margin: 10px 0 4px;
+  border-color: #c4e2cd;
+  background: #e9f6ee;
+  color: #267b4e;
+
+  ion-spinner {
+    color: #267b4e;
+  }
+
+  &:hover:not(:disabled) {
+    background: #dcf0e3;
+  }
+}
+
+.ownership-location-coordinates {
+  margin: 6px 0 4px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: #e8f4ed;
+  color: #2f7148;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.ownership-pickup-datetime {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  > div {
+    min-width: 0;
+  }
+}
+
+.ownership-cancel-decision {
+  flex: 1 1 110px;
+  border-color: #d8e3db;
+  background: #ffffff;
+  color: #536b59;
+
+  &:hover:not(:disabled) {
+    background: #eef4ef;
+  }
+}
+
+.ownership-submit-decision,
+.ownership-submit-rejection {
+  flex: 2 1 190px;
+}
+
+/* =====================================
+ * DISABLED, FOCUS, AND RESPONSIVE BEHAVIOR
+ * ===================================== */
+
+.ownership-claims-refresh,
+.ownership-claims-error button,
+.ownership-evidence-error button,
+.ownership-open-review-button,
+.ownership-review-inline-button,
+.ownership-claims-load-more,
+.ownership-review-close,
+.ownership-approve-button,
+.ownership-reject-button,
+.ownership-cancel-decision,
+.ownership-submit-decision,
+.ownership-submit-rejection,
+.ownership-use-location {
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 
   &:focus-visible {
-    outline: 2px solid #268554;
+    outline: 3px solid #69d194;
     outline-offset: 3px;
   }
 }
 
-/* =====================================
-   REPORT FOOTER
-===================================== */
-
-.report-footer {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #f0f3f0;
-  font-size: 11px;
-  color: #99a59d;
-  overflow-wrap: anywhere;
-}
-
-/* =====================================
-   LOADING, EMPTY AND ERROR STATES
-===================================== */
-
-.loading-state,
-.empty-state,
-.error-state {
-  text-align: center;
-  padding: 50px 15px;
-  color: #839087;
-
-  ion-icon {
-    font-size: 48px;
-    color: #9dcbb0;
+@media (max-width: 480px) {
+  .ownership-claims-section {
+    padding: 15px;
+    border-radius: 15px;
   }
 
-  ion-spinner {
-    color: #268554;
-    width: 30px;
-    height: 30px;
+  .ownership-claims-section-header h2 {
+    font-size: 16px;
   }
 
-  h3 {
-    color: #344d3d;
-    font-size: 17px;
-    margin-top: 14px;
+  .ownership-inbox-card {
+    padding: 12px;
   }
 
-  p {
-    font-size: 13px;
-    line-height: 1.6;
-  }
-}
-
-.error-state {
-  color: #d93025;
-
-  p {
-    color: #d93025;
+  .ownership-inbox-card-footer {
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  ion-button {
-    --color: #268554;
-    --border-color: #268554;
-    --border-radius: 10px;
-    text-transform: none;
-  }
-}
-
-/* =====================================
-   LOCATION MAP MODAL OVERLAY
-===================================== */
-
-.report-map-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 16px;
-  box-sizing: border-box;
-
-  background: rgba(16, 34, 23, 0.65);
-  backdrop-filter: blur(3px);
-}
-
-/* =====================================
-   MAP MODAL CONTAINER
-===================================== */
-
-.report-map-modal {
-  display: flex;
-  flex-direction: column;
-
-  width: 100%;
-  max-width: 540px;
-  max-height: min(90vh, 780px);
-
-  overflow-y: auto;
-
-  background: #ffffff;
-  border-radius: 20px;
-
-  box-shadow: 0 14px 45px rgba(10, 40, 20, 0.20);
-}
-
-/* =====================================
-   MAP MODAL HEADER
-===================================== */
-
-.report-map-modal-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-
-  padding: 20px 20px 12px;
-
-  h2 {
-    color: #213d2d;
-    font-size: 19px;
-    font-weight: 700;
-    line-height: 1.4;
-    margin: 0 0 5px;
-    overflow-wrap: anywhere;
+  .ownership-open-review-button {
+    width: 100%;
   }
 
-  p {
-    color: #829087;
-    font-size: 12px;
-    margin: 0;
-  }
-}
-
-.close-map-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  width: 36px;
-  height: 36px;
-  padding: 0;
-
-  background: #eef5f0;
-  color: #267b4e;
-
-  border: none;
-  border-radius: 10px;
-
-  cursor: pointer;
-
-  ion-icon {
-    font-size: 21px;
+  .ownership-report-summary {
+    padding: 11px;
   }
 
-  &:active {
-    background: #deebe2;
-  }
-}
-
-/* =====================================
-   MAP MODAL LOCATION DETAILS
-===================================== */
-
-.report-map-location-details {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-
-  margin: 0 20px 15px;
-  padding: 12px 14px;
-
-  border-radius: 11px;
-  background: #f1f8f3;
-
-  color: #526c59;
-  font-size: 12px;
-  line-height: 1.6;
-
-  overflow-wrap: anywhere;
-
-  ion-icon {
-    flex-shrink: 0;
-    margin-top: 2px;
-    font-size: 18px;
-    color: #268554;
-  }
-}
-
-/* =====================================
-   LEAFLET MAP CONTAINER
-===================================== */
-
-.report-map-container {
-  width: 100%;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
-.report-location-map {
-  display: block;
-
-  width: 100%;
-  height: 340px;
-  min-height: 340px;
-
-  position: relative;
-  z-index: 0;
-
-  border: 1px solid #dce8df;
-  border-radius: 12px;
-
-  background: #e6eee9;
-  overflow: hidden;
-}
-
-/* =====================================
-   MAP INFORMATION
-===================================== */
-
-.report-map-info {
-  padding: 15px 20px 5px;
-
-  p {
-    margin: 0 0 12px;
-    font-size: 12px;
-    line-height: 1.6;
-    color: #738579;
-  }
-}
-
-.report-map-coordinates {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-
-  padding: 12px;
-  background: #f6faf7;
-  border: 1px solid #e4eee6;
-  border-radius: 10px;
-
-  span {
-    font-size: 12px;
-    color: #53695a;
-    overflow-wrap: anywhere;
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-/* =====================================
-   CLOSE MAP ACTION BUTTON
-===================================== */
-
-.close-map-action {
-  --background: #268554;
-  --background-hover: #207448;
-  --border-radius: 11px;
-  --box-shadow: none;
-
-  height: 46px;
-  margin: 18px 20px 20px;
-
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: none;
-}
-
-/* =====================================
-   RESPONSIVE MOBILE LAYOUT
-===================================== */
-
-@media (max-width: 400px) {
-
-  .page-container {
-    padding: 18px 14px 70px;
+  .ownership-review-overlay {
+    padding: max(8px, env(safe-area-inset-top)) 8px
+      max(8px, env(safe-area-inset-bottom));
   }
 
-  .page-header {
-    gap: 12px;
+  .ownership-review-modal {
+    max-height: calc(100vh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius: 17px;
+  }
 
-    h1 {
-      font-size: 21px;
+  .ownership-review-header {
+    gap: 10px;
+    padding: 15px 15px 13px;
+
+    h2 {
+      font-size: 17px;
     }
 
     p {
@@ -678,661 +3154,2219 @@ ion-content {
     }
   }
 
-  .info-banner {
-    padding: 16px;
-    gap: 12px;
+  .ownership-review-body {
+    padding: 16px 14px 20px;
+  }
 
-    h2 {
-      font-size: 15px;
+  .ownership-review-meta {
+    gap: 13px 10px;
+    padding: 13px;
+    margin-bottom: 19px;
+  }
+
+  .ownership-review-section {
+    padding-bottom: 17px;
+    margin-bottom: 17px;
+  }
+
+  .ownership-decision-form {
+    padding: 14px;
+  }
+
+  .ownership-evidence-grid {
+    gap: 9px;
+
+    figure {
+      padding: 6px;
+      border-radius: 12px;
+    }
+
+    img {
+      height: clamp(145px, 40vw, 180px);
     }
   }
 
-  .report-card {
+  .ownership-review-actions {
+    gap: 9px;
+  }
+}
+
+@media (max-width: 340px) {
+  .ownership-review-meta,
+  .ownership-evidence-grid,
+  .ownership-pickup-datetime {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ownership-review-actions,
+  .ownership-decision-actions {
+    flex-direction: column;
+  }
+
+  .ownership-approve-button,
+  .ownership-reject-button,
+  .ownership-cancel-decision,
+  .ownership-submit-decision,
+  .ownership-submit-rejection {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ownership-review-modal,
+  .ownership-inbox-card,
+  .ownership-open-review-button,
+  .ownership-review-inline-button {
+    transition: none;
+    scroll-behavior: auto;
+  }
+}
+
+
+/* A single-column pickup schedule is easier to use on narrow phones. */
+@media (max-width: 390px) {
+  .ownership-pickup-datetime {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
+
+
+/* =====================================
+ * STEP 21 — SENT OWNERSHIP CLAIMS (RESIDENT B)
+ * Complements the existing Finder inbox and review modal.
+ * HTML/TypeScript/secure evidence rendering are unchanged.
+ * ===================================== */
+
+.sent-claims-section {
+  margin-top: 6px;
+  border-color: #d7e9df;
+  border-left: 3px solid #268554;
+  background: #ffffff;
+
+  .ownership-claims-section-header h2 {
+    color: #205c3c;
+  }
+
+  .ownership-inbox-summary {
+    padding: 0 2px 3px;
+  }
+}
+
+.sent-claim-card {
+  position: relative;
+  padding: 16px;
+  border: 1px solid #dce9e1;
+  border-radius: 14px;
+  background: #fbfdfb;
+  box-shadow: 0 2px 10px rgba(28, 78, 47, 0.035);
+
+  .ownership-inbox-card-header {
+    gap: 9px;
+
+    > div {
+      flex: 1 1 160px;
+    }
+
+    strong {
+      font-size: 14px;
+    }
+  }
+
+  .ownership-inbox-claimant {
+    margin-top: 11px;
+  }
+
+  .ownership-inbox-preview {
+    margin-bottom: 10px;
+  }
+
+  .ownership-inbox-card-footer {
+    margin-top: 13px;
+
+    .ownership-open-review-button {
+      min-height: 41px;
+    }
+  }
+}
+
+/* Next-step guidance appears on both the card and the full-screen details. */
+.sent-claim-next-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+  margin: 10px 0 12px;
+  padding: 12px 13px;
+  border: 1px solid #cfe2d5;
+  border-radius: 11px;
+  background: #f0f8f3;
+  color: #365e45;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  ion-icon {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    color: #268554;
+    font-size: 18px;
+  }
+}
+
+/* The two review dialogs share the same visual language, but have
+   separately scoped sizing and spacing to avoid changing Finder reviews. */
+.sent-claim-overlay {
+  z-index: 10045;
+  padding: max(12px, env(safe-area-inset-top)) 12px
+    max(12px, env(safe-area-inset-bottom));
+}
+
+.sent-claim-modal {
+  width: 100%;
+  max-width: 570px;
+  max-height: min(90vh, 820px);
+  max-height: min(90dvh, 820px);
+  min-height: 0;
+
+  .ownership-review-header {
+    flex: 0 0 auto;
+  }
+
+  .ownership-review-body {
+    min-height: 0;
+    padding-bottom: 25px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ownership-review-meta {
+    margin-bottom: 16px;
+  }
+
+  > .ownership-review-body > .sent-claim-next-step {
+    margin: 0 0 20px;
+  }
+
+  .ownership-review-section {
+    min-width: 0;
+  }
+
+  .ownership-review-section h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .ownership-existing-pickup {
+    margin-top: 3px;
+    padding: 15px;
+    border: 1px solid #cce2d2;
+    border-radius: 14px;
+    background: #f2faf5;
+
+    p {
+      margin: 9px 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .ownership-claim-status {
+    text-align: center;
+  }
+}
+
+.sent-claim-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 12px 0 5px !important;
+  padding: 11px 12px;
+  border: 1px solid #bfe2cb;
+  border-radius: 11px;
+  background: #e8f7ed;
+  color: #236b47 !important;
+  font-weight: 700;
+  line-height: 1.55;
+
+  ion-icon {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    color: #268554;
+    font-size: 19px;
+  }
+}
+
+/* Acceptance/rejection is about the proposed schedule—not pet receipt. */
+.sent-claim-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+
+  button {
+    min-width: 0;
+    min-height: 46px;
+    overflow-wrap: anywhere;
+  }
+}
+
+.sent-claim-main-action {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 47px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+  text-align: center;
+  white-space: normal;
+}
+
+.sent-reschedule-form {
+  padding: 17px;
+  border: 1px solid #d3e5d9;
+  border-radius: 14px;
+  background: #f7fbf8;
+
+  h3 {
+    color: #245737;
+  }
+
+  textarea,
+  input {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 72px;
+  }
+
+  .ownership-pickup-datetime {
+    margin-top: 2px;
+  }
+
+  .ownership-decision-actions {
+    margin-top: 20px;
+  }
+}
+
+/* A separate visual reminder prevents the pickup agreement from being
+   confused with confirmation that the animal was physically received. */
+.sent-handover-section {
+  padding: 16px;
+  border: 1px solid #ead8b3;
+  border-radius: 14px;
+  background: #fffaf0;
+
+  h3 {
+    color: #775321 !important;
+
+    ion-icon {
+      color: #ab7626;
+    }
+  }
+
+  .ownership-review-muted {
+    color: #765f3c;
+  }
+
+  .sent-claim-main-action {
+    margin-top: 12px;
+  }
+}
+
+/* Small screens: comfortable touch targets, no clipped fields/buttons,
+   and enough room for the Android keyboard inside the dialog. */
+@media (max-width: 480px) {
+  .sent-claims-section {
+    padding: 14px;
+    border-left-width: 3px;
+  }
+
+  .sent-claim-card {
+    padding: 13px;
+  }
+
+  .sent-claim-overlay {
+    padding: max(8px, env(safe-area-inset-top)) 8px
+      max(8px, env(safe-area-inset-bottom));
+  }
+
+  .sent-claim-modal {
+    max-height: calc(100vh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius: 17px;
+
+    .ownership-review-header {
+      padding: 15px 14px;
+    }
+
+    .ownership-review-body {
+      padding: 16px 14px 23px;
+    }
+
+    .ownership-existing-pickup {
+      padding: 13px;
+    }
+  }
+
+  .sent-reschedule-form {
+    padding: 14px;
+  }
+
+  .sent-handover-section {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 390px) {
+  .sent-claim-card {
+    .ownership-inbox-card-footer {
+      align-items: stretch;
+      flex-direction: column;
+
+      .ownership-open-review-button {
+        width: 100%;
+      }
+    }
+  }
+
+  .sent-claim-action-row,
+  .sent-reschedule-form .ownership-decision-actions {
+    flex-direction: column;
+
+    > button {
+      flex: 0 0 auto;
+      width: 100%;
+    }
+  }
+
+  .sent-reschedule-form .ownership-pickup-datetime {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sent-claim-card,
+  .sent-claim-modal,
+  .sent-claim-main-action {
+    transition: none;
+    scroll-behavior: auto;
+  }
+}
+
+/* ==========================================================
+   STEP 33 — MY REPORTS MINIMAL UI (matches Step 32 HTML)
+   Design-only refinements. All existing claim/dialog/photo/map
+   styles above remain available and unchanged in behavior.
+   ========================================================== */
+
+/* Simplify the page itself, keeping enough room for mobile safe areas. */
+.page-container {
+  padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+}
+
+.page-header {
+  align-items: center;
+  margin-bottom: 20px;
+
+  h1 {
+    font-size: 22px;
+    letter-spacing: -0.35px;
+  }
+
+  p {
+    max-width: 290px;
+    line-height: 1.5;
+  }
+}
+
+/* The only entry point for sent/received ownership claims. */
+.my-claims-hub {
+  display: block;
+  min-width: 0;
+  margin: 0 0 27px;
+}
+
+.my-claims-entry {
+  position: relative;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-height: 73px;
+  margin: 0 !important;
+  padding: 15px 17px !important;
+  border: 1px solid #dce9df !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(27, 74, 45, 0.045);
+  color: #244b33 !important;
+  cursor: pointer;
+  list-style: none !important;
+  -webkit-tap-highlight-color: transparent;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  > ion-icon {
+    flex-shrink: 0;
+    box-sizing: content-box;
+    padding: 10px;
+    border-radius: 12px;
+    background: #e9f5ed;
+    color: #238250;
+    font-size: 23px !important;
+  }
+
+  > span:nth-of-type(1) {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    strong {
+      color: #243d2d;
+      font-size: 15px !important;
+      line-height: 1.4;
+      font-weight: 750;
+    }
+
+    small {
+      color: #7a8a7e !important;
+      font-size: 11px !important;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  /* State is exposed with a small number, not another big button. */
+  .my-claims-entry-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 28px;
+    min-height: 27px;
+    padding: 4px 8px !important;
+    border-radius: 99px !important;
+    background: #e9f5ed !important;
+    color: #267b4e !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &::after {
+    content: '⌄';
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-left: -4px;
+    color: #789180;
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.18s ease;
+  }
+
+  &:focus-visible {
+    outline: 3px solid #81c69c;
+    outline-offset: 3px;
+  }
+}
+
+.my-claims-hub[open] > .my-claims-entry {
+  border-color: #bedcc9 !important;
+  border-radius: 16px 16px 0 0 !important;
+  box-shadow: none;
+}
+
+.my-claims-hub[open] > .my-claims-entry::after {
+  transform: rotate(180deg);
+}
+
+.my-claims-hub-content {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #bedcc9;
+  border-top: 0;
+  border-radius: 0 0 16px 16px;
+  background: #fafcfb;
+
+  .ownership-claims-section {
+    min-width: 0;
+    margin: 0 0 14px;
     padding: 16px;
+    border: 1px solid #e2ebe5;
+    border-radius: 13px;
+    background: white;
+    box-shadow: none;
+  }
+
+  .ownership-claims-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .sent-claims-section {
+    border-left: 1px solid #e2ebe5;
+  }
+
+  .ownership-claims-section-header h2 {
+    font-size: 15px;
+    letter-spacing: -0.1px;
+  }
+
+  .ownership-inbox-card {
+    border: 1px solid #e1eae3;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  .sent-claim-card {
+    border-left: 1px solid #e1eae3;
+  }
+
+  .ownership-inbox-card-footer {
+    gap: 9px;
+  }
+
+  .ownership-open-review-button {
+    min-height: 42px;
+    background: #f0f8f3;
+    color: #246e45;
+    border-color: #d0e7d7;
+  }
+}
+
+/* A separate, lightweight header for regular reports. */
+.my-reports-overview-header {
+  margin-bottom: 15px;
+
+  .section-header {
+    gap: 12px;
+    margin-bottom: 14px;
+
+    > div {
+      min-width: 0;
+    }
 
     h3 {
-      font-size: 18px;
+      color: #253f2f;
+      font-size: 17px;
+      font-weight: 750;
+      letter-spacing: -0.2px;
     }
+  }
+
+  .my-reports-intro {
+    margin-top: 4px !important;
+    line-height: 1.45;
   }
 
   .filter-container {
     gap: 8px;
+    margin-bottom: 0;
 
     button {
+      min-height: 40px;
+      border-radius: 11px;
+      border-color: #e1eae4;
+      background: #ffffff;
+      color: #627767;
       font-size: 12px;
-      padding: 11px 6px;
+      font-weight: 650;
     }
-  }
 
-  .report-button {
-    font-size: 12px;
-  }
-
-  .report-map-overlay {
-    padding: 10px;
-  }
-
-  .report-map-modal {
-    max-height: 92vh;
-    border-radius: 16px;
-  }
-
-  .report-map-modal-header {
-    padding: 16px 15px 10px;
-
-    h2 {
-      font-size: 17px;
+    button.active {
+      background: #268554;
+      border-color: #268554;
+      color: #ffffff;
     }
-  }
-
-  .report-map-location-details {
-    margin: 0 15px 12px;
-  }
-
-  .report-map-container {
-    padding: 0 15px;
-  }
-
-  .report-location-map {
-    height: 280px;
-    min-height: 280px;
-  }
-
-  .report-map-info {
-    padding: 12px 15px 5px;
-  }
-
-  .close-map-action {
-    margin: 15px 15px 18px;
   }
 }
 
-/* =====================================
-   ACCESSIBILITY
-===================================== */
+/* Calm, compact post cards. Keep the full photo visible, not cropped. */
+.report-card {
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #e8efe9;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(28, 69, 40, 0.035);
+
+  > h3 {
+    margin: 12px 0 4px;
+    color: #253b2c;
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: -0.25px;
+  }
+
+  > .animal-type {
+    color: #819087;
+    font-size: 11px;
+  }
+
+  > .description {
+    margin: 11px 0 13px;
+    color: #596b5e;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .pet-photo-gallery {
+    margin-bottom: 13px;
+    border-color: #e5eee7;
+    border-radius: 12px;
+    background: #f4f8f5;
+  }
+
+  .pet-photo-view-button {
+    min-height: 120px;
+    background: #f4f8f5;
+
+    img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+    }
+  }
+
+  .pet-photo-expand {
+    width: 29px;
+    height: 29px;
+    border-radius: 8px;
+  }
+
+  .pet-photo-counter {
+    font-size: 11px;
+  }
+
+  .report-details {
+    margin-top: 12px;
+    padding-top: 13px;
+
+    > div {
+      margin-bottom: 9px;
+      font-size: 12px;
+    }
+
+    > div:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .view-location-button {
+    margin: 13px 0 0;
+    min-height: 42px;
+    border-radius: 10px;
+    background: #f4f9f5;
+    border-color: #dcebe0;
+    font-size: 12px;
+  }
+
+  .report-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    font-size: 10px;
+    color: #90a095;
+  }
+}
+
+.minimal-report-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .report-badge,
+  .status-badge {
+    margin: 0;
+    padding: 6px 10px;
+    border-radius: 99px;
+    font-size: 10px;
+    line-height: 1.35;
+  }
+}
+
+.ownership-report-guidance {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 13px 0 0;
+  padding: 11px 12px;
+  border: 1px solid #dce9df;
+  border-radius: 11px;
+  background: #f5faf6;
+  color: #557261;
+  font-size: 11px;
+  line-height: 1.55;
+
+  ion-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #268554;
+    font-size: 16px;
+  }
+
+  strong {
+    color: #276f46;
+  }
+}
+
+/* Report management is collapsed by default; the dangerous action is
+   only shown after the resident expands it. */
+.report-card-manage {
+  display: block;
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.report-manage-trigger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px;
+  margin: 0 !important;
+  padding: 11px 14px !important;
+  border: 1px solid #d3e6d8 !important;
+  border-radius: 11px !important;
+  background: #f0f8f3 !important;
+  color: #277348 !important;
+  cursor: pointer;
+  list-style: none !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  -webkit-tap-highlight-color: transparent;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  ion-icon {
+    font-size: 17px;
+  }
+
+  &:focus-visible {
+    outline: 3px solid #81c69c;
+    outline-offset: 2px;
+  }
+}
+
+.report-card-manage[open] > .report-manage-trigger {
+  background: #e8f5ec !important;
+  border-color: #bfddc8 !important;
+  border-radius: 11px 11px 0 0 !important;
+}
+
+.report-card-manage .report-management-actions {
+  gap: 9px;
+  margin-top: 0;
+  padding: 12px;
+  border: 1px solid #d7e7db;
+  border-top: none;
+  border-radius: 0 0 11px 11px;
+  background: #fbfdfb;
+
+  button {
+    width: 100%;
+    min-height: 43px;
+    font-size: 12px;
+    border-radius: 9px;
+  }
+}
+
+.report-card > .resolved-info,
+.report-card > .closed-info {
+  margin-top: 13px;
+  justify-content: flex-start;
+  text-align: left;
+  font-size: 11px;
+}
+
+@media (max-width: 480px) {
+  .my-claims-hub-content {
+    padding: 10px;
+
+    .ownership-claims-section {
+      padding: 13px 12px;
+      margin-bottom: 10px;
+    }
+
+    .ownership-inbox-card {
+      padding: 12px;
+    }
+
+    .ownership-inbox-card-footer {
+      align-items: stretch;
+      flex-direction: column;
+
+      .ownership-open-review-button {
+        width: 100%;
+      }
+    }
+  }
+
+  .my-claims-entry {
+    gap: 10px !important;
+    padding: 13px 12px !important;
+
+    > ion-icon {
+      padding: 9px;
+      font-size: 21px !important;
+    }
+
+    > span:nth-of-type(1) small {
+      font-size: 10px !important;
+    }
+  }
+
+  .report-card {
+    padding: 14px;
+
+    > h3 {
+      font-size: 17px;
+    }
+
+    .pet-photo-view-button img {
+      max-height: 230px;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .my-claims-entry {
+    flex-wrap: wrap;
+
+    > span:nth-of-type(1) {
+      flex-basis: calc(100% - 70px);
+    }
+  }
+
+  .minimal-report-status-row {
+    gap: 6px;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .filter-container button {
+  .my-claims-entry::after {
     transition: none;
   }
 }
 
 
-/* =====================================
-   MULTIPLE PET PHOTOS - POST GALLERY
-===================================== */
-
-.pet-photo-gallery {
-  width: 100%;
-  margin-bottom: 16px;
-  overflow: hidden;
-  border: 1px solid #e2ebe5;
-  border-radius: 14px;
-  background: #f7fbf8;
-  touch-action: pan-y;
-
-  .pet-photo {
-    position: relative;
-    margin-bottom: 0;
-    border-radius: 0;
-    background: #edf4ef;
-  }
+/* =============================================================
+   PAWRESCUE COMMUNITY — MY REPORTS VISUAL REFRESH
+   Aligned with the Home Page palette and spacing.
+   Presentation-only: all existing gallery, map, claim and report
+   management behavior/styles above remain available.
+   ============================================================= */
+:host {
+  --reports-green: #238653;
+  --reports-green-deep: #17623f;
+  --reports-ink: #193b2b;
+  --reports-muted: #78887e;
+  --reports-line: #e4ece6;
+  --reports-paper: #ffffff;
 }
 
-.pet-photo-view-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-  min-height: 150px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: #edf4ef;
-  cursor: zoom-in;
-  overflow: hidden;
-
-  img {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 430px;
-    object-fit: contain;
-    object-position: center;
-    border-radius: 0;
-    user-select: none;
-    -webkit-user-drag: none;
-  }
+ion-content.pawrescue-my-reports {
+  --background: #f5f9f6;
+  --color: var(--reports-ink);
 }
 
-.pet-photo-expand {
-  position: absolute;
-  top: 11px;
-  left: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: rgba(16, 34, 23, 0.65);
-  color: #ffffff;
-  pointer-events: none;
-
-  ion-icon {
-    font-size: 18px;
-  }
-}
-
-.pet-photo-counter {
-  position: absolute;
-  top: 11px;
-  right: 11px;
-  z-index: 2;
-  padding: 7px 11px;
-  border-radius: 20px;
-  background: rgba(16, 34, 23, 0.72);
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  pointer-events: none;
-}
-
-/* =====================================
-   PHOTO PREVIOUS / NEXT BUTTONS
-===================================== */
-
-.pet-photo-nav {
-  position: absolute;
-  top: 50%;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  transform: translateY(-50%);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 50%;
-  background: rgba(16, 34, 23, 0.62);
-  color: #ffffff;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-
-  ion-icon {
-    font-size: 24px;
-    pointer-events: none;
-  }
-
-  &:active {
-    background: rgba(16, 34, 23, 0.85);
-  }
-}
-
-.pet-photo-prev {
-  left: 10px;
-}
-
-.pet-photo-next {
-  right: 10px;
-}
-
-/* =====================================
-   PHOTO DOT POSITION INDICATORS
-===================================== */
-
-.pet-photo-dots,
-.photo-viewer-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px 10px;
-}
-
-.pet-photo-dot,
-.photo-viewer-dot {
-  display: block;
-  width: 10px;
-  height: 10px;
-  min-width: 10px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: #c9d9ce;
-  cursor: pointer;
-
-  &.active {
-    width: 20px;
-    border-radius: 20px;
-    background: #268554;
-  }
-}
-
-/* =====================================
-   FULL-SIZE PHOTO VIEWER OVERLAY
-===================================== */
-
-.photo-viewer-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10020;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.page-container {
   box-sizing: border-box;
-  padding: max(12px, env(safe-area-inset-top)) 14px
-    max(12px, env(safe-area-inset-bottom));
-  background: rgba(10, 22, 15, 0.90);
-  backdrop-filter: blur(5px);
-}
-
-.photo-viewer-modal {
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  max-width: 900px;
-  max-height: 100%;
-  overflow: hidden;
-  background: #16251b;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 18px;
-  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38);
+  max-width: 650px;
+  margin: 0 auto;
+  padding:
+    calc(20px + env(safe-area-inset-top, 0px))
+    18px
+    calc(56px + env(safe-area-inset-bottom, 0px));
 }
 
-.photo-viewer-header {
+/* Fullscreen Ionic pages need extra room for Android's status bar. */
+:host-context(.plt-android) .page-container {
+  padding-top: calc(18px + max(26px, env(safe-area-inset-top, 0px)));
+}
+
+.page-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 15px;
-  padding: 16px 18px;
-}
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 29px;
 
-.photo-viewer-heading {
-  min-width: 0;
+  .page-heading-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 
-  h2 {
-    margin: 0 0 5px;
-    color: #ffffff;
-    font-size: 17px;
-    font-weight: 700;
-    overflow-wrap: anywhere;
+  .page-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--reports-green);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.25px;
+    line-height: 1.3;
+  }
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: clamp(22px, 5.8vw, 26px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.7px;
+    color: var(--reports-ink);
   }
 
   p {
     margin: 0;
-    color: #b9c9bd;
+    max-width: none;
     font-size: 12px;
-    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+    color: var(--reports-muted);
   }
 }
 
-.photo-viewer-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
+.back-button {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
   padding: 0;
-  border: 0;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  cursor: pointer;
+  border: 1px solid var(--reports-line);
+  border-radius: 15px;
+  background: var(--reports-paper);
+  color: #207b4e;
+  box-shadow: 0 4px 13px rgba(19, 70, 43, 0.04);
+  -webkit-tap-highlight-color: transparent;
 
-  ion-icon {
-    font-size: 23px;
-  }
+  ion-icon { font-size: 23px; }
 
-  &:active {
-    background: rgba(255, 255, 255, 0.24);
-  }
-}
-
-.photo-viewer-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 150px;
-  max-height: min(65vh, 650px);
-  overflow: hidden;
-  background: #0f1912;
-  touch-action: pan-y;
-}
-
-.photo-viewer-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-width: 100%;
-  max-height: min(65vh, 650px);
-  object-fit: contain;
-  object-position: center;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.photo-viewer-nav {
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  transform: translateY(-50%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  color: #ffffff;
-  cursor: pointer;
-
-  ion-icon {
-    font-size: 27px;
-    pointer-events: none;
-  }
-
-  &:active {
-    background: rgba(0, 0, 0, 0.8);
-  }
-}
-
-.photo-viewer-prev {
-  left: 12px;
-}
-
-.photo-viewer-next {
-  right: 12px;
-}
-
-.photo-viewer-dots {
-  padding: 15px 12px 8px;
-  background: #16251b;
-}
-
-.photo-viewer-dot {
-  background: #647b6a;
-
-  &.active {
-    background: #69d194;
-  }
-}
-
-.photo-viewer-help {
-  margin: 0;
-  padding: 0 16px 15px;
-  color: #afc2b4;
-  font-size: 11px;
-  line-height: 1.5;
-  text-align: center;
-}
-
-/* =====================================
-   GALLERY BUTTON ACCESSIBILITY
-===================================== */
-
-.pet-photo-view-button,
-.pet-photo-nav,
-.pet-photo-dot,
-.photo-viewer-close,
-.photo-viewer-nav,
-.photo-viewer-dot {
+  &:active { background: #eaf5ee; }
   &:focus-visible {
-    outline: 3px solid #69d194;
+    outline: 2px solid var(--reports-green);
     outline-offset: 3px;
   }
 }
 
-/* =====================================
-   MOBILE GALLERY ADJUSTMENTS
-===================================== */
+.my-reports-overview-header {
+  margin-bottom: 17px;
 
-@media (max-width: 400px) {
+  .section-header {
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    h3 {
+      margin: 0;
+      color: var(--reports-ink);
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.55px;
+    }
+  }
+
+  .my-reports-intro {
+    margin: 5px 0 0 !important;
+    color: var(--reports-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .filter-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 0;
+
+    button {
+      width: 100%;
+      min-height: 44px;
+      padding: 11px 6px;
+      border: 1px solid #dfe9e2;
+      border-radius: 13px;
+      background: #ffffff;
+      color: #64776a;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 750;
+      box-shadow: 0 2px 8px rgba(26, 74, 43, 0.018);
+    }
+
+    button.active {
+      border-color: var(--reports-green);
+      background: var(--reports-green);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(35, 134, 83, .12);
+    }
+
+    button:not(:disabled):active { transform: scale(.985); }
+  }
+}
+
+.refresh-button {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #dcece1;
+  border-radius: 14px;
+  background: #eaf5ee;
+  color: var(--reports-green);
+  font-size: 22px;
+
+  &:focus-visible {
+    outline: 2px solid var(--reports-green);
+    outline-offset: 3px;
+  }
+}
+
+/* Reports are now shorter and easier to scan, while the full
+   photograph remains visible (object-fit: contain). */
+.report-card {
+  padding: 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--reports-line);
+  border-radius: 20px;
+  background: var(--reports-paper);
+  box-shadow: 0 5px 18px rgba(28, 70, 44, .045);
+
+  > h3 {
+    margin: 12px 0 4px;
+    color: var(--reports-ink);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -.45px;
+    line-height: 1.3;
+  }
+
+  > .animal-type {
+    color: #849289;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  > .description {
+    margin: 10px 0 14px;
+    color: #586c60;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+
+  .pet-photo-gallery {
+    margin-bottom: 13px;
+    border: 1px solid #e7eee8;
+    border-radius: 15px;
+    background: #f1f6f3;
+  }
+
   .pet-photo-view-button {
-    min-height: 130px;
+    min-height: 0;
+    background: #f1f6f3;
 
     img {
-      max-height: 340px;
+      display: block;
+      width: 100%;
+      height: clamp(185px, 52vw, 250px);
+      max-height: none;
+      object-fit: contain;
+      object-position: center;
     }
+  }
+
+  .pet-photo-expand {
+    top: 10px;
+    left: 10px;
+    width: 33px;
+    height: 33px;
+    border-radius: 10px;
+  }
+
+  .pet-photo-counter {
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .report-details {
+    margin-top: 12px;
+    padding-top: 13px;
+    border-color: #edf2ee;
+
+    > div {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: #76877c;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    ion-icon {
+      color: var(--reports-green);
+      font-size: 17px;
+    }
+  }
+
+  .view-location-button {
+    min-height: 44px;
+    margin: 13px 0 0;
+    border-color: #d8eade;
+    border-radius: 12px;
+    background: #f0f8f3;
+    color: #237b4e;
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .report-footer {
+    margin-top: 15px;
+    padding-top: 12px;
+    border-color: #edf2ef;
+    color: #8a9b90;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+}
+
+.minimal-report-status-row {
+  gap: 8px;
+
+  .report-badge,
+  .status-badge {
+    margin: 0;
+    padding: 7px 11px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 750;
+    line-height: 1.3;
+  }
+}
+
+.report-badge.found {
+  background: #e4f5e9;
+  color: #207c4b;
+}
+
+.report-badge.lost {
+  background: #fff0e5;
+  color: #bd6c2c;
+}
+
+.status-badge[data-status='pending'] {
+  background: #fff4df;
+  color: #94620e;
+}
+
+.no-photo {
+  min-height: 180px;
+  margin-bottom: 13px;
+  border-radius: 15px;
+  background: #f5f9f6;
+}
+
+/* Keep the management actions behind the resident's explicit tap. */
+.report-card-manage { margin-top: 11px; }
+
+.report-manage-trigger {
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 14px !important;
+  border: 1px solid #d4e8da !important;
+  border-radius: 12px !important;
+  background: #eaf6ee !important;
+  color: #237649 !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+}
+
+.report-card-manage[open] > .report-manage-trigger {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.report-card-manage .report-management-actions {
+  padding: 11px;
+  border-color: #d4e8da;
+  background: #fbfdfb;
+}
+
+/* States are designed like small informational cards. */
+.loading-state,
+.empty-state,
+.error-state {
+  margin: 15px 0;
+  padding: 35px 18px;
+  border: 1px solid var(--reports-line);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(28, 70, 44, .025);
+}
+
+.resolve-message,
+.refresh-status {
+  border-radius: 13px;
+  font-size: 12px;
+}
+
+@media (min-width: 520px) {
+  .report-card {
+    padding: 19px;
+  }
+
+  .report-card-manage .report-management-actions {
+    flex-direction: row;
+  }
+
+  .report-card-manage .report-management-actions button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .page-container {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .page-header {
+    gap: 11px;
+
+    h1 { font-size: 22px; }
+    p { font-size: 11px; }
+  }
+
+  .back-button {
+    flex-basis: 43px;
+    width: 43px;
+    height: 43px;
+  }
+
+  .my-reports-overview-header .section-header h3 {
+    font-size: 19px;
+  }
+
+  .report-card {
+    padding: 12px;
+
+    > h3 { font-size: 18px; }
   }
 
   .pet-photo-nav {
     width: 34px;
     height: 34px;
-
-    ion-icon {
-      font-size: 21px;
-    }
-  }
-
-  .photo-viewer-overlay {
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
-  .photo-viewer-modal {
-    border-radius: 13px;
-  }
-
-  .photo-viewer-header {
-    padding: 12px;
-  }
-
-  .photo-viewer-heading h2 {
-    font-size: 15px;
-  }
-
-  .photo-viewer-stage,
-  .photo-viewer-image {
-    max-height: 60vh;
-  }
-
-  .photo-viewer-nav {
-    width: 36px;
-    height: 36px;
-
-    ion-icon {
-      font-size: 23px;
-    }
-  }
-
-  .photo-viewer-prev {
-    left: 7px;
-  }
-
-  .photo-viewer-next {
-    right: 7px;
   }
 }
 
-/* =====================================
-   REDUCED MOTION PREFERENCE
-===================================== */
-
 @media (prefers-reduced-motion: reduce) {
-  .pet-photo-view-button,
-  .pet-photo-nav,
-  .photo-viewer-nav {
-    scroll-behavior: auto;
+  .my-reports-overview-header .filter-container button {
     transition: none;
   }
 }
 
-
-/* =====================================
-   MY REPORTS-ONLY: STATUS AND ACTIONS
-   Base design intentionally matches Lost & Found.
-===================================== */
-
-.my-report-status {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
+/* =============================================================
+   COMPACT STATUS FILTER
+   One page title; one status dropdown; keep All / Lost / Found.
+   ============================================================= */
+.my-reports-overview-header {
+  margin-top: -3px;
+  margin-bottom: 17px;
 }
 
-.status-badge {
-  display: inline-flex;
+.report-filter-toolbar {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 7px 12px;
-  border-radius: 20px;
-  background: #edf0f2;
-  color: #52605a;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.status-badge[data-status="pending"] {
-  background: #fff3de;
-  color: #95650d;
-}
-
-.status-badge[data-status="under_review"],
-.status-badge[data-status="in_progress"] {
-  background: #e9f1ff;
-  color: #386ca6;
-}
-
-.status-badge[data-status="resolved"] {
-  background: #e2f4e9;
-  color: #268554;
-}
-
-.status-badge[data-status="closed"] {
-  background: #edf0f2;
-  color: #64746a;
-}
-
-.no-photo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-height: 155px;
-  margin-bottom: 16px;
-  border: 1px dashed #cddfd3;
-  border-radius: 14px;
-  background: #f7fbf8;
-  color: #8a9c90;
-
-  ion-icon {
-    font-size: 38px;
-  }
-
-  span {
-    font-size: 12px;
-  }
-}
-
-.report-management-actions {
-  display: flex;
-  flex-direction: column;
   gap: 10px;
-  margin-top: 12px;
+  margin-bottom: 14px;
 }
 
-.edit-button,
-.resolve-button {
+.report-status-label {
+  flex: 0 0 auto;
+  color: #2a4b39;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.report-status-select-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+}
+
+.report-status-select-wrap::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 17px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #237c4d;
+  border-bottom: 2px solid #237c4d;
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+}
+
+.report-status-select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 47px;
+  padding: 0 39px 0 15px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #256f48;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.2;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: none;
+    outline-offset: 0;
+  }
+
+  &:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+}
+
+.report-filter-toolbar .refresh-button {
+  flex: 0 0 47px;
+  width: 47px;
+  height: 47px;
+  margin: 0;
+}
+
+.report-filter-caption {
+  margin-bottom: 9px;
+  color: #819187;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+@media (max-width: 365px) {
+  .report-filter-toolbar { gap: 7px; }
+  .report-status-label { font-size: 12px; }
+  .report-status-select { padding-left: 11px; font-size: 12px; }
+  .report-filter-toolbar .refresh-button { flex-basis: 43px; width: 43px; height: 45px; }
+}
+
+/* =============================================================
+   MY REPORTS PHOTO GALLERY — FULL IMAGE WITH BLURRED BACKGROUND
+   The original photo is never cropped. A blurred duplicate fills
+   the gallery edges for portrait / landscape photos of any ratio.
+   Fullscreen image remains unchanged and uses object-fit: contain.
+   ============================================================= */
+.report-card .pet-photo-gallery {
+  width: 100%;
+  overflow: hidden;
+  background: #edf4ef;
+}
+
+.report-card .pet-photo-gallery .pet-photo {
+  width: 100%;
+  overflow: hidden;
+}
+
+.report-card .pet-photo-gallery .pet-photo-view-button {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: clamp(260px, 78vw, 370px);
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #dce9df;
+  isolation: isolate;
+}
+
+/* Provide a gentle dark tint over the blurry photo behind the actual image. */
+.report-card .pet-photo-gallery .pet-photo-view-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(10, 35, 22, 0.16);
+  pointer-events: none;
+}
+
+.report-card .pet-photo-gallery .pet-photo-view-button > img.pet-photo-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(19px);
+  transform: scale(1.1);
+  border-radius: 0;
+  pointer-events: none;
+}
+
+.report-card .pet-photo-gallery .pet-photo-view-button > img.pet-photo-foreground {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+/* Keep the enlarge icon clickable via its parent button, above both images. */
+.report-card .pet-photo-gallery .pet-photo-expand {
+  z-index: 3;
+}
+
+@media (max-width: 360px) {
+  .report-card .pet-photo-gallery .pet-photo-view-button {
+    height: clamp(240px, 85vw, 300px);
+  }
+}
+
+/* =============================================================
+   MY REPORTS — EDIT ONLY
+   Handover/recovery confirmation happens in My Claims/My Recoveries.
+   Keep active reports editable without a second Manage Report tap.
+   ============================================================= */
+.report-card > .report-edit-only {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   width: 100%;
-  min-height: 43px;
-  padding: 11px 14px;
-  border: 1px solid #c6e6d1;
-  border-radius: 11px;
+  min-height: 46px;
+  margin-top: 13px;
+  padding: 12px 14px;
+  border: 1px solid #cbe2d3;
+  border-radius: 12px;
+  background: #eaf6ee;
+  color: #237649;
   font-family: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-
-  ion-icon {
-    font-size: 19px;
-    flex-shrink: 0;
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #268554;
-    outline-offset: 3px;
-  }
 }
 
-.edit-button {
-  background: #eaf7ee;
+.report-card > .report-edit-only ion-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.report-card > .report-edit-only:active {
+  background: #d8f0e1;
+}
+
+.report-card > .report-edit-only:focus-visible {
+  outline: 2px solid #238653;
+  outline-offset: 2px;
+}
+
+.report-card > .report-edit-only:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* =============================================================
+   MY REPORTS — BUTTONS MATCH STRAY ANIMAL ASSISTANCE
+   Reference: stray-assistance.page.scss
+   Primary:   #2d8038 (solid green / white text)
+   Secondary: #2d8038 (green outline / white background)
+   Soft:      #e2f4e9 (icon buttons)
+   This section affects only visual styling; no Angular logic changes.
+   ============================================================= */
+:host {
+  --myreports-action-green: #2d8038;
+  --myreports-action-hover: #277232;
+  --myreports-action-active: #23692e;
+  --myreports-action-soft: #e2f4e9;
+}
+
+/* Stray Assistance uses a round, pale-green back button. */
+.page-header .back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--myreports-action-soft);
   color: #268554;
+  box-shadow: none;
+  cursor: pointer;
+}
+.page-header .back-button:active { background: #d5eddd; }
+.page-header .back-button:focus-visible {
+  outline: 3px solid #268554;
+  outline-offset: 3px;
 }
 
-.resolve-button {
-  border-color: #268554;
-  background: #268554;
+/* Status dropdown uses the same understated idle/focus design as Lost & Found. */
+.report-status-select {
+  height: 49px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 11px;
+  color: #2d8038;
+  background-color: #ffffff;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+.report-status-select-wrap::after {
+  border-right-color: #2d8038;
+  border-bottom-color: #2d8038;
+}
+/* Use exactly the Lost & Found dropdown's border and focus glow. */
+.report-status-select:focus,
+.report-status-select:focus-visible {
+  border-color: #2d8038;
+  outline: none;
+  outline-offset: 0;
+  box-shadow: 0 0 0 3px rgba(45, 128, 56, .12);
+}
+
+/* Small icon button follows the pale green Stray Assistance icon style. */
+.report-filter-toolbar .refresh-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 49px;
+  width: 49px;
+  height: 49px;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  background: var(--myreports-action-soft);
+  color: #268554;
+  box-shadow: none;
+}
+.report-filter-toolbar .refresh-button:active { background: #d5eddd; }
+.report-filter-toolbar .refresh-button:focus-visible {
+  outline: 3px solid #268554;
+  outline-offset: 2px;
+}
+
+/* All / Lost / Found: outline for idle, solid green for selected. */
+.my-reports-overview-header .filter-container button {
+  min-height: 49px;
+  padding: 11px 8px;
+  border: 2px solid var(--myreports-action-green);
+  border-radius: 11px;
+  background: #ffffff;
+  color: var(--myreports-action-green);
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.my-reports-overview-header .filter-container button.active {
+  border-color: var(--myreports-action-green);
+  background: var(--myreports-action-green);
   color: #ffffff;
-
-  ion-spinner {
-    width: 18px;
-    height: 18px;
-    color: #ffffff;
-  }
-
-  &:active {
-    background: #207448;
-  }
+  box-shadow: 0 2px 6px rgba(26, 91, 42, .13);
+}
+.my-reports-overview-header .filter-container button:not(.active):not(:disabled):active {
+  background: var(--myreports-action-soft);
+}
+.my-reports-overview-header .filter-container button.active:not(:disabled):active {
+  background: var(--myreports-action-active);
+}
+.my-reports-overview-header .filter-container button:focus-visible {
+  outline: 3px solid #268554;
+  outline-offset: 2px;
 }
 
-.resolved-info,
-.closed-info,
-.resolve-message {
+/* Secondary action: same 2px green outline as 'My Reports' in Stray Assistance. */
+.report-card .view-location-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
-  padding: 12px;
-  border: 1px solid #c6e6d1;
+  width: 100%;
+  min-height: 49px;
+  padding: 12px 14px;
+  border: 2px solid var(--myreports-action-green);
   border-radius: 11px;
-  background: #eaf7ee;
-  color: #236b47;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.55;
-  text-align: center;
-
-  ion-icon {
-    flex-shrink: 0;
-    font-size: 20px;
-  }
+  background: #ffffff;
+  color: var(--myreports-action-green);
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+.report-card .view-location-button:hover { background: #f7fcf8; }
+.report-card .view-location-button:active { background: var(--myreports-action-soft); }
+.report-card .view-location-button:focus-visible {
+  outline: 3px solid #268554;
+  outline-offset: 2px;
 }
 
-.closed-info {
-  border-color: #e1e7e3;
-  background: #f4f6f4;
-  color: #667369;
+/* Primary action: same solid green as 'Report a Stray'. */
+.report-card > .report-edit-only {
+  min-height: 49px;
+  padding: 12px 14px;
+  border: 2px solid var(--myreports-action-green);
+  border-radius: 11px;
+  background: var(--myreports-action-green);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(26, 91, 42, .13);
+  font-size: 13px;
+  font-weight: 700;
 }
-
-.resolve-message {
-  margin-bottom: 16px;
+.report-card > .report-edit-only:not(:disabled):hover {
+  border-color: var(--myreports-action-hover);
+  background: var(--myreports-action-hover);
 }
-
-.filter-container button:disabled {
-  opacity: 0.55;
+.report-card > .report-edit-only:not(:disabled):active {
+  border-color: var(--myreports-action-active);
+  background: var(--myreports-action-active);
+}
+.report-card > .report-edit-only:focus-visible {
+  outline: 3px solid #268554;
+  outline-offset: 2px;
+}
+.report-card > .report-edit-only:disabled {
+  opacity: .55;
   cursor: not-allowed;
 }
 
-.report-button:disabled {
-  opacity: 0.6;
+/* Keep the map dialog and retry actions within the same button palette. */
+.close-map-action {
+  --background: #2d8038;
+  --background-hover: #277232;
+  --background-activated: #23692e;
+  --color: #ffffff;
+  --border-radius: 11px;
+  --box-shadow: none;
+  height: 49px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.error-state ion-button {
+  --color: #2d8038;
+  --border-color: #2d8038;
+  --border-style: solid;
+  --border-width: 2px;
+  --border-radius: 11px;
+  --background-activated: #e2f4e9;
+  --box-shadow: none;
+  text-transform: none;
+  font-weight: 700;
+}
+
+@media (max-width: 365px) {
+  .report-filter-toolbar .refresh-button {
+    flex-basis: 45px;
+    width: 45px;
+    height: 49px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .my-reports-overview-header .filter-container button { transition: none; }
+}
+
+
+/* =============================================================
+ * MY REPORTS — COMPACT PREVIEWS + SEPARATE FULL DETAILS
+ * Keeps old gallery/map styles scoped to the expanded detail card.
+ * ============================================================= */
+.report-preview-card {
+  box-sizing: border-box;
+  padding: 12px;
+  margin: 0 0 12px;
+  background: #fff;
+  border: 1px solid #dfeae2;
+  border-radius: 17px;
+  box-shadow: 0 3px 12px rgba(21, 65, 36, 0.04);
+}
+
+.report-preview-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.report-preview-photo {
+  position: relative;
+  width: 108px;
+  height: 122px;
+  flex: 0 0 108px;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #eaf4ed;
+  border: 1px solid #e0eae3;
+  border-radius: 12px;
+  color: #368454;
+}
+.report-preview-photo > ion-icon { font-size: 27px; }
+.report-preview-photo-blur,
+.report-preview-photo-full {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.report-preview-photo-blur {
+  object-fit: cover;
+  filter: blur(14px) brightness(.9);
+  transform: scale(1.15);
+}
+.report-preview-photo-full { object-fit: contain; }
+.report-preview-body { flex: 1 1 0; min-width: 0; }
+.report-preview-badges { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; margin: 1px 0 7px; }
+.report-preview-badges .report-badge,
+.report-preview-badges .status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  margin: 0;
+  padding: 4px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 30px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.report-preview-body h3 {
+  margin: 0 0 3px;
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: #193b2b;
+  overflow-wrap: anywhere;
+}
+.report-preview-species { margin: 0 0 5px; font-size: 11px; color: #78877c; }
+.report-preview-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin: 0 0 6px;
+  color: #657669;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.report-preview-date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: #708477;
+  font-size: 10.5px;
+}
+.report-preview-date ion-icon { color: #2d8038; font-size: 14px; flex-shrink: 0; }
+.report-preview-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 12px;
+  margin: 10px 0 0;
+  background: #fff;
+  border: 1.5px solid #2d8038;
+  border-radius: 11px;
+  color: #2d8038;
+  font-size: 12px;
+  font-weight: 750;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.report-preview-action ion-icon { font-size: 15px; }
+.report-preview-action:active { background: #e7f5ea; }
+.report-preview-action:focus-visible { outline: 2px solid #2d8038; outline-offset: 2px; }
+
+/* Full-screen detail panel. Existing photo and map viewers stay above it. */
+.report-details-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  box-sizing: border-box;
+  background: #f5f9f6;
+  display: flex;
+  flex-direction: column;
+}
+.report-details-sheet {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+}
+.report-details-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: calc(16px + max(24px, env(safe-area-inset-top, 0px))) 16px 15px;
+  background: #f5f9f6;
+  border-bottom: 1px solid #e1ebe4;
+}
+.report-details-back {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: 1px solid #dce7df;
+  border-radius: 12px;
+  color: #2d8038;
+  background: #fff;
+  cursor: pointer;
+}
+.report-details-back ion-icon { font-size: 23px; }
+.report-details-title { min-width: 0; }
+.report-details-title h2 {
+  margin: 0 0 2px;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #193b2b;
+}
+.report-details-title p { margin: 0; color: #7b8a7e; font-size: 12px; }
+.report-details-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 16px calc(32px + max(16px, env(safe-area-inset-bottom, 0px)));
+}
+.report-details-overlay .report-expanded-card {
+  margin: 0;
+  padding: 14px;
+  border-radius: 17px;
+}
+.report-details-overlay .report-expanded-card .pet-photo-gallery .pet-photo-view-button {
+  height: clamp(225px, 76vw, 365px);
+}
+.report-details-overlay .report-expanded-card .report-details { margin-top: 12px; }
+.report-details-overlay .report-expanded-card .view-location-button,
+.report-details-overlay .report-expanded-card > .report-edit-only { min-height: 44px; }
+.report-details-overlay .report-expanded-card > .report-edit-only { margin-top: 12px; }
+
+@media (max-width: 370px) {
+  .report-preview-card { padding: 10px; }
+  .report-preview-main { gap: 9px; }
+  .report-preview-photo { width: 92px; height: 112px; flex-basis: 92px; }
+  .report-preview-badges { gap: 4px; }
+  .report-preview-badges .report-badge,
+  .report-preview-badges .status-badge { font-size: 9px; padding: 4px 6px; }
+  .report-preview-body h3 { font-size: 15.5px; }
+  .report-preview-action { min-height: 37px; }
+}
+
+
+/* =============================================================
+ * MY REPORTS — DUAL DROPDOWN FILTERS + IMPROVED PREVIEW CARDS
+ * Only affects the list and its filter controls; detail modals unchanged.
+ * ============================================================= */
+.my-reports-overview-header .report-filter-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  width: 100%;
+}
+.my-reports-overview-header .report-filter-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.my-reports-overview-header .report-filter-field > label {
+  color: #526a5b;
+  font-size: 12px;
+  font-weight: 700;
+}
+.my-reports-overview-header .report-filter-select-wrap {
+  position: relative;
+  min-width: 0;
+}
+.my-reports-overview-header .report-filter-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 15px;
+  top: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #2d8038;
+  border-bottom: 2px solid #2d8038;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.my-reports-overview-header .report-filter-select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 32px 0 12px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 11px;
+  background: #fff;
+  color: #245a36;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+/* Same 1.5px border and single 3px translucent halo used by Lost & Found. */
+.my-reports-overview-header .report-filter-select:focus,
+.my-reports-overview-header .report-filter-select:focus-visible {
+  border-color: #2d8038;
+  outline: none;
+  outline-offset: 0;
+  box-shadow: 0 0 0 3px rgba(45, 128, 56, .12);
+}
+.my-reports-overview-header .report-filter-select:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Compact, readable pet preview: primary info first, details as metadata. */
+.report-preview-card {
+  padding: 13px;
+  margin-bottom: 12px;
+  border: 1px solid #dde9e0;
+  border-radius: 16px;
+}
+.report-preview-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.report-preview-photo {
+  width: 102px;
+  height: 136px;
+  flex: 0 0 102px;
+  border-radius: 12px;
+}
+.report-preview-body { min-width: 0; flex: 1 1 0; }
+.report-preview-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+.report-preview-heading h3 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.28;
+  color: #193b2b;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.report-preview-heading .status-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  max-width: 96px;
+  min-height: 23px;
+  padding: 4px 7px;
+  margin: 0;
+  border-radius: 30px;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 700;
+  text-align: center;
+  white-space: normal;
+}
+.report-preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 7px;
+}
+.report-preview-kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 25px;
+  background: #e5f5e9;
+  color: #237646;
+  font-size: 10.5px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+.report-preview-kind.lost {
+  background: #fff0e4;
+  color: #a35f24;
+}
+.report-preview-species {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #637a6b;
+  font-weight: 600;
+}
+.report-preview-species ion-icon { font-size: 12px; color: #4c8b61; }
+.report-preview-description {
+  margin: 0 0 7px;
+  color: #56695c;
+  font-size: 11.5px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.report-preview-metadata { display: grid; gap: 4px; }
+.report-preview-location,
+.report-preview-date {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 5px;
+  margin: 0;
+  color: #718376;
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+.report-preview-location ion-icon,
+.report-preview-date ion-icon {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: #2d8038;
+}
+.report-preview-location span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.report-preview-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid #edf2ee;
+}
+.report-preview-reference {
+  color: #849387;
+  font-size: 10.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.report-preview-bottom .report-preview-action {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  padding: 8px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+@media (max-width: 370px) {
+  .my-reports-overview-header .report-filter-pair { gap: 8px; }
+  .my-reports-overview-header .report-filter-select { font-size: 12px; padding-left: 10px; }
+  .report-preview-card { padding: 10px; }
+  .report-preview-main { gap: 9px; }
+  .report-preview-photo { width: 86px; height: 118px; flex-basis: 86px; }
+  .report-preview-heading { flex-wrap: wrap; gap: 4px; }
+  .report-preview-heading .status-badge { max-width: none; }
+  .report-preview-heading h3 { font-size: 15px; }
+  .report-preview-bottom .report-preview-action { min-height: 38px; }
+}
+
+
+/* =============================================================
+   MY REPORTS — REFRESH BUTTON ALIGNED WITH PAGE HEADING
+   Status dropdown now occupies the filter row without a button.
+   ============================================================= */
+.page-header .refresh-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  min-width: 43px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 1px solid #dcece1;
+  border-radius: 12px;
+  background: #e2f4e9;
+  color: #268554;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.page-header .refresh-button ion-icon {
+  font-size: 21px;
+}
+.page-header .refresh-button:active:not(:disabled) {
+  background: #d5eddd;
+}
+.page-header .refresh-button:focus-visible {
+  outline: 2px solid #268554;
+  outline-offset: 2px;
+}
+.page-header .refresh-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
 }

@@ -1,0 +1,1253 @@
+/* ============================================================
+   PAWRESCUE COMMUNITY — MY RECOVERIES
+   Step 66: Clean, mobile-first green / white theme
+   Companion: my-recoveries.page.html (Step 65)
+   ============================================================ */
+
+:host {
+  display: block;
+  --recovery-green: #287f50;
+  --recovery-green-dark: #20683f;
+  --recovery-green-pale: #eaf6ee;
+  --recovery-text: #243a2d;
+  --recovery-muted: #718176;
+  --recovery-border: #e1eae4;
+  --recovery-background: #f6f9f7;
+}
+
+ion-content {
+  --background: var(--recovery-background);
+  --color: var(--recovery-text);
+}
+
+.recoveries-page {
+  width: min(100%, 720px);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 24px 18px calc(80px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+/* Header */
+.recoveries-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 24px;
+}
+
+.recoveries-header-title {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  h1 {
+    margin: 0 0 5px;
+    color: var(--recovery-text);
+    font-size: 23px;
+    font-weight: 750;
+    letter-spacing: -0.45px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--recovery-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+.recoveries-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  padding: 0;
+  border: 1px solid var(--recovery-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--recovery-green);
+  cursor: pointer;
+
+  ion-icon { font-size: 21px; }
+  &:active { background: var(--recovery-green-pale); }
+}
+
+/* Sent / Received tabs */
+.recoveries-tabs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 9px;
+  padding: 5px;
+  margin-bottom: 26px;
+  border: 1px solid var(--recovery-border);
+  border-radius: 15px;
+  background: #edf3ef;
+}
+
+.recoveries-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 47px;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: #64796b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease;
+
+  > span:not(.recoveries-tab-count) { min-width: 0; }
+  ion-icon { font-size: 18px; flex: 0 0 auto; }
+
+  &.is-active {
+    border-color: #dce7df;
+    background: #fff;
+    color: var(--recovery-green-dark);
+    box-shadow: 0 2px 7px rgba(22, 69, 37, .06);
+  }
+}
+
+.recoveries-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 30px;
+  background: #dfeae3;
+  color: #52715c;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.recoveries-tab.is-active .recoveries-tab-count {
+  background: var(--recovery-green-pale);
+  color: var(--recovery-green);
+}
+
+/* List and cards */
+.recoveries-section { min-width: 0; }
+
+.recoveries-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+
+  h2 {
+    margin: 0 0 4px;
+    color: var(--recovery-text);
+    font-size: 17px;
+    font-weight: 720;
+  }
+
+  p {
+    margin: 0;
+    color: var(--recovery-muted);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+}
+
+.recoveries-attention {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: 20px;
+  background: #fff2db;
+  color: #95610e;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.recoveries-loading,
+.recoveries-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 170px;
+  padding: 24px 18px;
+  border: 1px dashed #d3e1d6;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--recovery-muted);
+  text-align: center;
+
+  ion-icon { font-size: 38px; color: #91bca0; }
+  ion-spinner { width: 26px; height: 26px; color: var(--recovery-green); }
+
+  h3 { margin: 0; color: var(--recovery-text); font-size: 15px; }
+  p { margin: 0; font-size: 12px; line-height: 1.6; }
+}
+
+.recoveries-loading--compact {
+  flex-direction: row;
+  min-height: 0;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  ion-spinner { width: 18px; height: 18px; }
+}
+
+.recoveries-card-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 13px;
+}
+
+.recoveries-card {
+  min-width: 0;
+  padding: 17px 18px 15px;
+  border: 1px solid var(--recovery-border);
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 3px 13px rgba(26, 63, 37, .035);
+
+  h3 {
+    margin: 0 0 5px;
+    color: var(--recovery-text);
+    font-size: 17px;
+    font-weight: 720;
+    overflow-wrap: anywhere;
+  }
+}
+
+.recoveries-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.recoveries-card-category {
+  color: #698471;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.recoveries-card-meta {
+  margin: 0 0 12px;
+  color: var(--recovery-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.recoveries-card-next,
+.recoveries-next-step {
+  margin: 0 0 13px;
+  padding: 11px 12px;
+  border-left: 3px solid #87b998;
+  border-radius: 0 9px 9px 0;
+  background: #f2f8f4;
+  color: #476653;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.recoveries-card-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 14px;
+  border: 1px solid #c8e4d1;
+  border-radius: 11px;
+  background: var(--recovery-green-pale);
+  color: var(--recovery-green-dark);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+
+  ion-icon { font-size: 17px; }
+  &:active { background: #dceee2; }
+}
+
+/* Every status is a plain, readable label. */
+.recoveries-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #e1e8e3;
+  border-radius: 99px;
+  background: #f0f3f1;
+  color: #5d7163;
+  font-size: 10px;
+  font-weight: 720;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+
+  &[data-status='pending'] {
+    border-color: #f4dfb8;
+    background: #fff5e3;
+    color: #926514;
+  }
+
+  &[data-status='approved'],
+  &[data-status='pickup_scheduled'] {
+    border-color: #c5e5d0;
+    background: #eaf7ee;
+    color: #236e45;
+  }
+
+  &[data-status='reschedule_requested'] {
+    border-color: #d4e0f5;
+    background: #eef4ff;
+    color: #3c659a;
+  }
+
+  &[data-status='completed'] {
+    border-color: #b7dfc2;
+    background: #e1f4e7;
+    color: #1d7745;
+  }
+
+  &[data-status='rejected'],
+  &[data-status='disputed'] {
+    border-color: #f3cfd0;
+    background: #fff0f0;
+    color: #ab4849;
+  }
+
+  &[data-status='cancelled'] {
+    border-color: #e2e6e3;
+    background: #f1f3f2;
+    color: #67746c;
+  }
+}
+
+.recoveries-load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-width: 165px;
+    min-height: 42px;
+    padding: 10px 18px;
+    border: 1px solid var(--recovery-border);
+    border-radius: 11px;
+    background: #fff;
+    color: var(--recovery-green);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+
+    ion-spinner { width: 15px; height: 15px; }
+  }
+}
+
+/* Private details dialog */
+.recoveries-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
+  background: rgba(15, 35, 23, .65);
+  backdrop-filter: blur(3px);
+}
+
+.recoveries-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: min(90dvh, 790px);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #e3ece5;
+  border-radius: 19px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(8, 35, 17, .24);
+}
+
+.recoveries-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex: 0 0 auto;
+  padding: 19px 21px 15px;
+  border-bottom: 1px solid var(--recovery-border);
+}
+
+.recoveries-dialog-heading {
+  min-width: 0;
+  p { margin: 0 0 5px; color: #7a8c7e; font-size: 11px; font-weight: 650; }
+  h2 { margin: 0; color: var(--recovery-text); font-size: 19px; font-weight: 750; overflow-wrap: anywhere; }
+}
+
+.recoveries-dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: #eef4ef;
+  color: var(--recovery-green-dark);
+  cursor: pointer;
+  ion-icon { font-size: 21px; }
+}
+
+.recoveries-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 19px 21px 23px;
+
+  > .recoveries-status { margin-bottom: 12px; }
+}
+
+.recoveries-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  padding: 12px 21px 15px;
+  border-top: 1px solid var(--recovery-border);
+  background: #fff;
+}
+
+.recoveries-next-step { margin-top: 2px; margin-bottom: 16px; }
+
+.recoveries-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 22px;
+
+  > div {
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid #e8efe9;
+    border-radius: 11px;
+    background: #fafcfb;
+  }
+
+  span, strong { display: block; overflow-wrap: anywhere; }
+  span { margin-bottom: 5px; color: #829086; font-size: 10px; }
+  strong { color: var(--recovery-text); font-size: 12px; font-weight: 680; line-height: 1.45; }
+}
+
+.recoveries-dialog-section {
+  min-width: 0;
+  margin: 0 0 19px;
+  padding-top: 17px;
+  border-top: 1px solid #edf0ed;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 10px;
+    color: var(--recovery-text);
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.45;
+    ion-icon { flex: 0 0 auto; font-size: 18px; color: var(--recovery-green); }
+  }
+}
+
+.recoveries-section-inline-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+  h3 { margin: 0; }
+}
+
+.recoveries-muted {
+  margin: 7px 0 11px;
+  color: var(--recovery-muted);
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.recoveries-prewrap {
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid #e8eee8;
+  border-radius: 10px;
+  background: #f8fbf9;
+  color: #495e50;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.recoveries-detail-lines {
+  margin: 12px 0;
+  p { margin: 0 0 7px; color: #526658; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+  strong { color: #304e3b; }
+}
+
+.recoveries-text-button {
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--recovery-green);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.recoveries-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  margin-top: 13px;
+
+  figure {
+    min-width: 0;
+    margin: 0;
+    padding: 9px;
+    border: 1px solid var(--recovery-border);
+    border-radius: 12px;
+    background: #f9fbfa;
+    overflow: hidden;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 190px;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px;
+    background: #eef3ef;
+    user-select: none;
+  }
+
+  figcaption {
+    padding: 9px 2px 2px;
+    color: #718277;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+.recoveries-pickup-box {
+  padding: 13px 14px;
+  border: 1px solid #dcebe1;
+  border-radius: 12px;
+  background: #f3faf5;
+
+  p { margin: 0 0 8px; color: #4f6657; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
+  p:last-child { margin-bottom: 0; }
+  strong { color: #2a5038; font-weight: 700; }
+}
+
+.recoveries-confirmed {
+  color: #287f50 !important;
+  ion-icon { vertical-align: -2px; margin-right: 4px; }
+}
+
+.recoveries-notice {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+  padding: 12px 13px;
+  border: 1px solid #e2e8e3;
+  border-radius: 10px;
+  background: #f5f7f5;
+  color: #617165;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  &--success { border-color: #cae6d1; background: #edf8f0; color: #276a44; }
+  &--error { border-color: #f1cece; background: #fff2f2; color: #a54243; }
+  ion-icon { flex: 0 0 auto; margin-top: 1px; font-size: 17px; }
+
+  button {
+    padding: 3px 8px;
+    border: 1px solid currentColor;
+    border-radius: 7px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+}
+
+.recoveries-working {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  border-radius: 10px;
+  background: #f4f8f5;
+  color: #64816c;
+  font-size: 12px;
+  ion-spinner { width: 17px; height: 17px; color: var(--recovery-green); }
+}
+
+/* Forms / actions */
+.recoveries-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #dfeae3;
+  border-radius: 13px;
+  background: #fafcfb;
+  h3, .recoveries-muted { margin-bottom: 0; }
+}
+
+.recoveries-field {
+  display: block;
+  min-width: 0;
+  flex: 1 1 100%;
+
+  > span {
+    display: block;
+    margin: 0 0 7px;
+    color: #3c5445;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  em { color: #bd5c52; font-style: normal; }
+
+  input, textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 11px 12px;
+    box-sizing: border-box;
+    border: 1px solid #d3e1d7;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--recovery-text);
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+
+    &:focus { border-color: #6caf82; box-shadow: 0 0 0 3px rgba(40, 127, 80, .12); }
+    &::placeholder { color: #99a69c; }
+  }
+
+  textarea { min-height: 80px; resize: vertical; }
+}
+
+.recoveries-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.recoveries-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 12px;
+  > .recoveries-button { flex: 1 1 140px; }
+}
+
+.recoveries-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 11px 15px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--recovery-green-dark);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.4;
+  text-align: center;
+  cursor: pointer;
+
+  ion-icon { flex: 0 0 auto; font-size: 18px; }
+  ion-spinner { width: 16px; height: 16px; }
+
+  &--full { display: flex; width: 100%; }
+  &--primary { border-color: var(--recovery-green); background: var(--recovery-green); color: #fff; }
+  &--outline { border-color: #c8dcd0; background: #fff; color: var(--recovery-green-dark); }
+  &--subtle { border-color: #dcece1; background: var(--recovery-green-pale); color: var(--recovery-green-dark); }
+  &--danger { border-color: #bb5050; background: #b94747; color: #fff; }
+}
+
+.recoveries-handover {
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid #cce4d2;
+  border-radius: 13px;
+  background: #f4faf6;
+  h3 { color: #2b6240; }
+}
+
+.recoveries-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin: 15px 0;
+  color: #40594a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.65;
+  cursor: pointer;
+
+  input {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--recovery-green);
+  }
+}
+
+.recoveries-confirmation-list {
+  padding: 9px 12px;
+  border: 1px solid var(--recovery-border);
+  border-radius: 12px;
+  background: #fafcfb;
+  p {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 8px 0;
+    color: #6b7e70;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  p.is-confirmed { color: var(--recovery-green); font-weight: 700; }
+  ion-icon { font-size: 17px; }
+}
+
+/* Accessible focus and disabled states */
+.recoveries-icon-button:focus-visible,
+.recoveries-tab:focus-visible,
+.recoveries-card-button:focus-visible,
+.recoveries-load-more button:focus-visible,
+.recoveries-dialog-close:focus-visible,
+.recoveries-text-button:focus-visible,
+.recoveries-button:focus-visible,
+.recoveries-notice button:focus-visible {
+  outline: 3px solid #75b78a;
+  outline-offset: 3px;
+}
+
+.recoveries-page button:disabled,
+.recoveries-dialog button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* Tablet and desktop */
+@media (min-width: 800px) {
+  .recoveries-page { padding-top: 32px; }
+  .recoveries-card-list { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+  .recoveries-card { display: flex; flex-direction: column; }
+  .recoveries-card-button { margin-top: auto; }
+}
+
+/* Narrow mobile devices */
+@media (max-width: 520px) {
+  .recoveries-page {
+    padding: 18px 14px calc(74px + env(safe-area-inset-bottom));
+  }
+
+  .recoveries-header { gap: 10px; margin-bottom: 20px; }
+  .recoveries-header-title h1 { font-size: 21px; }
+  .recoveries-tabs { gap: 5px; margin-bottom: 21px; }
+  .recoveries-tab { gap: 5px; padding: 9px 5px; font-size: 12px; }
+  .recoveries-tab ion-icon { font-size: 16px; }
+  .recoveries-card { padding: 15px; }
+
+  .recoveries-overlay {
+    padding: max(8px, env(safe-area-inset-top)) 9px max(8px, env(safe-area-inset-bottom));
+  }
+  .recoveries-dialog {
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius: 15px;
+  }
+  .recoveries-dialog-header { padding: 15px 15px 12px; }
+  .recoveries-dialog-heading h2 { font-size: 17px; }
+  .recoveries-dialog-body { padding: 15px; }
+  .recoveries-dialog-footer { padding: 10px 15px 13px; }
+  .recoveries-detail-grid { gap: 6px; }
+  .recoveries-detail-grid > div { padding: 9px; }
+  .recoveries-detail-grid strong { font-size: 11px; }
+  .recoveries-photo-grid img { height: 145px; }
+  .recoveries-form-grid { gap: 8px; }
+}
+
+@media (max-width: 350px) {
+  .recoveries-tab { font-size: 11px; }
+  .recoveries-tab ion-icon { display: none; }
+  .recoveries-tab-count { min-width: 19px; height: 19px; font-size: 10px; }
+  .recoveries-detail-grid { grid-template-columns: 1fr 1fr; }
+  .recoveries-form-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ================================================================
+   MY RECOVERIES — MATCH MY CLAIMS / REPORT A PET
+   Mobile spacing, readable card hierarchy, uncluttered details.
+   Visual changes only. All existing Angular handlers stay intact.
+   ================================================================ */
+:host {
+  --recovery-green: #2d8038;
+  --recovery-green-dark: #23692e;
+  --recovery-green-pale: #e5f4ea;
+  --recovery-text: #1f4230;
+  --recovery-muted: #748579;
+  --recovery-border: #dfeae2;
+  --recovery-background: #f5f9f6;
+}
+
+/* Same safe-area clearance as Report a Pet and My Claims. */
+.recoveries-page {
+  width: 100%;
+  max-width: 720px;
+  padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 16px
+    max(78px, env(safe-area-inset-bottom, 0px));
+}
+.recoveries-header {
+  gap: 13px;
+  margin: 0 0 24px;
+}
+.recoveries-header-title h1 {
+  font-size: 23px;
+  line-height: 1.25;
+  letter-spacing: -0.35px;
+}
+.recoveries-header-title p { color: #829087; }
+.recoveries-back-button,
+.recoveries-refresh-button {
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  border: none;
+  background: #e5f4ea;
+  color: #2d8038;
+}
+.recoveries-back-button { border-radius: 50%; }
+.recoveries-refresh-button { border: 1px solid #d9eae0; border-radius: 12px; }
+.recoveries-back-button ion-icon,
+.recoveries-refresh-button ion-icon { font-size: 23px; }
+
+.recoveries-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 0 0 23px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.recoveries-tab {
+  min-height: 49px;
+  gap: 7px;
+  padding: 10px 8px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 13px;
+  background: #fff;
+  color: #2d8038;
+  font-size: 12px;
+  font-weight: 750;
+  box-shadow: none;
+}
+.recoveries-tab.is-active {
+  border-color: #2d8038;
+  background: #2d8038;
+  color: #fff;
+  box-shadow: 0 3px 9px rgba(27, 93, 40, .12);
+}
+.recoveries-tab-count {
+  background: #eaf6ed;
+  color: #2d8038;
+  font-size: 10px;
+  font-weight: 800;
+}
+.recoveries-tab.is-active .recoveries-tab-count {
+  background: rgba(255,255,255,.22);
+  color: #fff;
+}
+.recoveries-section-heading { align-items: center; margin-bottom: 16px; }
+.recoveries-section-heading h2 { font-size: 19px; font-weight: 800; }
+.recoveries-attention { border: 1px solid #f0ddba; }
+
+.recoveries-card-list { gap: 12px; }
+.recoveries-card {
+  padding: 16px;
+  border: 1px solid #e0eae3;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 13px rgba(22, 59, 34, .035);
+}
+.recoveries-card-top { align-items: center; margin-bottom: 11px; }
+.recoveries-card-category { color: #628171; font-weight: 700; }
+.recoveries-card h3 { font-size: 17px; font-weight: 800; color: #214936; }
+.recoveries-card-meta { margin: 0 0 12px; }
+.recoveries-card-next {
+  margin: 0 0 13px;
+  padding: 11px 13px;
+  border: 1px solid #e0ebe3;
+  border-left: 3px solid #87b998;
+  border-radius: 11px;
+  background: #f4faf6;
+}
+.recoveries-card-next-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #2d8038;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .45px;
+}
+.recoveries-card-next p {
+  margin: 0;
+  color: #42634e;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.recoveries-card-button {
+  min-height: 45px;
+  border: 1.5px solid #2d8038;
+  background: #fff;
+  color: #2d8038;
+  font-weight: 750;
+}
+.recoveries-card-button.is-primary {
+  border-color: #2d8038;
+  background: #2d8038;
+  color: #fff;
+}
+.recoveries-card-button:not(.is-primary):active { background: #f0f9f2; }
+.recoveries-card-button.is-primary:active { background: #23692e; }
+.recoveries-load-more button { border-color: #bcdcc5; color: #2d8038; }
+
+/* View Details uses a clean, scrollable bottom sheet on phones. */
+.recoveries-overlay {
+  background: rgba(10, 34, 20, .59);
+  backdrop-filter: blur(3px);
+}
+.recoveries-dialog {
+  border-color: #e1ebe5;
+  background: #f9fbfa;
+}
+.recoveries-dialog-header {
+  align-items: center;
+  padding: 18px 20px 17px;
+  background: #fff;
+}
+.recoveries-dialog-heading p {
+  margin-bottom: 5px;
+  color: #6b8a73;
+  font-size: 11px;
+}
+.recoveries-dialog-heading h2 { font-size: 20px; line-height: 1.3; }
+.recoveries-dialog-close { flex: 0 0 39px; width: 39px; height: 39px; border-radius: 12px; }
+.recoveries-dialog-body { padding: 18px 18px 27px; background: #f9fbfa; }
+.recoveries-dialog-summary {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid #dcebe1;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(22,58,32,.025);
+}
+.recoveries-dialog-state-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.recoveries-dialog-state-caption { color: #87968b; font-size: 11px; font-weight: 600; }
+.recoveries-dialog-update-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #2d8038;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .7px;
+}
+.recoveries-dialog-summary .recoveries-next-step {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #365c43;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+.recoveries-overview-label {
+  margin: 0 4px 8px;
+  color: #32523a;
+  font-size: 12px;
+  font-weight: 800;
+}
+/* Metadata as readable rows instead of narrow 3-column tiles. */
+.recoveries-dialog-body .recoveries-detail-grid {
+  display: block;
+  margin: 0 0 14px;
+  padding: 4px 14px;
+  border: 1px solid #e2eae5;
+  border-radius: 14px;
+  background: #fff;
+}
+.recoveries-dialog-body .recoveries-detail-grid > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 39px;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid #eef2ef;
+  border-radius: 0;
+  background: transparent;
+}
+.recoveries-dialog-body .recoveries-detail-grid > div:last-child { border-bottom: 0; }
+.recoveries-dialog-body .recoveries-detail-grid span {
+  flex: 0 0 39%;
+  margin: 0;
+  color: #7b8b7e;
+  font-size: 11px;
+}
+.recoveries-dialog-body .recoveries-detail-grid strong {
+  min-width: 0;
+  color: #274b35;
+  font-size: 12px;
+  font-weight: 750;
+  text-align: right;
+  line-height: 1.45;
+}
+
+/* Expand static details as needed; no new TypeScript state. */
+.recoveries-disclosure {
+  overflow: hidden;
+  margin: 0 0 13px;
+  border: 1px solid #e0eae3;
+  border-radius: 14px;
+  background: #fff;
+}
+.recoveries-disclosure-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 62px;
+  padding: 14px 15px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.recoveries-disclosure-toggle::-webkit-details-marker { display: none; }
+.recoveries-disclosure-toggle::marker { content: ''; }
+.recoveries-disclosure-heading { display: flex; flex-direction: column; min-width: 0; gap: 4px; }
+.recoveries-disclosure-heading strong {
+  color: #214936;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.recoveries-disclosure-heading small { color: #839186; font-size: 11px; line-height: 1.45; }
+.recoveries-disclosure-chevron {
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  margin-right: 5px;
+  transform: rotate(45deg);
+  border-right: 2px solid #2d8038;
+  border-bottom: 2px solid #2d8038;
+  transition: transform .18s ease;
+}
+.recoveries-disclosure[open] .recoveries-disclosure-chevron { transform: translateY(3px) rotate(225deg); }
+.recoveries-disclosure[open] .recoveries-disclosure-toggle {
+  border-bottom: 1px solid #e9f0eb;
+  background: #f6fbf7;
+}
+.recoveries-disclosure-content { padding: 15px; }
+.recoveries-disclosure-content .recoveries-prewrap {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.recoveries-disclosure-content .recoveries-section-inline-heading { margin: 0 0 10px; }
+.recoveries-disclosure-content .recoveries-section-inline-heading h3 { font-size: 12px; }
+.recoveries-disclosure-content .recoveries-muted:last-child { margin-bottom: 0; }
+.recoveries-disclosure:focus-within { border-color: #bcdcc5; }
+.recoveries-disclosure-toggle:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgba(45,128,56,.32);
+}
+/* Active actions remain visible as their own separated sections. */
+.recoveries-dialog-body > .recoveries-dialog-section {
+  margin: 0 0 13px;
+  padding: 16px;
+  border: 1px solid #e1eae3;
+  border-radius: 14px;
+  background: #fff;
+}
+.recoveries-dialog-body > .recoveries-dialog-section h3 {
+  margin-bottom: 9px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.recoveries-dialog-section--pickup .recoveries-pickup-box,
+.recoveries-dialog-section--change .recoveries-pickup-box {
+  padding: 11px 13px;
+  border-color: #e2ede5;
+  background: #f8fbf9;
+}
+.recoveries-dialog-body .recoveries-pickup-box p {
+  margin: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid #e8f0eb;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.recoveries-dialog-body .recoveries-pickup-box p:first-child { padding-top: 0; }
+.recoveries-dialog-body .recoveries-pickup-box p:last-child { padding-bottom: 0; border-bottom: 0; }
+.recoveries-dialog-section--action {
+  border-color: #d4e8da !important;
+  background: #f6fbf7 !important;
+}
+.recoveries-dialog-body > .recoveries-handover {
+  background: #eefaef;
+  border-color: #bce0c7;
+}
+.recoveries-dialog-body > .recoveries-notice { margin: 9px 0 13px; }
+.recoveries-dialog-footer { padding: 12px 19px; background: #fff; }
+.recoveries-dialog-footer .recoveries-button { min-width: 105px; }
+.recoveries-button--primary { border-color: #2d8038; background: #2d8038; color: #fff; }
+.recoveries-button--outline { border-color: #bcdcc5; color: #2d8038; background: #fff; }
+.recoveries-button--subtle { border-color: #d3e9d9; background: #eaf6ed; color: #2d8038; }
+.recoveries-field input,
+.recoveries-field textarea { border: 1.5px solid #bcdcc5; border-radius: 11px; }
+.recoveries-field input:focus,
+.recoveries-field textarea:focus {
+  border-color: #2d8038;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45,128,56,.12);
+}
+@media (max-width: 520px) {
+  .recoveries-page {
+    padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 14px
+      max(72px, env(safe-area-inset-bottom, 0px));
+  }
+  .recoveries-header { gap: 10px; margin-bottom: 20px; }
+  .recoveries-header-title h1 { font-size: 21px; }
+  .recoveries-tabs { gap: 8px; margin-bottom: 21px; }
+  .recoveries-tab { gap: 5px; padding: 9px 5px; font-size: 11px; }
+  .recoveries-overlay {
+    align-items: flex-end;
+    padding: max(54px, env(safe-area-inset-top, 0px)) 0 0;
+  }
+  .recoveries-dialog {
+    width: 100%;
+    max-height: 100%;
+    border-radius: 21px 21px 0 0;
+    border-bottom: 0;
+  }
+  .recoveries-dialog-header { padding: 17px 17px 14px; }
+  .recoveries-dialog-body { padding: 14px 13px 22px; }
+  .recoveries-dialog-summary { padding: 14px; }
+  .recoveries-dialog-body > .recoveries-dialog-section { padding: 14px; }
+  .recoveries-dialog-body .recoveries-detail-grid { padding: 4px 12px; }
+  .recoveries-photo-grid { gap: 8px; }
+  .recoveries-photo-grid img { height: 125px; }
+  .recoveries-dialog-body .recoveries-inline-actions { flex-direction: column; }
+  .recoveries-dialog-body .recoveries-inline-actions > .recoveries-button {
+    width: 100%;
+    flex: 0 0 auto;
+    min-height: 46px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .recoveries-disclosure-chevron { transition: none; }
+}
+
+/* Count shown beside the active section heading, not inside the tabs. */
+.recoveries-heading-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 4px;
+}
+.recoveries-heading-title-row h2 {
+  margin: 0;
+}
+.recoveries-heading-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 27px;
+  height: 27px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #e7f4e9;
+  color: #2d8038;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}

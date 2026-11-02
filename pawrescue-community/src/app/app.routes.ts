@@ -25,6 +25,19 @@ export const routes: Routes = [
     canActivate: [residentGuard],
   },
 
+  // =====================================
+  // RESIDENT ACTIVITY NOTIFICATIONS
+  // =====================================
+  {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./pages/notifications/notifications.page').then((m) => m.NotificationsPage),
+    canActivate: [residentGuard],
+  },
+
+  // =====================================
+  // LOST AND FOUND PETS
+  // =====================================
   {
     path: 'lost-found',
     loadComponent: () => import('./pages/lost-found/lost-found.page').then((m) => m.LostFoundPage),
@@ -44,11 +57,25 @@ export const routes: Routes = [
   },
 
   // =====================================
-  // EDIT EXISTING PET REPORT
+  // OWNERSHIP CLAIMS AND PET RECOVERIES
   // =====================================
   {
+    path: 'my-claims',
+    loadComponent: () => import('./pages/my-claims/my-claims.page').then((m) => m.MyClaimsPage),
+    canActivate: [residentGuard],
+  },
+
+  {
+    path: 'my-recoveries',
+    loadComponent: () =>
+      import('./pages/my-recoveries/my-recoveries.page').then((m) => m.MyRecoveriesPage),
+    canActivate: [residentGuard],
+  },
+
+  {
     path: 'edit-report/:id',
-    loadComponent: () => import('./pages/edit-report/edit-report.page').then((m) => m.EditReportPage),
+    loadComponent: () =>
+      import('./pages/edit-report/edit-report.page').then((m) => m.EditReportPage),
     canActivate: [residentGuard],
   },
 
@@ -57,28 +84,18 @@ export const routes: Routes = [
   // =====================================
   {
     path: 'stray-assistance',
-    loadComponent: () => import('./pages/stray-assistance/stray-assistance.page').then((m) => m.StrayAssistancePage),
+    loadComponent: () =>
+      import('./pages/stray-assistance/stray-assistance.page').then((m) => m.StrayAssistancePage),
     canActivate: [residentGuard],
   },
 
-  // =====================================
-  // REPORT STRAY ANIMAL
-  // =====================================
   {
     path: 'report-stray',
-    loadComponent: () => import('./pages/report-stray/report-stray.page').then((m) => m.ReportStrayPage),
+    loadComponent: () =>
+      import('./pages/report-stray/report-stray.page').then((m) => m.ReportStrayPage),
     canActivate: [residentGuard],
   },
 
-  // MY STRAY REPORTS
-  {
-    path: 'my-stray-reports',
-    loadComponent: () => import('./pages/my-stray-reports/my-stray-reports.page').then((m) => m.MyStrayReportsPage),
-    canActivate: [residentGuard],
-  },
-  // =====================================
-  // STRAY ANIMAL REPORT DETAILS
-  // =====================================
   {
     path: 'stray-report-details/:id',
     loadComponent: () =>
@@ -86,53 +103,53 @@ export const routes: Routes = [
     canActivate: [residentGuard],
   },
 
+  // Add the 'my-stray-reports' route once the teammate's
+  // my-stray-reports page has been added to this local project.
+
   // =====================================
   // PET ADOPTION COMMUNITY
   // =====================================
   {
     path: 'pet-adoption',
-    loadComponent: () => import('./pages/pet-adoption/pet-adoption.page').then((m) => m.PetAdoptionPage),
+    loadComponent: () =>
+      import('./pages/pet-adoption/pet-adoption.page').then((m) => m.PetAdoptionPage),
     canActivate: [residentGuard],
   },
 
   {
     path: 'post-adoption',
-    loadComponent: () => import('./pages/post-adoption/post-adoption.page').then((m) => m.PostAdoptionPage),
+    loadComponent: () =>
+      import('./pages/post-adoption/post-adoption.page').then((m) => m.PostAdoptionPage),
     canActivate: [residentGuard],
   },
 
   {
     path: 'my-adoptions',
-    loadComponent: () => import('./pages/my-adoptions/my-adoptions.page').then((m) => m.MyAdoptionsPage),
+    loadComponent: () =>
+      import('./pages/my-adoptions/my-adoptions.page').then((m) => m.MyAdoptionsPage),
     canActivate: [residentGuard],
   },
 
   {
     path: 'adoption-details/:id',
-    loadComponent: () => import('./pages/adoption-details/adoption-details.page').then((m) => m.AdoptionDetailsPage),
+    loadComponent: () =>
+      import('./pages/adoption-details/adoption-details.page').then((m) => m.AdoptionDetailsPage),
     canActivate: [residentGuard],
   },
 
-  // Keep this route at the very end
+  // =====================================
+  // MY ACCOUNT
+  // =====================================
+  {
+    path: 'my-account',
+    loadComponent: () =>
+      import('./pages/my-account/my-account.page').then((m) => m.MyAccountPage),
+    canActivate: [residentGuard],
+  },
+
+  // Keep the wildcard route at the very end.
   {
     path: '**',
     redirectTo: 'login',
-  },
-  {
-    path: 'my-stray-reports',
-    loadComponent: () => import('./pages/my-stray-reports/my-stray-reports.page').then((m) => m.MyStrayReportsPage),
-  },
-  {
-    path: 'stray-report-details',
-    loadComponent: () =>
-      import('./pages/stray-report-details/stray-report-details.page').then((m) => m.StrayReportDetailsPage),
-  },
-  {
-    path: 'stray-assistance',
-    loadComponent: () => import('./pages/stray-assistance/stray-assistance.page').then((m) => m.StrayAssistancePage),
-  },
-  {
-    path: 'report-stray',
-    loadComponent: () => import('./pages/report-stray/report-stray.page').then((m) => m.ReportStrayPage),
   },
 ];

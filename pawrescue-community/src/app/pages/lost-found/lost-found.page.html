@@ -1,194 +1,210 @@
 <ion-content [fullscreen]="true">
-
   <div class="page-container">
-
     <!-- PAGE HEADER -->
     <div class="page-header">
-
       <button
         type="button"
         class="back-button"
-        (click)="goBack()">
-
+        (click)="goBack()"
+        aria-label="Back to Home">
         <ion-icon name="arrow-back-outline"></ion-icon>
-
       </button>
-
       <div>
         <h1>Lost & Found Pets</h1>
         <p>Help reunite pets with their families</p>
       </div>
-
     </div>
+    <!-- PRIMARY NAVIGATION: REPORTING AND CLAIM TRACKING -->
+    <div class="lost-found-primary-actions" aria-label="Lost and found actions">
 
-    <!-- INTRODUCTION BANNER -->
-    <div class="info-banner">
+      <ion-button
+        expand="block"
+        class="report-button lost-found-report-action"
+        (click)="reportPet()"
+        aria-label="Report a lost or found pet">
+        <ion-icon name="add-outline" slot="start" aria-hidden="true"></ion-icon>
+        Report a Pet
+      </ion-button>
 
-      <div class="banner-icon">
-        <ion-icon name="paw-outline"></ion-icon>
-      </div>
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="lost-found-my-claims-action"
+        (click)="goToMyClaims()"
+        aria-label="Open my ownership claims">
+        <ion-icon name="shield-checkmark-outline" slot="start" aria-hidden="true"></ion-icon>
+        My Claims
+      </ion-button>
 
-      <div>
-        <h2>Every pet deserves to be home.</h2>
-
-        <p>
-          Browse missing and found pets in
-          your community.
-        </p>
-      </div>
-
+      <!-- My Claims and My Recoveries share the second row, below the full-width Report a Pet button. -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="lost-found-my-recoveries-action"
+        (click)="goToMyRecoveries()"
+        aria-label="Open my lost pet recoveries">
+        <ion-icon name="paw-outline" slot="start" aria-hidden="true"></ion-icon>
+        My Recoveries
+      </ion-button>
     </div>
-
-    <!-- REPORT A PET BUTTON -->
-    <ion-button
-      expand="block"
-      class="report-button"
-      (click)="reportPet()">
-
-      <ion-icon
-        name="add-outline"
-        slot="start">
-      </ion-icon>
-
-      Report a Lost or Found Pet
-
-    </ion-button>
-
-    <!-- REPORT FILTERS -->
-    <div class="filter-container">
-
-      <button
-        type="button"
-        [class.active]="selectedFilter === 'all'"
-        (click)="changeFilter('all')">
-
-        All Pets
-
-      </button>
-
-      <button
-        type="button"
-        [class.active]="selectedFilter === 'lost'"
-        (click)="changeFilter('lost')">
-
-        Lost
-
-      </button>
-
-      <button
-        type="button"
-        [class.active]="selectedFilter === 'found'"
-        (click)="changeFilter('found')">
-
-        Found
-
-      </button>
-
+    <!-- OWNERSHIP CLAIM SUBMISSION STATUS -->
+    <div
+      *ngIf="claimSuccessMessage"
+      class="ownership-claim-success"
+      role="status"
+      aria-live="polite"
+      style="display:flex; align-items:flex-start; gap:10px; margin:14px 0; padding:13px 15px; border:1px solid #b8ddc4; border-radius:12px; background:#edf8f0; color:#205d36; font-size:13px; line-height:1.5;">
+      <ion-icon name="checkmark-circle-outline" style="font-size:21px; flex-shrink:0;"></ion-icon>
+      <span>{{ claimSuccessMessage }}</span>
     </div>
-
+    <div
+      *ngIf="ownershipEligibilityError && selectedFilter !== 'lost'"
+      class="ownership-eligibility-error"
+      role="status"
+      style="margin:12px 0; padding:12px 14px; border-radius:10px; background:#fff5e9; color:#865626; font-size:12px; line-height:1.5;">
+      {{ ownershipEligibilityError }}
+    </div>
+    <!-- LOST PET RECOVERY SUBMISSION FEEDBACK -->
+    <div
+      *ngIf="recoverySuccessMessage"
+      class="lost-recovery-success"
+      role="status"
+      aria-live="polite"
+      style="display:flex; align-items:flex-start; gap:10px; margin:14px 0; padding:13px 15px; border:1px solid #b8ddc4; border-radius:12px; background:#edf8f0; color:#205d36; font-size:13px; line-height:1.5;">
+      <ion-icon name="checkmark-circle-outline" aria-hidden="true" style="font-size:21px; flex-shrink:0;"></ion-icon>
+      <span>{{ recoverySuccessMessage }}</span>
+    </div>
     <!-- SECTION HEADING -->
     <div class="section-header">
-
       <h3>Community Reports</h3>
-
       <button
         type="button"
         class="refresh-button"
         (click)="refreshReports()"
         [disabled]="loading || refreshing"
         aria-label="Refresh reports">
-
         <ion-icon name="refresh-outline"></ion-icon>
-
       </button>
-
     </div>
+    <!-- COMPACT FILTERS: REPORT TYPE FIRST ROW; GPS AND RADIUS SECOND ROW -->
+    <section class="lost-found-filters" aria-label="Filter community pet reports">
+      <div class="compact-filter-row">
+        <h4 class="compact-filter-title">Filter Reports</h4>
+        <div class="compact-filter-select-wrap">
+          <select
+            id="lf-report-type"
+            class="compact-filter-select"
+            [value]="selectedFilter"
+            (change)="onReportTypeChange($event)"
+            aria-label="Filter community reports by type">
+            <option value="all">All Pets</option>
+            <option value="lost">Lost Pets</option>
+            <option value="found">Found Pets</option>
+          </select>
+          <span class="compact-filter-chevron" aria-hidden="true"></span>
+        </div>
+      </div>
 
+      <!-- Keep Use My GPS and radius selection side by side on mobile. -->
+      <div class="compact-gps-row">
+        <button
+          type="button"
+          class="compact-nearby-button"
+          [class.active]="!!nearbyCenter"
+          [disabled]="nearbyLoading"
+          [attr.aria-pressed]="!!nearbyCenter"
+          (click)="useCurrentLocationFilter()"
+          aria-label="Filter reports near my current GPS location">
+          <ion-spinner *ngIf="nearbyLoading" name="dots" aria-hidden="true"></ion-spinner>
+          <ion-icon *ngIf="!nearbyLoading" name="location-outline" aria-hidden="true"></ion-icon>
+          {{ nearbyLoading ? 'Locating...' : nearbyCenter ? 'Update GPS' : 'Use My GPS' }}
+        </button>
+        <label class="compact-radius-group" for="lf-radius">
+          <span>Within</span>
+          <select
+            id="lf-radius"
+            class="compact-radius-select"
+            [value]="nearbyRadiusKm"
+            (change)="onNearbyRadiusChange($event)"
+            aria-label="Nearby search radius">
+            <option value="1">1 km</option>
+            <option value="3">3 km</option>
+            <option value="5">5 km</option>
+            <option value="10">10 km</option>
+            <option value="20">20 km</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="compact-gps-active" *ngIf="nearbyCenter" role="status">
+        <span>Within {{ nearbyRadiusKm }} km of your GPS location</span>
+        <button type="button" (click)="clearNearbyLocationFilter()" aria-label="Remove nearby GPS filter">Clear GPS</button>
+      </div>
+      <p class="nearby-error" *ngIf="nearbyError" role="alert">{{ nearbyError }}</p>
+      <p class="compact-filter-results" *ngIf="!loading && !errorMessage" aria-live="polite">
+        {{ filteredReports.length }} {{ filteredReports.length === 1 ? 'report' : 'reports' }} found
+      </p>
+    </section>
     <!-- REFRESH INDICATOR -->
     <div
       class="refresh-status"
       *ngIf="refreshing"
       role="status">
-
       <ion-spinner name="dots"></ion-spinner>
-
       <span>Updating reports...</span>
-
     </div>
-
     <!-- INITIAL LOADING -->
     <div
       class="loading-state"
       *ngIf="loading">
-
       <ion-spinner name="crescent"></ion-spinner>
-
       <p>Loading pet reports...</p>
-
     </div>
-
     <!-- ERROR STATE -->
     <div
       class="error-state"
       *ngIf="errorMessage"
       role="alert">
-
       <p>{{ errorMessage }}</p>
-
       <ion-button
         fill="outline"
         size="small"
         (click)="refreshReports()"
         [disabled]="loading || refreshing">
-
         Try Again
-
       </ion-button>
-
     </div>
-
     <!-- EMPTY STATE -->
     <div
       class="empty-state"
       *ngIf="
         !loading &&
         !errorMessage &&
-        reports.length === 0
+        filteredReports.length === 0
       ">
-
       <ion-icon name="paw-outline"></ion-icon>
-
       <h3>No reports found</h3>
-
       <p>
-        There are no pet reports available
-        in this category yet.
+        No matching reports. Try a wider GPS radius or a different report type.
       </p>
-
     </div>
-
     <!-- PET REPORTS -->
     <ng-container *ngIf="!loading">
-
       <div
         class="report-card"
         *ngFor="
-          let report of reports;
+          let report of filteredReports;
           trackBy: trackReport
         ">
-
         <!-- MULTIPLE PET PHOTOS: SWIPEABLE POST GALLERY -->
         <ng-container
           *ngIf="getCurrentPhotoUrl(report) as photoUrl">
-
           <div
             class="pet-photo-gallery"
             (touchstart)="onPhotoTouchStart($event, report)"
             (touchend)="onPhotoTouchEnd($event, report)">
-
             <!-- CURRENT PHOTO: TAP TO ENLARGE -->
             <div class="pet-photo">
-
               <button
                 type="button"
                 class="pet-photo-view-button"
@@ -198,20 +214,22 @@
                   ' photo ' + (getCurrentPhotoIndex(report) + 1) +
                   ' of ' + getReportPhotos(report).length +
                   ' in full screen'">
-
-                <img
+                <!-- Blurred background fills the frame; the foreground photo is never cropped. -->
+                <img class="pet-photo-backdrop"
+                  [src]="photoUrl"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy">
+                <img class="pet-photo-main-image"
                   [src]="photoUrl"
                   [alt]="(report.pet_name || 'Pet') +
                     ' photo ' + (getCurrentPhotoIndex(report) + 1)"
                   loading="lazy"
                   (error)="onPhotoLoadError(photoUrl)">
-
                 <span class="pet-photo-expand" aria-hidden="true">
                   <ion-icon name="expand-outline"></ion-icon>
                 </span>
-
               </button>
-
               <!-- PHOTO COUNTER -->
               <span
                 *ngIf="getReportPhotos(report).length > 1"
@@ -220,10 +238,8 @@
                 {{ getCurrentPhotoIndex(report) + 1 }} /
                 {{ getReportPhotos(report).length }}
               </span>
-
               <!-- PREVIOUS AND NEXT PHOTO -->
               <ng-container *ngIf="getReportPhotos(report).length > 1">
-
                 <button
                   type="button"
                   class="pet-photo-nav pet-photo-prev"
@@ -231,7 +247,6 @@
                   aria-label="Previous pet photo">
                   <ion-icon name="chevron-back-outline"></ion-icon>
                 </button>
-
                 <button
                   type="button"
                   class="pet-photo-nav pet-photo-next"
@@ -239,17 +254,13 @@
                   aria-label="Next pet photo">
                   <ion-icon name="chevron-forward-outline"></ion-icon>
                 </button>
-
               </ng-container>
-
             </div>
-
             <!-- PHOTO POSITION INDICATORS -->
             <div
               class="pet-photo-dots"
               *ngIf="getReportPhotos(report).length > 1"
               aria-label="Choose pet photo">
-
               <button
                 *ngFor="let photo of getReportPhotos(report); let i = index"
                 type="button"
@@ -259,100 +270,515 @@
                 [attr.aria-current]="getCurrentPhotoIndex(report) === i ? 'true' : null"
                 (click)="selectPhoto(report, i)">
               </button>
-
             </div>
-
           </div>
-
         </ng-container>
-
-
-        <!-- REPORT TYPE AND ANIMAL ICON -->
-        <div class="report-top">
-          <div class="animal-icon">
-            <ion-icon name="paw-outline"></ion-icon>
-          </div>
-
+        <!-- COMPACT PET HEADING: NAME AND REPORT TYPE ON ONE ROW -->
+        <div class="report-title-row">
+          <h3>{{ report.pet_name || 'Unnamed Pet' }}</h3>
           <span
             class="report-badge"
             [class.lost]="report.report_type === 'lost'"
             [class.found]="report.report_type === 'found'">
-            {{
-              report.report_type === 'lost'
-                ? 'Lost Pet'
-                : 'Found Pet'
-            }}
+            {{ report.report_type === 'lost' ? 'Lost Pet' : 'Found Pet' }}
           </span>
         </div>
-
-        <!-- PET NAME -->
-        <h3>
-          {{ report.pet_name || 'Unnamed Pet' }}
-        </h3>
-
         <!-- ANIMAL TYPE -->
         <p class="animal-type">
           {{ report.animal_type | titlecase }}
         </p>
-
         <!-- DESCRIPTION -->
         <p class="description">
           {{ report.description }}
         </p>
-
         <!-- REPORT DETAILS -->
         <div class="report-details">
-
           <!-- REPORTED LOCATION -->
           <div>
-
             <ion-icon name="location-outline"></ion-icon>
-
             <span>
               {{ report.location_address }}
             </span>
-
           </div>
-
           <!-- INCIDENT DATE -->
           <div>
-
             <ion-icon name="calendar-outline"></ion-icon>
-
             <span>
               {{ report.incident_date }}
             </span>
-
           </div>
-
         </div>
-
         <!-- VIEW LOCATION BUTTON -->
         <button
           *ngIf="hasLocation(report)"
           type="button"
           class="view-location-button"
           (click)="viewLocation(report)">
-
           <ion-icon name="map-outline"></ion-icon>
-
-          View Location on Map
-
+          View Location
         </button>
+        <!-- FOUND PET AVAILABILITY: NEVER EXPOSE PRIVATE CLAIMANT INFORMATION -->
+        <!-- Availability is read from Step 28 TS / Step 26 API, not inferred from the report status. -->
+        <ng-container *ngIf="report.report_type === 'found'">
+          <!-- Another claimant has been approved. Do not offer the claim action. -->
+          <!-- Compact reserved status: preserves the handover warning without a tall alert card. -->
+          <div
+            *ngIf="getFoundPetAvailabilityStatus(report) === 'reserved'"
+            class="ownership-availability-banner ownership-availability-reserved ownership-availability-compact"
+            role="status">
+            <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+            <div class="availability-compact-copy">
+              <strong>Reserved · Awaiting handover</strong>
+              <span>Claim approved. New ownership claims unavailable.</span>
+            </div>
+          </div>
 
+          <!-- A disputed claim temporarily prevents new submissions. -->
+          <div
+            *ngIf="getFoundPetAvailabilityStatus(report) === 'under_dispute'"
+            class="ownership-availability-banner ownership-availability-disputed"
+            role="status"
+            style="display:flex; flex-direction:column; gap:5px; margin:13px 0 0; padding:13px 15px; background:#fff1ee; border:1px solid #efc7bf; border-radius:12px; color:#943f36; line-height:1.5;">
+            <strong style="font-size:13px;">
+              {{ getFoundPetAvailabilityLabel(report) }}
+            </strong>
+            <span style="font-size:12px;">
+              This pet has an unresolved ownership claim. New claims are temporarily unavailable.
+            </span>
+          </div>
+
+          <!-- Defensive state if a returned pet still appears in the active report feed. -->
+          <div
+            *ngIf="getFoundPetAvailabilityStatus(report) === 'returned'"
+            class="ownership-availability-banner ownership-availability-returned"
+            role="status"
+            style="display:flex; flex-direction:column; gap:5px; margin:13px 0 0; padding:13px 15px; background:#eaf7ee; border:1px solid #c4e2ce; border-radius:12px; color:#236a43; line-height:1.5;">
+            <strong style="font-size:13px;">
+              {{ getFoundPetAvailabilityLabel(report) }}
+            </strong>
+            <span style="font-size:12px;">
+              The pet has been returned. This post is no longer accepting ownership claims.
+            </span>
+          </div>
+
+          <!-- Do not suggest a pet is available before the server check finishes. -->
+          <div
+            *ngIf="getFoundPetAvailabilityStatus(report) === 'checking'"
+            class="ownership-availability-banner ownership-availability-checking"
+            role="status"
+            style="display:flex; align-items:center; gap:9px; margin:13px 0 0; padding:12px 14px; background:#f3f7f4; border:1px solid #e0ebe3; border-radius:12px; color:#607667; font-size:12px; line-height:1.5;">
+            <ion-spinner name="dots" style="width:18px; height:18px; flex-shrink:0;"></ion-spinner>
+            Checking whether this Found Pet is available for ownership claims...
+          </div>
+
+          <!-- Fail closed: no Claim Ownership button when status cannot be verified. -->
+          <div
+            *ngIf="getFoundPetAvailabilityStatus(report) === 'unavailable' &&
+                   (report.status === 'pending' || report.status === 'under_review' || report.status === 'in_progress')"
+            class="ownership-availability-banner ownership-availability-unknown"
+            role="status"
+            style="display:flex; flex-direction:column; gap:5px; margin:13px 0 0; padding:13px 15px; background:#f3f7f4; border:1px solid #dce7df; border-radius:12px; color:#5a6f60; line-height:1.5;">
+            <strong style="font-size:13px;">Claim availability cannot be verified</strong>
+            <span style="font-size:12px;">
+              Ownership claims are temporarily disabled. Refresh the reports to check again.
+            </span>
+          </div>
+        </ng-container>
+
+        <!-- CLAIM OWNERSHIP: AVAILABLE ONLY FOR ANOTHER RESIDENT'S ACTIVE FOUND PET REPORT -->
+        <button
+          *ngIf="canClaimOwnership(report)"
+          type="button"
+          class="claim-ownership-button"
+          (click)="openOwnershipClaim(report)"
+          [disabled]="claimSubmitting || claimPhotoUploading"
+          [attr.aria-label]="'Claim ownership of ' + (report.pet_name || 'this found pet')"
+>
+          <ion-icon name="shield-checkmark-outline" aria-hidden="true" style="font-size:19px;"></ion-icon>
+          Claim Ownership
+        </button>
+        <button *ngIf="showSubmittedClaimStatus(report)" type="button"
+          class="claim-ownership-button" disabled aria-label="Ownership claim already submitted"
+          style="background:#e7eee9 !important; color:#486352 !important; border:1px solid #cbded1 !important; opacity:1 !important; cursor:not-allowed;">
+          <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+          Already Submitted
+        </button>
+        <!-- LOST PET: SUBMIT A PRIVATE FINDING TO THE PET OWNER -->
+        <!-- Only another resident may submit; PHP checks eligibility again. -->
+        <button
+          *ngIf="canReportFoundLostPet(report)"
+          type="button"
+          class="report-found-lost-pet-button"
+          (click)="openLostPetRecovery(report)"
+          [disabled]="recoverySubmitting || recoveryPhotoUploading"
+          [attr.aria-label]="'Report finding ' + (report.pet_name || 'this lost pet')"
+>
+          <ion-icon name="paw-outline" aria-hidden="true" style="font-size:19px;"></ion-icon>
+          I Found This Pet
+        </button>
+        <button *ngIf="showSubmittedRecoveryStatus(report)" type="button"
+          class="report-found-lost-pet-button" disabled aria-label="Finding report already submitted"
+          style="background:#e7eee9 !important; color:#486352 !important; border:1px solid #cbded1 !important; opacity:1 !important; cursor:not-allowed;">
+          <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+          Already Submitted
+        </button>
         <!-- REPORT FOOTER -->
         <div class="report-footer">
-
           <span>
             Reported by {{ report.reporter_name }}
           </span>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <!-- ================================================== -->
+  <!-- FOUND PET: PRIVATE OWNERSHIP CLAIM -->
+  <!-- ================================================== -->
+  <div
+    *ngIf="claimReport as foundPet"
+    class="ownership-claim-overlay lf-private-overlay"
+    role="presentation">
+    <section
+      class="ownership-claim-modal lf-private-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ownershipClaimTitle"
+      aria-describedby="ownershipClaimIntro">
 
+      <header class="ownership-claim-modal-header lf-private-header">
+        <div class="lf-private-header-copy">
+          <p class="lf-private-eyebrow">Found Pet · Ownership Request</p>
+          <h2 id="ownershipClaimTitle">Claim Ownership</h2>
+          <p id="ownershipClaimIntro">Send proof privately to the person who found this pet.</p>
+        </div>
+        <button
+          type="button"
+          class="ownership-claim-close lf-private-close"
+          (click)="closeOwnershipClaim()"
+          [disabled]="claimSubmitting || claimPhotoUploading"
+          aria-label="Close ownership claim form">
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </header>
+
+      <div class="ownership-claim-body lf-private-body">
+        <div class="ownership-claim-pet-summary lf-private-pet-summary">
+          <div class="lf-private-pet-symbol"><ion-icon name="paw-outline" aria-hidden="true"></ion-icon></div>
+          <div>
+            <strong>{{ foundPet.pet_name || 'Unnamed Pet' }} · {{ foundPet.animal_type | titlecase }}</strong>
+            <span>Found by {{ foundPet.reporter_name }}</span>
+          </div>
         </div>
 
+        <div *ngIf="claimErrorMessage" class="lf-private-notice lf-private-notice--error" role="alert">
+          {{ claimErrorMessage }}
+        </div>
+
+        <!-- Existing submission: preserve safe retry behavior and avoid duplicate claims. -->
+        <ng-container *ngIf="claimPhotoWarning; else newOwnershipClaimForm">
+          <div class="lf-private-notice lf-private-notice--warning" role="alert">
+            <strong>Your claim is saved.</strong>
+            <p>{{ claimPhotoWarning }}</p>
+            <p>Retry only remaining photos. Do not send another claim.</p>
+          </div>
+          <p *ngIf="claimPhotoUploadProgress" class="lf-private-upload-progress" role="status">{{ claimPhotoUploadProgress }}</p>
+          <ion-button
+            expand="block"
+            class="lf-private-submit"
+            (click)="retryOwnershipEvidenceUpload()"
+            [disabled]="claimPhotoUploading">
+            <ion-spinner *ngIf="claimPhotoUploading" name="crescent" slot="start"></ion-spinner>
+            <ion-icon *ngIf="!claimPhotoUploading" name="refresh-outline" slot="start"></ion-icon>
+            {{ claimPhotoUploading ? 'Uploading Photos...' : 'Retry Remaining Photos' }}
+          </ion-button>
+          <button type="button" class="lf-private-cancel"
+            (click)="closeOwnershipClaim()" [disabled]="claimPhotoUploading">Close</button>
+        </ng-container>
+
+        <ng-template #newOwnershipClaimForm>
+          <form (ngSubmit)="submitOwnershipClaim()" novalidate>
+            <div class="lf-private-field">
+              <label for="ownershipProofDescription">How do you know this is your pet? <span class="lf-required">*</span></label>
+              <textarea
+                id="ownershipProofDescription"
+                name="ownershipProofDescription"
+                [(ngModel)]="claimProofDescription"
+                rows="3"
+                minlength="10"
+                maxlength="3000"
+                required
+                [disabled]="claimSubmitting || claimPhotoUploading"
+                placeholder="Describe unique markings, habits, or details only the owner would know."></textarea>
+            </div>
+
+
+            <div class="lf-private-field">
+              <div class="lf-private-field-heading">
+                <label for="ownershipEvidencePhotos">Previous Pet Photos <span class="lf-private-optional-label">Optional</span></label>
+                <span *ngIf="claimEvidenceFiles.length > 0" class="lf-private-file-count">{{ claimEvidenceFiles.length }} / 5</span>
+              </div>
+              <label class="lf-private-upload-tile" for="ownershipEvidencePhotos">
+                <ion-icon name="images-outline" aria-hidden="true"></ion-icon>
+                <span>{{ claimEvidenceFiles.length > 0 ? 'Add More Photos' : 'Choose Pet Photos' }}</span>
+                <small>Older photos or proof · up to 5 images</small>
+                <input
+                  id="ownershipEvidencePhotos"
+                  name="ownershipEvidencePhotos"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  (change)="onOwnershipEvidenceSelected($event)"
+                  [disabled]="claimSubmitting || claimPhotoUploading || claimEvidenceFiles.length >= 5"
+                  aria-label="Choose previous pet photos for ownership evidence" />
+              </label>
+              <ul *ngIf="claimEvidenceFiles.length > 0" class="ownership-evidence-file-list lf-private-file-list">
+                <li *ngFor="let evidenceFile of claimEvidenceFiles; let i = index">
+                  <ion-icon name="images-outline" aria-hidden="true"></ion-icon>
+                  <span>{{ evidenceFile.name }}</span>
+                  <button type="button" (click)="removeOwnershipEvidencePhoto(i)"
+                    [disabled]="claimSubmitting || claimPhotoUploading"
+                    [attr.aria-label]="'Remove ' + evidenceFile.name">Remove</button>
+                </li>
+              </ul>
+            </div>
+
+            <p class="lf-private-privacy">
+              <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+              Your evidence is private. The finder must approve your claim before pickup.
+            </p>
+            <p *ngIf="claimPhotoUploadProgress" class="lf-private-upload-progress" role="status">{{ claimPhotoUploadProgress }}</p>
+            <ion-button
+              type="submit"
+              expand="block"
+              class="lf-private-submit"
+              [disabled]="claimSubmitting || claimPhotoUploading || claimProofDescription.trim().length < 10">
+              <ion-spinner *ngIf="claimSubmitting || claimPhotoUploading" name="crescent" slot="start"></ion-spinner>
+              <ion-icon *ngIf="!claimSubmitting && !claimPhotoUploading" name="shield-checkmark-outline" slot="start"></ion-icon>
+              {{ claimSubmitting ? 'Submitting Claim...' : claimPhotoUploading ? 'Uploading Evidence...' : 'Submit Ownership Claim' }}
+            </ion-button>
+            <button type="button" class="lf-private-cancel" (click)="closeOwnershipClaim()"
+              [disabled]="claimSubmitting || claimPhotoUploading">Cancel</button>
+          </form>
+        </ng-template>
       </div>
+    </section>
+  </div>
 
-    </ng-container>
+  <!-- ================================================== -->
+  <!-- LOST PET: PRIVATE FINDING SUBMISSION -->
+  <!-- ================================================== -->
+  <div
+    *ngIf="recoveryReport as lostPet"
+    class="lost-recovery-overlay lf-private-overlay"
+    role="presentation">
+    <section
+      class="lost-recovery-modal lf-private-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lostRecoveryTitle"
+      aria-describedby="lostRecoveryIntro">
+      <header class="lost-recovery-modal-header lf-private-header">
+        <div class="lf-private-header-copy">
+          <p class="lf-private-eyebrow">Lost Pet · Finding Report</p>
+          <h2 id="lostRecoveryTitle">I Found This Pet</h2>
+          <p id="lostRecoveryIntro">Tell the owner where and how you found their missing pet.</p>
+        </div>
+        <button
+          type="button"
+          class="lost-recovery-close lf-private-close"
+          (click)="closeLostPetRecovery()"
+          [disabled]="recoverySubmitting || recoveryPhotoUploading"
+          aria-label="Close finding report form">
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </header>
 
+      <div class="lost-recovery-body lf-private-body">
+        <div class="lf-private-pet-summary">
+          <div class="lf-private-pet-symbol"><ion-icon name="paw-outline" aria-hidden="true"></ion-icon></div>
+          <div>
+            <strong>{{ lostPet.pet_name || 'Unnamed Pet' }} · {{ lostPet.animal_type | titlecase }}</strong>
+            <span>Lost Pet report by {{ lostPet.reporter_name }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="recoveryErrorMessage" class="lf-private-notice lf-private-notice--error" role="alert">
+          {{ recoveryErrorMessage }}
+        </div>
+
+        <!-- Existing submission: avoid creating duplicates when photo uploads are uncertain. -->
+        <ng-container *ngIf="recoveryPhotoWarning; else newLostRecoveryForm">
+          <div class="lf-private-notice lf-private-notice--warning" role="alert">
+            <strong>Your finding report is saved.</strong>
+            <p>{{ recoveryPhotoWarning }}</p>
+            <p>Retry only remaining photos. Do not submit another finding.</p>
+          </div>
+          <p *ngIf="recoveryPhotoUploadProgress" class="lf-private-upload-progress" role="status">{{ recoveryPhotoUploadProgress }}</p>
+          <ion-button expand="block" class="lf-private-submit"
+            (click)="retryLostPetRecoveryEvidenceUpload()"
+            [disabled]="recoveryPhotoUploading || recoverySubmitting">
+            <ion-spinner *ngIf="recoveryPhotoUploading" name="crescent" slot="start"></ion-spinner>
+            <ion-icon *ngIf="!recoveryPhotoUploading" name="refresh-outline" slot="start"></ion-icon>
+            {{ recoveryPhotoUploading ? 'Uploading Photos...' : 'Retry Remaining Photos' }}
+          </ion-button>
+          <button type="button" class="lf-private-cancel" (click)="closeLostPetRecovery()"
+            [disabled]="recoveryPhotoUploading || recoverySubmitting">Close</button>
+        </ng-container>
+
+        <ng-template #newLostRecoveryForm>
+          <!-- The recovery record has already been confirmed by the API.
+               Photos are still uploading, so show a separate progress state
+               instead of leaving the original submit form spinning. -->
+          <ng-container *ngIf="recoveryPhotoUploading; else recoveryEntryForm">
+            <div
+              class="lf-private-notice"
+              role="status"
+              aria-live="polite"
+              style="padding:20px 16px; border-color:#c7e6d0; background:#f0faf3; text-align:center;">
+              <ion-icon
+                name="checkmark-circle-outline"
+                aria-hidden="true"
+                style="display:block; margin:0 auto 8px; color:#2d8038; font-size:43px;">
+              </ion-icon>
+              <strong style="display:block; font-size:17px; color:#214936;">
+                Finding report saved!
+              </strong>
+              <p style="margin:7px 0 5px; color:#476751; font-size:12px;">
+                Your finding is already saved in My Recoveries.
+              </p>
+              <div style="margin:15px 0 0; padding:12px; border:1px solid #d8e9dc; border-radius:11px; background:#fff;">
+                <ion-spinner name="crescent" style="display:block; margin:0 auto 9px; color:#2d8038;"></ion-spinner>
+                <p style="margin:0; color:#2d8038; font-size:13px; font-weight:700;">
+                  {{ recoveryPhotoUploadProgress || 'Preparing evidence photos...' }}
+                </p>
+                <p style="margin:7px 0 0; color:#718478; font-size:11px; line-height:1.5;">
+                  The finding is saved. Please keep this screen open until the photos finish uploading.
+                </p>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #recoveryEntryForm>
+          <form (ngSubmit)="submitLostPetRecovery()" novalidate>
+            <div class="lf-private-field">
+              <label for="recoveryFindingDescription">How did you find this pet? <span class="lf-required">*</span></label>
+              <textarea
+                id="recoveryFindingDescription"
+                name="recoveryFindingDescription"
+                [(ngModel)]="recoveryFindingDescription"
+                rows="3"
+                minlength="10"
+                maxlength="3000"
+                required
+                [disabled]="recoverySubmitting || recoveryPhotoUploading"
+                placeholder="Describe the pet, where you saw it, and its condition."></textarea>
+            </div>
+
+            <div class="lf-private-field">
+              <label for="recoveryFoundLocation">Where did you find it? <span class="lf-required">*</span></label>
+              <input
+                id="recoveryFoundLocation"
+                name="recoveryFoundLocation"
+                type="text"
+                [(ngModel)]="recoveryFoundLocation"
+                minlength="5"
+                maxlength="255"
+                required
+                autocomplete="off"
+                [disabled]="recoverySubmitting || recoveryPhotoUploading"
+                placeholder="Street, barangay, or nearby landmark" />
+            </div>
+
+            <details class="lf-private-optional">
+              <summary>Additional details <span>Optional</span></summary>
+              <div class="lf-private-optional-body">
+                <div class="lf-private-field">
+                  <label>GPS pin</label>
+                  <p style="margin:0 0 10px; color:#68806f; font-size:11px; line-height:1.5;">Use GPS only if you are still where you found the pet.</p>
+                  <button
+                    type="button"
+                    class="lf-private-gps"
+                    (click)="useCurrentLocationForRecovery()"
+                    [disabled]="recoveryLocationLoading || recoverySubmitting || recoveryPhotoUploading">
+                    <ion-spinner name="dots" *ngIf="recoveryLocationLoading"></ion-spinner>
+                    <ion-icon *ngIf="!recoveryLocationLoading" name="location-outline" aria-hidden="true"></ion-icon>
+                    {{ recoveryLocationLoading ? 'Getting Location...' : 'Use Current GPS' }}
+                  </button>
+                  <div class="lf-private-gps-confirmed"
+                    *ngIf="recoveryFoundLatitude !== null && recoveryFoundLongitude !== null">
+                    <span>GPS pin attached</span>
+                    <button type="button" (click)="clearRecoveryGps()"
+                      [disabled]="recoverySubmitting || recoveryPhotoUploading">Remove GPS</button>
+                  </div>
+                </div>
+                <div class="lf-private-field" *ngIf="myFoundPetReports.length > 0">
+                  <label for="recoveryLinkedFoundReport">Link an existing Found Pet report</label>
+                  <select
+                    id="recoveryLinkedFoundReport"
+                    name="recoveryLinkedFoundReport"
+                    [(ngModel)]="recoveryLinkedFoundReportId"
+                    [disabled]="recoverySubmitting || recoveryPhotoUploading">
+                    <option [ngValue]="null">Do not link a report</option>
+                    <option *ngFor="let foundReport of myFoundPetReports" [ngValue]="foundReport.id">
+                      {{ foundReport.pet_name || 'Unnamed Pet' }} — {{ foundReport.incident_date }} (Report #{{ foundReport.id }})
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </details>
+
+            <div class="lf-private-field">
+              <div class="lf-private-field-heading">
+                <label for="recoveryEvidencePhotos">Photos of the Found Pet <span class="lf-private-optional-label">Optional</span></label>
+                <span *ngIf="recoveryEvidenceFiles.length > 0" class="lf-private-file-count">{{ recoveryEvidenceFiles.length }} / 5</span>
+              </div>
+              <label class="lf-private-upload-tile" for="recoveryEvidencePhotos">
+                <ion-icon name="images-outline" aria-hidden="true"></ion-icon>
+                <span>{{ recoveryEvidenceFiles.length > 0 ? 'Add More Photos' : 'Choose Pet Photos' }}</span>
+                <small>Clear pet photos · up to 5 images</small>
+                <input
+                  id="recoveryEvidencePhotos"
+                  name="recoveryEvidencePhotos"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  (change)="onRecoveryEvidenceSelected($event)"
+                  [disabled]="recoverySubmitting || recoveryPhotoUploading || recoveryEvidenceFiles.length >= 5"
+                  aria-label="Choose photos of the pet you found" />
+              </label>
+              <ul *ngIf="recoveryEvidenceFiles.length > 0" class="lost-recovery-evidence-file-list lf-private-file-list">
+                <li *ngFor="let evidenceFile of recoveryEvidenceFiles; let i = index">
+                  <ion-icon name="images-outline" aria-hidden="true"></ion-icon>
+                  <span>{{ evidenceFile.name }}</span>
+                  <button type="button" (click)="removeRecoveryEvidencePhoto(i)"
+                    [disabled]="recoverySubmitting || recoveryPhotoUploading"
+                    [attr.aria-label]="'Remove ' + evidenceFile.name">Remove</button>
+                </li>
+              </ul>
+            </div>
+
+            <p class="lf-private-privacy">
+              <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+              Your details are private. The owner will review this finding before arranging pickup.
+            </p>
+            <p *ngIf="recoveryPhotoUploadProgress" class="lf-private-upload-progress" role="status">
+              {{ recoveryPhotoUploadProgress }}
+            </p>
+            <ion-button
+              type="submit"
+              expand="block"
+              class="lf-private-submit"
+              [disabled]="recoverySubmitting || recoveryPhotoUploading || recoveryFindingDescription.trim().length < 10 || recoveryFoundLocation.trim().length < 5">
+              <ion-spinner *ngIf="recoverySubmitting || recoveryPhotoUploading" name="crescent" slot="start"></ion-spinner>
+              <ion-icon *ngIf="!recoverySubmitting && !recoveryPhotoUploading" name="paw-outline" slot="start"></ion-icon>
+              {{ recoverySubmitting ? 'Submitting Finding...' : recoveryPhotoUploading ? 'Uploading Evidence...' : 'Submit Finding Report' }}
+            </ion-button>
+            <button type="button" class="lf-private-cancel" (click)="closeLostPetRecovery()"
+              [disabled]="recoverySubmitting || recoveryPhotoUploading">Cancel</button>
+          </form>
+          </ng-template>
+        </ng-template>
+      </div>
+    </section>
   </div>
 
   <!-- FULL-SCREEN PET PHOTO VIEWER -->
@@ -363,14 +789,11 @@
     aria-modal="true"
     aria-labelledby="photoViewerTitle"
     (click)="closePhotoViewer()">
-
     <div
       class="photo-viewer-modal"
       (click)="$event.stopPropagation()">
-
       <!-- PHOTO VIEWER HEADER -->
       <div class="photo-viewer-header">
-
         <div class="photo-viewer-heading">
           <h2 id="photoViewerTitle">
             {{ viewerReport.pet_name || 'Pet Photos' }}
@@ -380,7 +803,6 @@
             of {{ getReportPhotos(viewerReport).length }}
           </p>
         </div>
-
         <button
           type="button"
           class="photo-viewer-close"
@@ -388,29 +810,22 @@
           aria-label="Close photo viewer">
           <ion-icon name="close-outline"></ion-icon>
         </button>
-
       </div>
-
       <!-- LARGE PHOTO WITH SWIPE SUPPORT -->
       <div
         class="photo-viewer-stage"
         (touchstart)="onPhotoTouchStart($event, viewerReport)"
         (touchend)="onPhotoTouchEnd($event, viewerReport)">
-
         <ng-container
           *ngIf="getCurrentPhotoUrl(viewerReport) as largePhotoUrl">
-
           <img
             class="photo-viewer-image"
             [src]="largePhotoUrl"
             [alt]="(viewerReport.pet_name || 'Pet') +
               ' photo ' + (getCurrentPhotoIndex(viewerReport) + 1)"
             (error)="onPhotoLoadError(largePhotoUrl)">
-
         </ng-container>
-
         <ng-container *ngIf="getReportPhotos(viewerReport).length > 1">
-
           <button
             type="button"
             class="photo-viewer-nav photo-viewer-prev"
@@ -418,7 +833,6 @@
             aria-label="Previous full-size photo">
             <ion-icon name="chevron-back-outline"></ion-icon>
           </button>
-
           <button
             type="button"
             class="photo-viewer-nav photo-viewer-next"
@@ -426,16 +840,12 @@
             aria-label="Next full-size photo">
             <ion-icon name="chevron-forward-outline"></ion-icon>
           </button>
-
         </ng-container>
-
       </div>
-
       <!-- PHOTO DOTS -->
       <div
         class="photo-viewer-dots"
         *ngIf="getReportPhotos(viewerReport).length > 1">
-
         <button
           *ngFor="let photo of getReportPhotos(viewerReport); let i = index"
           type="button"
@@ -445,17 +855,12 @@
           [attr.aria-current]="getCurrentPhotoIndex(viewerReport) === i ? 'true' : null"
           (click)="selectPhoto(viewerReport, i)">
         </button>
-
       </div>
-
       <p class="photo-viewer-help" *ngIf="getReportPhotos(viewerReport).length > 1">
         Swipe left or right to see more pictures.
       </p>
-
     </div>
-
   </div>
-
   <!-- REPORT LOCATION MAP OVERLAY -->
   <div
     class="report-map-overlay"
@@ -463,94 +868,64 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="reportMapTitle">
-
     <div class="report-map-modal">
-
       <!-- MAP MODAL HEADER -->
       <div class="report-map-modal-header">
-
         <div>
-
           <h2 id="reportMapTitle">
             {{ selectedReport.pet_name || 'Pet' }} Location
           </h2>
-
           <p>
             Last seen / found location
           </p>
-
         </div>
-
         <button
           type="button"
           class="close-map-button"
           (click)="closeLocationMap()"
           aria-label="Close location map">
-
           <ion-icon name="close-outline"></ion-icon>
-
         </button>
-
       </div>
-
       <!-- PET LOCATION DETAILS -->
       <div class="report-map-location-details">
-
         <ion-icon name="location-outline"></ion-icon>
-
         <span>
           {{ selectedReport.location_address }}
         </span>
-
       </div>
-
       <!-- INTERACTIVE MAP -->
       <div class="report-map-container">
-
         <div
           #reportLocationMap
           class="report-location-map"
           aria-label="Map showing the reported pet location">
         </div>
-
       </div>
-
       <!-- MAP INFORMATION -->
       <div class="report-map-info">
-
         <p>
           The marker shows the location provided
           when this pet was reported.
         </p>
-
         <div class="report-map-coordinates">
-
           <span>
             Latitude:
             {{ selectedReport.latitude }}
           </span>
-
           <span>
             Longitude:
             {{ selectedReport.longitude }}
           </span>
-
         </div>
-
       </div>
-
       <!-- CLOSE BUTTON -->
       <ion-button
         expand="block"
         class="close-map-action"
         (click)="closeLocationMap()">
-
         Close Map
-
       </ion-button>
-
     </div>
-
   </div>
-
 </ion-content>

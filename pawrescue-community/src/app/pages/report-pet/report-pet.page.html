@@ -14,122 +14,129 @@
         <p>Help our community find missing pets</p>
       </div>
     </div>
-    <!-- SUCCESS SCREEN -->
-    <div
-      class="success-card"
-      *ngIf="submittedReportId !== null">
-      <ion-icon name="checkmark-circle-outline">
-      </ion-icon>
-      <h2>Report Submitted!</h2>
-      <p>{{ successMessage }}</p>
-      <p class="report-number">
-        Report ID: #{{ submittedReportId }}
-      </p>
-
-        <!-- MULTIPLE PHOTO UPLOAD PROGRESS -->
-        <div
-          class="upload-status"
-          *ngIf="uploadingPhoto"
-          role="status"
-          aria-live="polite">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>
-            Uploading photo {{ currentPhotoNumber }}
-            of {{ selectedPhotos.length }}...
-          </p>
-          <p>
-            {{ uploadedPhotosCount }} of {{ selectedPhotos.length }}
-            photos confirmed uploaded.
-          </p>
-        </div>
-        <!-- MULTIPLE PHOTO UPLOAD SUCCESS -->
-        <div
-          class="photo-success"
-          *ngIf="photoUploaded && selectedPhotos.length > 0"
-          role="status">
-          <ion-icon name="checkmark-circle-outline"></ion-icon>
-          <p>
-            All {{ uploadedPhotosCount }} pet photos uploaded successfully!
-          </p>
-        </div>
-        <!-- MULTIPLE PHOTO UPLOAD ERROR -->
-        <div
-          class="photo-upload-error"
-          *ngIf="photoError"
-          role="alert">
-          <p>{{ photoError }}</p>
-          <ion-button
-            *ngIf="!photoUploadUncertain && selectedPhotos.length > 0 && !photoUploaded"
-            expand="block"
-            fill="outline"
-            type="button"
-            [disabled]="loading || uploadingPhoto"
-            (click)="uploadSelectedPhoto()">
-            Retry Remaining Photo Uploads
-          </ion-button>
-          <small *ngIf="photoUploadUncertain">
-            Your report has been saved, but the last upload may have
-            succeeded without a response. Check My Reports before
-            attempting another upload to avoid duplicate pictures.
-          </small>
-          <small *ngIf="!photoUploadUncertain">
-            Your pet report and any successfully uploaded photos are
-            already saved. Retrying uploads only the remaining photos.
-          </small>
-        </div>
-      <!-- VIEW REPORTS -->
-      <ion-button
-        expand="block"
-        [disabled]="loading || uploadingPhoto"
-        (click)="viewReports()">
-        View Reports
-      </ion-button>
-    </div>
-    <!-- REPORT FORM -->
-    <div *ngIf="submittedReportId === null">
-      <!-- INFORMATION CARD -->
-      <div class="info-card">
-        <ion-icon name="paw-outline"></ion-icon>
-        <div>
-          <h2>Help a pet get home</h2>
-          <p>
-            Provide accurate information to help
-            the community identify the animal.
-          </p>
-        </div>
+    <!-- SUCCESS SCREEN: shown only after a newly confirmed submission. -->
+    <section class="success-card" *ngIf="submittedReportId !== null" aria-labelledby="reportSuccessHeading">
+      <div class="success-icon-shell" aria-hidden="true">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
       </div>
-      <form
-        (ngSubmit)="submitReport()"
-        #reportForm="ngForm">
-        <!-- REPORT TYPE -->
-        <div class="form-group">
-          <label for="reportType">
-            Report Type <span>*</span>
-          </label>
-          <select
-            id="reportType"
-            name="report_type"
-            [(ngModel)]="form.report_type"
-            [disabled]="loading || submissionUncertain"
-            required>
-            <option value="lost">Lost Pet</option>
-            <option value="found">Found Pet</option>
-          </select>
+      <p class="success-eyebrow">Report saved successfully</p>
+      <h2 id="reportSuccessHeading">Report Submitted!</h2>
+      <p class="success-description">
+        Your pet report has been saved. Thank you for helping our community.
+      </p>
+      <div class="success-report-ticket">
+        <span>Report ID</span>
+        <strong>#{{ submittedReportId }}</strong>
+      </div>
+
+      <!-- Preserve progress, retry and ambiguous upload protection. -->
+      <div class="upload-status" *ngIf="uploadingPhoto" role="status" aria-live="polite">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Uploading photo {{ currentPhotoNumber }} of {{ selectedPhotos.length }}...</p>
+        <p>{{ uploadedPhotosCount }} of {{ selectedPhotos.length }} photos confirmed uploaded.</p>
+      </div>
+      <div class="photo-success" *ngIf="photoUploaded && selectedPhotos.length > 0" role="status">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <p>{{ uploadedPhotosCount }} {{ uploadedPhotosCount === 1 ? 'photo' : 'photos' }} uploaded successfully</p>
+      </div>
+      <div class="photo-upload-error" *ngIf="photoError" role="alert">
+        <p>{{ photoError }}</p>
+        <ion-button
+          *ngIf="!photoUploadUncertain && selectedPhotos.length > 0 && !photoUploaded"
+          expand="block"
+          fill="outline"
+          type="button"
+          [disabled]="loading || uploadingPhoto"
+          (click)="uploadSelectedPhoto()">
+          Retry Remaining Photo Uploads
+        </ion-button>
+        <small *ngIf="photoUploadUncertain">
+          Your report was saved, but the latest photo upload may have succeeded without
+          a response. Check My Reports before trying again to avoid duplicate pictures.
+        </small>
+        <small *ngIf="!photoUploadUncertain">
+          Your report and any successfully uploaded photos are saved.
+          Retrying uploads only the remaining photos.
+        </small>
+      </div>
+      <div class="success-actions">
+        <ion-button
+          class="success-primary-action"
+          expand="block"
+          type="button"
+          [disabled]="loading || uploadingPhoto"
+          (click)="viewReports()">
+          View Reports
+          <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+        </ion-button>
+        <button
+          *ngIf="!photoUploadUncertain && !photoError"
+          type="button"
+          class="success-secondary-action"
+          [disabled]="loading || uploadingPhoto || (selectedPhotos.length > 0 && !photoUploaded)"
+          (click)="reportAnotherPet()">
+          <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
+          Report Another Pet
+        </button>
+      </div>
+    </section>
+    <!-- STEPPED FORM: only one short section is visible at a time. -->
+    <div *ngIf="submittedReportId === null">
+      <section class="wizard-progress" aria-label="Report a Pet form progress">
+        <div class="wizard-progress-summary">
+          <span class="wizard-step-count">Step {{ formStep }} of 3</span>
+          <span class="wizard-progress-hint">{{ formStep === 1 ? 'Tell us about the pet' : formStep === 2 ? (form.report_type === 'lost' ? 'Where was the pet last seen?' : 'Capture where you found the pet') : 'Add photos and confirm' }}</span>
         </div>
-        <!-- ANIMAL TYPE -->
-        <div class="form-group">
-          <label for="animalType">
-            Animal Type <span>*</span>
-          </label>
-          <select
-            id="animalType"
-            name="animal_type"
-            [(ngModel)]="form.animal_type"
-            [disabled]="loading || submissionUncertain"
-            required>
-            <option value="dog">Dog</option>
-            <option value="cat">Cat</option>
-          </select>
+        <div class="wizard-progress-track" aria-hidden="true">
+          <span [class.is-active]="formStep >= 1"></span>
+          <span [class.is-active]="formStep >= 2"></span>
+          <span [class.is-active]="formStep >= 3"></span>
+        </div>
+        <div class="wizard-progress-labels" aria-hidden="true">
+          <span [class.is-current]="formStep === 1">Pet Details</span>
+          <span [class.is-current]="formStep === 2">Location</span>
+          <span [class.is-current]="formStep === 3">Photos &amp; Review</span>
+        </div>
+      </section>
+      <form (ngSubmit)="submitReport()" #reportForm="ngForm" novalidate>
+        <section class="wizard-panel" [hidden]="formStep !== 1" aria-labelledby="wizardPetTitle">
+          <div class="wizard-panel-title">
+            <h2 id="wizardPetTitle">Pet Details</h2>
+            <p>Provide information that helps others recognize the pet.</p>
+          </div>
+        <!-- Compact classification controls, one row on phones -->
+        <div class="pet-classification-row">
+          <!-- REPORT TYPE -->
+          <div class="form-group">
+            <label for="reportType">
+              Report Type <span>*</span>
+            </label>
+            <select
+              id="reportType"
+              name="report_type"
+              [(ngModel)]="form.report_type"
+              (ngModelChange)="onReportTypeChange($event)"
+              [disabled]="loading || submissionUncertain"
+              required>
+              <option value="lost">Lost Pet</option>
+              <option value="found">Found Pet</option>
+            </select>
+          </div>
+          <!-- ANIMAL TYPE -->
+          <div class="form-group">
+            <label for="animalType">
+              Animal Type <span>*</span>
+            </label>
+            <select
+              id="animalType"
+              name="animal_type"
+              [(ngModel)]="form.animal_type"
+              [disabled]="loading || submissionUncertain"
+              required>
+              <option value="dog">Dog</option>
+              <option value="cat">Cat</option>
+            </select>
+          </div>
         </div>
         <!-- PET NAME -->
         <div class="form-group">
@@ -155,7 +162,9 @@
             name="description"
             rows="5"
             maxlength="5000"
-            placeholder="Describe the color, breed, size, markings, or collar..."
+            [placeholder]="form.report_type === 'lost'
+              ? 'Describe the color, breed, size, markings, or collar...'
+              : 'Describe the found pet: color, size, markings, and condition...'"
             [(ngModel)]="form.description"
             [disabled]="loading || submissionUncertain"
             required>
@@ -164,24 +173,38 @@
         <!-- INCIDENT DATE -->
         <div class="form-group">
           <label for="incidentDate">
-            Date Lost / Found <span>*</span>
+            {{ form.report_type === 'lost' ? 'Date Last Seen' : 'Date Found' }} <span>*</span>
           </label>
-          <input
-            id="incidentDate"
-            type="date"
-            name="incident_date"
-            [max]="today"
-            [(ngModel)]="form.incident_date"
-            [disabled]="loading || submissionUncertain"
-            required>
+          <!-- Native date picker with an explicit mobile-friendly empty hint. -->
+          <div class="report-date-input-wrap">
+            <input
+              id="incidentDate"
+              type="date"
+              name="incident_date"
+              placeholder="MM/DD/YYYY"
+              [max]="today"
+              [(ngModel)]="form.incident_date"
+              [disabled]="loading || submissionUncertain"
+              required>
+            <span
+              class="report-date-placeholder"
+              *ngIf="!form.incident_date"
+              aria-hidden="true">MM/DD/YYYY</span>
+          </div>
         </div>
+        </section>
+        <section class="wizard-panel" [hidden]="formStep !== 2" aria-labelledby="wizardLocationTitle">
+          <div class="wizard-panel-title">
+            <h2 id="wizardLocationTitle">{{ form.report_type === 'lost' ? 'Last Seen Location' : 'Found Pet Location' }}</h2>
+            <p>{{ form.report_type === 'lost' ? 'Tell us where the pet was last seen.' : 'Use GPS at the exact place where you found the pet.' }}</p>
+          </div>
         <!-- PET LOCATION DETAILS -->
-        <div class="location-details-card">
+        <div class="location-details-card" *ngIf="form.report_type === 'lost'">
           <div class="location-details-heading">
             <ion-icon name="location-outline"></ion-icon>
             <div>
-              <h3>Pet Location Details</h3>
-              <p>Where was the pet last seen or found?</p>
+              <h3>Last Seen Location</h3>
+              <p>Where did you last see your missing pet?</p>
             </div>
           </div>
           <!-- BARANGAY -->
@@ -214,7 +237,7 @@
               </select>
               <ion-icon name="chevron-down-outline"></ion-icon>
             </div>
-            <small>Select the barangay where the pet was lost or found.</small>
+            <small>Select the barangay where the pet was last seen.</small>
           </div>
           <!-- STREET / LANDMARK -->
           <div class="form-group">
@@ -236,15 +259,13 @@
           </div>
         </div>
         <!-- GPS AND MAP LOCATION -->
-        <div class="form-group location-section">
+        <div class="form-group location-section" *ngIf="form.report_type === 'lost'">
           <label>
-            Pin Location on Map (Optional)
+            Pin Last Seen Location on Map (Optional)
           </label>
           <p class="location-description">
-            Select the exact location where
-            the pet was lost or found.
-            You may use your current location
-            or choose a location manually on the map.
+            Add a pin for the last place your missing pet was seen.
+            Choose the location on the map, or use your GPS if you are there now.
           </p>
           <!-- LOCATION ACTION BUTTONS -->
           <div class="location-actions">
@@ -349,13 +370,65 @@
             </button>
           </div>
           <small>
-            GPS coordinates are optional.
-            Please select a barangay above.
-            Make sure the pin matches the actual
-            incident location before submitting.
+            A map pin is optional for Lost Pet reports.
+            Choose a barangay above and make sure the pin, if added,
+            matches the last seen location.
           </small>
         </div>
 
+        <!-- FOUND PET: capture the actual finding location with device GPS. -->
+        <div class="found-gps-section" *ngIf="form.report_type === 'found'">
+          <div class="found-gps-heading">
+            <ion-icon name="locate-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <h3>Location Where You Found the Pet</h3>
+              <p>GPS is required for Found Pet reports.</p>
+            </div>
+          </div>
+          <p class="found-gps-explanation">
+            Capture your current GPS location while you are at the place where
+            you found the pet. This location will be attached to the report.
+          </p>
+          <button
+            type="button"
+            class="location-action-button current-location-button found-gps-button"
+            (click)="useCurrentLocation()"
+            [disabled]="loading || uploadingPhoto || gettingLocation || submissionUncertain">
+            <ion-spinner *ngIf="gettingLocation" name="crescent"></ion-spinner>
+            <ion-icon *ngIf="!gettingLocation" name="locate-outline" aria-hidden="true"></ion-icon>
+            <span>{{ gettingLocation ? 'Getting GPS Location...' : (foundGpsVerified ? 'Update GPS Location' : 'Use Current GPS Location') }}</span>
+          </button>
+          <p class="error-message" *ngIf="locationError" role="alert">{{ locationError }}</p>
+          <p class="location-message" *ngIf="locationMessage" role="status">{{ locationMessage }}</p>
+          <div class="selected-location-card found-gps-confirmation"
+               *ngIf="foundGpsVerified && selectedLatitude !== null && selectedLongitude !== null">
+            <div class="selected-location-header">
+              <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+              <strong>GPS Location Captured</strong>
+            </div>
+            <div class="coordinate-details">
+              <span>Latitude: {{ selectedLatitude | number:'1.6-7' }}</span>
+              <span>Longitude: {{ selectedLongitude | number:'1.6-7' }}</span>
+            </div>
+            <button type="button" class="clear-location-button"
+                    (click)="clearSelectedLocation()"
+                    [disabled]="loading || uploadingPhoto || submissionUncertain">
+              <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+              Remove GPS Location
+            </button>
+          </div>
+          <p class="found-gps-note">
+            Only use this option at the actual finding location. Your exact GPS
+            coordinates may be visible to people viewing the report.
+          </p>
+        </div>
+
+        </section>
+        <section class="wizard-panel" [hidden]="formStep !== 3" aria-labelledby="wizardPhotosTitle">
+          <div class="wizard-panel-title">
+            <h2 id="wizardPhotosTitle">Photos &amp; Review</h2>
+            <p>Photos are optional. Check your details before submitting.</p>
+          </div>
         <!-- MULTIPLE PET PHOTO UPLOAD -->
         <div class="form-group">
           <div class="photo-upload-heading">
@@ -366,9 +439,7 @@
           </div>
           <div class="photo-upload-container">
             <!-- Keep direct file input overlay for Android gallery picker. -->
-            <label
-              class="photo-upload-label"
-              style="position: relative; overflow: hidden; cursor: pointer;">
+            <label class="photo-upload-label gallery-upload-label">
               <ion-icon name="camera-outline"></ion-icon>
               <span>
                 {{ selectedPhotos.length > 0 ? 'Add More Photos' : 'Choose Pet Photos' }}
@@ -379,16 +450,14 @@
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 (change)="onPhotoSelected($event)"
-                [disabled]="loading || uploadingPhoto || cameraOpening || submissionUncertain || remainingPhotoSlots === 0"
-                style="display: block; position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;">
+                [disabled]="loading || uploadingPhoto || cameraOpening || submissionUncertain || remainingPhotoSlots === 0">
             </label>
             <!-- TAKE ADDITIONAL PHOTOS WITH NATIVE CAMERA -->
             <button
               type="button"
-              class="photo-upload-label"
+              class="photo-upload-label camera-upload-button"
               (click)="takePhoto()"
-              [disabled]="loading || uploadingPhoto || cameraOpening || submissionUncertain || remainingPhotoSlots === 0"
-              style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 10px; cursor: pointer;">
+              [disabled]="loading || uploadingPhoto || cameraOpening || submissionUncertain || remainingPhotoSlots === 0">
               <ion-icon name="camera-outline"></ion-icon>
               <span>
                 {{ cameraOpening ? 'Opening Camera...' : 'Take Another Photo' }}
@@ -431,6 +500,21 @@
             {{ photoError }}
           </p>
         </div>
+          <div class="wizard-review" aria-label="Review your report details">
+            <div class="wizard-review-header">
+              <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+              <h3>Review Report</h3>
+            </div>
+            <div class="wizard-review-row"><span>Report</span><strong>{{ form.report_type === 'lost' ? 'Lost Pet' : 'Found Pet' }} · {{ form.animal_type === 'dog' ? 'Dog' : 'Cat' }}</strong></div>
+            <div class="wizard-review-row"><span>Pet Name</span><strong>{{ form.pet_name.trim() || 'Not provided' }}</strong></div>
+            <div class="wizard-review-row"><span>Description</span><strong>{{ form.description }}</strong></div>
+            <div class="wizard-review-row"><span>Date</span><strong>{{ form.incident_date }}</strong></div>
+            <div class="wizard-review-row" *ngIf="form.report_type === 'lost'"><span>Last Seen Barangay</span><strong>{{ selectedBarangay }}</strong></div>
+            <div class="wizard-review-row" *ngIf="form.report_type === 'lost' && landmark.trim()"><span>Landmark</span><strong>{{ landmark }}</strong></div>
+            <div class="wizard-review-row" *ngIf="form.report_type === 'lost'"><span>Map Pin</span><strong>{{ selectedLatitude !== null && selectedLongitude !== null ? 'Added' : 'Not added (optional)' }}</strong></div>
+            <div class="wizard-review-row" *ngIf="form.report_type === 'found'"><span>Found Pet GPS</span><strong>{{ foundGpsVerified && selectedLatitude !== null && selectedLongitude !== null ? (selectedLatitude | number:'1.6-7') + ', ' + (selectedLongitude | number:'1.6-7') : 'Not captured' }}</strong></div>
+            <div class="wizard-review-row"><span>Photos</span><strong>{{ selectedPhotos.length }} selected</strong></div>
+          </div>
         <!-- REPORT VALIDATION ERROR -->
         <p
           class="error-message"
@@ -456,8 +540,31 @@
             Check Existing Reports
           </ion-button>
         </div>
+        </section>
+        <p class="wizard-step-error" role="alert" *ngIf="stepError">{{ stepError }}</p>
+        <div class="wizard-actions" [class.has-previous]="formStep > 1">
+          <button
+            *ngIf="formStep > 1"
+            type="button"
+            class="wizard-action wizard-action-back"
+            (click)="previousStep()"
+            [disabled]="loading || uploadingPhoto || cameraOpening || submissionUncertain">
+            <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+            Back
+          </button>
+          <button
+            *ngIf="formStep < 3"
+            type="button"
+            class="wizard-action wizard-action-next"
+            (click)="nextStep()"
+            [disabled]="loading || uploadingPhoto || cameraOpening || submissionUncertain">
+            Next
+            <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+          </button>
+          <div class="wizard-submit-wrap" *ngIf="formStep === 3">
         <!-- SUBMIT REPORT BUTTON -->
         <ion-button
+          class="wizard-submit-button"
           expand="block"
           type="submit"
           [disabled]="loading || uploadingPhoto || submissionUncertain || reportForm.invalid">
@@ -472,6 +579,8 @@
             Submitting...
           </span>
         </ion-button>
+          </div>
+        </div>
       </form>
     </div>
   </div>

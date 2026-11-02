@@ -1,0 +1,644 @@
+<ion-content [fullscreen]="true">
+  <main class="claims-page">
+
+    <!-- Consistent PawRescue page header: aligned below the Android status bar -->
+    <header class="claims-page-header">
+      <button type="button" class="claims-back-button" (click)="goBack()" aria-label="Back to My Reports">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="claims-page-heading">
+        <h1>My Claims</h1>
+        <p>Manage your pet ownership requests</p>
+      </div>
+      <button
+        type="button"
+        class="claims-refresh-button"
+        (click)="refreshClaims()"
+        [disabled]="claimsLoading || sentClaimsLoading ||
+          respondingClaimId !== null || finderActionClaimId !== null || sentActionClaimId !== null"
+        aria-label="Refresh ownership claims">
+        <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </header>
+
+    <!-- Clear switcher between sent and received ownership requests -->
+    <nav class="claims-tabs" aria-label="Ownership claim categories">
+      <button
+        type="button"
+        class="claims-tab"
+        [class.active]="activeClaimsTab === 'sent'"
+        [attr.aria-current]="activeClaimsTab === 'sent' ? 'page' : null"
+        (click)="changeClaimsTab('sent')">
+        <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
+        <span>Sent Claims</span>
+      </button>
+      <button
+        type="button"
+        class="claims-tab"
+        [class.active]="activeClaimsTab === 'received'"
+        [attr.aria-current]="activeClaimsTab === 'received' ? 'page' : null"
+        (click)="changeClaimsTab('received')">
+        <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+        <span>Received Claims</span>
+      </button>
+    </nav>
+
+    <!-- RESIDENT B: SENT CLAIMS -->
+    <section class="claims-list-section" *ngIf="activeClaimsTab === 'sent'" aria-labelledby="sentClaimsTitle">
+      <div class="claims-section-heading">
+        <div>
+          <h2 id="sentClaimsTitle" class="claims-heading-with-count">Sent Claims <span class="claims-heading-count" *ngIf="sentClaimsLoaded">{{ sentClaimsTotal }}</span></h2>
+          <p>Claims you've submitted for found pets</p>
+        </div>
+      </div>
+
+      <div class="claims-state" *ngIf="sentClaimsLoading && !sentClaimsLoaded" role="status">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading your claims...</p>
+      </div>
+      <p class="claims-notice claims-notice--error" *ngIf="sentClaimsError" role="alert">
+        {{ sentClaimsError }}
+        <button type="button" (click)="loadSentClaims()">Retry</button>
+      </p>
+      <p class="claims-notice claims-notice--success" *ngIf="sentClaimsMessage" role="status">
+        {{ sentClaimsMessage }}
+      </p>
+      <div class="claims-empty" *ngIf="!sentClaimsLoading && sentClaimsLoaded && sentClaims.length === 0 && !sentClaimsError">
+        <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+        <h3>No sent claims yet</h3>
+        <p>When you claim a found pet, you can track it here.</p>
+      </div>
+
+      <div class="claims-card-list">
+        <article class="claims-card" *ngFor="let claim of sentClaims; trackBy: trackSentClaim">
+          <div class="claims-card-top">
+            <span class="claims-card-kind">Found Pet · #{{ claim.found_report_id }}</span>
+            <span class="claims-status" [attr.data-status]="claim.status">
+              {{ getOwnershipClaimStatusLabel(claim.status) }}
+            </span>
+          </div>
+          <h3>{{ claim.pet_name || 'Unnamed Pet' }}</h3>
+          <p class="claims-card-meta">{{ claim.animal_type | titlecase }} · Found by {{ claim.finder_name }}</p>
+          <div class="claims-card-next">
+            <span class="claims-card-next-label">Current update</span>
+            <p>{{ getSentClaimNextStep(claim) }}</p>
+          </div>
+          <button type="button" class="claims-card-action" (click)="openSentClaimDetails(claim)"
+            [disabled]="sentActionClaimId !== null || finderActionClaimId !== null || respondingClaimId !== null">
+            View Details
+            <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </article>
+      </div>
+      <div class="claims-load-more" *ngIf="sentClaimsHasMore">
+        <button type="button" (click)="loadSentClaims(true)"
+          [disabled]="sentClaimsLoading || sentClaimsLoadingMore">
+          <ion-spinner *ngIf="sentClaimsLoadingMore" name="dots"></ion-spinner>
+          {{ sentClaimsLoadingMore ? 'Loading...' : 'Load More' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- RESIDENT A: RECEIVED CLAIMS -->
+    <section class="claims-list-section" *ngIf="activeClaimsTab === 'received'" aria-labelledby="receivedClaimsTitle">
+      <div class="claims-section-heading">
+        <div>
+          <h2 id="receivedClaimsTitle" class="claims-heading-with-count">Received Claims <span class="claims-heading-count" *ngIf="claimsLoaded">{{ claimsTotal }}</span></h2>
+          <p>Ownership requests for pets you've found</p>
+        </div>
+        <span class="claims-attention-count" *ngIf="getPendingClaimCount() > 0">
+          {{ getPendingClaimCount() }} pending
+        </span>
+      </div>
+
+      <div class="claims-state" *ngIf="claimsLoading && !claimsLoaded" role="status">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading received claims...</p>
+      </div>
+      <p class="claims-notice claims-notice--error" *ngIf="claimsErrorMessage" role="alert">
+        {{ claimsErrorMessage }}
+        <button type="button" (click)="loadReceivedClaims()">Retry</button>
+      </p>
+      <p class="claims-notice claims-notice--success" *ngIf="claimsMessage" role="status">
+        {{ claimsMessage }}
+      </p>
+      <div class="claims-empty" *ngIf="!claimsLoading && claimsLoaded && receivedClaims.length === 0 && !claimsErrorMessage">
+        <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+        <h3>No received claims yet</h3>
+        <p>Ownership requests for your Found Pet reports will appear here.</p>
+      </div>
+
+      <div class="claims-card-list">
+        <article class="claims-card" *ngFor="let claim of receivedClaims; trackBy: trackOwnershipClaim">
+          <div class="claims-card-top">
+            <span class="claims-card-kind">Found Pet · #{{ claim.found_report_id }}</span>
+            <span class="claims-status" [attr.data-status]="claim.status">
+              {{ getOwnershipClaimStatusLabel(claim.status) }}
+            </span>
+          </div>
+          <h3>{{ claim.pet_name || 'Unnamed Pet' }}</h3>
+          <p class="claims-card-meta">Claimed by {{ claim.claimant_name }}</p>
+          <div class="claims-card-next">
+            <span class="claims-card-next-label">Current update</span>
+            <p>{{ getFinderClaimNextStep(claim) }}</p>
+          </div>
+          <button type="button" class="claims-card-action" [class.claims-card-action--primary]="claim.status === 'pending'" (click)="openClaimReview(claim)"
+            [disabled]="respondingClaimId !== null || finderActionClaimId !== null || sentActionClaimId !== null">
+            {{ claim.status === 'pending' ? 'Review Claim' : 'View Details' }}
+            <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </article>
+      </div>
+      <div class="claims-load-more" *ngIf="claimsHasMore">
+        <button type="button" (click)="loadReceivedClaims(true)"
+          [disabled]="claimsLoading || claimsLoadingMore">
+          <ion-spinner *ngIf="claimsLoadingMore" name="dots"></ion-spinner>
+          {{ claimsLoadingMore ? 'Loading...' : 'Load More' }}
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- RESIDENT B: SENT CLAIM DETAILS -->
+  <div class="claims-dialog-overlay" *ngIf="selectedSentClaim as claim"
+    role="dialog" aria-modal="true" aria-labelledby="sentClaimDialogTitle">
+    <div class="claims-dialog">
+      <header class="claims-dialog-header">
+        <div class="claims-dialog-title">
+          <p>Sent Claim #{{ claim.id }}</p>
+          <h2 id="sentClaimDialogTitle">{{ claim.pet_name || 'Unnamed Pet' }}</h2>
+        </div>
+        <button type="button" class="claims-dialog-close" (click)="closeSentClaimDetails()"
+          [disabled]="sentActionClaimId !== null" aria-label="Close claim details">
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </header>
+
+      <div class="claims-dialog-body">
+        <div class="claims-dialog-summary">
+          <div class="claims-dialog-state-row">
+            <span class="claims-status" [attr.data-status]="claim.status">
+              {{ getOwnershipClaimStatusLabel(claim.status) }}
+            </span>
+            <span class="claims-dialog-state-caption">Ownership claim</span>
+          </div>
+          <span class="claims-dialog-update-label">CURRENT UPDATE</span>
+          <p class="claims-next-step" role="status">{{ getSentClaimNextStep(claim) }}</p>
+        </div>
+        <h3 class="claims-overview-label">Claim Information</h3>
+        <div class="claims-detail-grid">
+          <div><span>Finder</span><strong>{{ claim.finder_name }}</strong></div>
+          <div><span>Reported Pet</span><strong>#{{ claim.found_report_id }}</strong></div>
+          <div><span>Submitted</span><strong>{{ claim.created_at | date:'mediumDate' }}</strong></div>
+        </div>
+
+        <details class="claims-disclosure">
+          <summary class="claims-disclosure-toggle">
+            <span class="claims-disclosure-heading">
+              <strong>Your Submitted Evidence</strong>
+              <small>Ownership explanation and attached proof</small>
+            </span>
+            <span class="claims-disclosure-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="claims-disclosure-content">
+            <h4>Ownership Explanation</h4>
+            <p class="claims-prewrap">{{ claim.proof_description }}</p>
+            <p class="claims-muted" *ngIf="claim.linked_lost_report_id !== null">
+              Linked Lost Pet Report #{{ claim.linked_lost_report_id }}
+            </p>
+            <p class="claims-muted" *ngIf="claim.evidence_photos.length > 0">
+              {{ claim.evidence_photos.length }} private evidence photo(s) submitted to the finder.
+            </p>
+          </div>
+        </details>
+
+        <p class="claims-notice claims-notice--error" *ngIf="claim.rejection_reason">
+          <strong>Rejection reason:</strong> {{ claim.rejection_reason }}
+        </p>
+        <p class="claims-notice claims-notice--muted" *ngIf="claim.cancellation_reason">
+          <strong>Cancellation:</strong> {{ claim.cancellation_reason }}
+        </p>
+        <p class="claims-notice claims-notice--error" *ngIf="claim.dispute_reason">
+          <strong>Dispute:</strong> {{ claim.dispute_reason }}
+        </p>
+
+        <section class="claims-dialog-section claims-dialog-section--pickup" *ngIf="claim.pickup.location">
+          <h3><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon> Private Pickup Arrangement</h3>
+          <div class="claims-pickup-summary">
+            <p><strong>Place:</strong> {{ claim.pickup.location }}</p>
+            <p><strong>Date:</strong> {{ claim.pickup.date }}</p>
+            <p><strong>Time:</strong> {{ claim.pickup.time?.slice(0, 5) }} (Philippine time)</p>
+            <p class="claims-muted" *ngIf="claim.pickup.claimant_confirmed_at">
+              <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+              You confirmed this pickup arrangement.
+            </p>
+          </div>
+        </section>
+
+        <section class="claims-dialog-section claims-dialog-section--change" *ngIf="claim.latest_reschedule as proposal">
+          <h3>Latest Pickup Change</h3>
+          <p class="claims-muted">
+            Proposed by {{ proposal.requested_by_user_id === claim.claimant_user_id ? 'you' : 'the finder' }}
+            · {{ getOwnershipClaimStatusLabel(proposal.status) }}
+          </p>
+          <div class="claims-pickup-summary">
+            <p><strong>New place:</strong> {{ proposal.proposed_location }}</p>
+            <p><strong>New date:</strong> {{ proposal.proposed_date }}</p>
+            <p><strong>New time:</strong> {{ proposal.proposed_time.slice(0, 5) }} (Philippine time)</p>
+            <p *ngIf="proposal.reason"><strong>Reason:</strong> {{ proposal.reason }}</p>
+          </div>
+          <div class="claims-action-row" *ngIf="canRespondToSentReschedule(claim)">
+            <button type="button" class="claims-button claims-button--primary"
+              (click)="respondSentReschedule(claim, 'accept')" [disabled]="sentActionClaimId !== null">
+              Accept Change
+            </button>
+            <button type="button" class="claims-button claims-button--outline"
+              (click)="respondSentReschedule(claim, 'reject')" [disabled]="sentActionClaimId !== null">
+              Keep Original
+            </button>
+          </div>
+          <p class="claims-muted" *ngIf="proposal.status === 'pending' && proposal.requested_by_user_id === claim.claimant_user_id">
+            Waiting for the finder to respond. Your current pickup details have not changed.
+          </p>
+        </section>
+
+        <!-- Agreeing to a pickup date is not the same as receiving the pet. -->
+        <section class="claims-dialog-section claims-dialog-section--action" *ngIf="canConfirmSentPickup(claim)">
+          <h3>Confirm Pickup Schedule</h3>
+          <p class="claims-muted">Confirm the meeting place, date, and time. This does NOT confirm a pet handover.</p>
+          <button type="button" class="claims-button claims-button--primary claims-button--full"
+            (click)="confirmSentPickup(claim)" [disabled]="sentActionClaimId !== null">
+            <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+            Confirm Pickup Arrangement
+          </button>
+        </section>
+
+        <section class="claims-dialog-section claims-dialog-section--action" *ngIf="canRequestSentReschedule(claim)">
+          <ng-container *ngIf="!sentRescheduleMode; else sentRescheduleForm">
+            <button type="button" class="claims-button claims-button--subtle claims-button--full"
+              (click)="startSentReschedule(claim)" [disabled]="sentActionClaimId !== null">
+              Request a Different Pickup Time or Place
+            </button>
+          </ng-container>
+          <ng-template #sentRescheduleForm>
+            <h3>Propose a Pickup Change</h3>
+            <p class="claims-muted">Change at least one detail. The finder must accept your proposal.</p>
+            <div class="claims-form-field">
+              <label for="claimantRescheduleLocation">New meeting location</label>
+              <textarea id="claimantRescheduleLocation" rows="2" maxlength="255"
+                [(ngModel)]="sentRescheduleLocation" [disabled]="sentActionClaimId !== null"></textarea>
+            </div>
+            <div class="claims-form-grid">
+              <div class="claims-form-field">
+                <label for="claimantRescheduleDate">New date</label>
+                <input id="claimantRescheduleDate" type="date" [min]="minimumPickupDate"
+                  [(ngModel)]="sentRescheduleDate" [disabled]="sentActionClaimId !== null">
+              </div>
+              <div class="claims-form-field">
+                <label for="claimantRescheduleTime">New time</label>
+                <input id="claimantRescheduleTime" type="time"
+                  [(ngModel)]="sentRescheduleTime" [disabled]="sentActionClaimId !== null">
+              </div>
+            </div>
+            <div class="claims-form-field">
+              <label for="claimantRescheduleReason">Reason (optional)</label>
+              <textarea id="claimantRescheduleReason" rows="2" maxlength="1000"
+                [(ngModel)]="sentRescheduleReason" [disabled]="sentActionClaimId !== null"></textarea>
+            </div>
+            <div class="claims-action-row">
+              <button type="button" class="claims-button claims-button--outline"
+                (click)="cancelSentReschedule()" [disabled]="sentActionClaimId !== null">Cancel</button>
+              <button type="button" class="claims-button claims-button--primary"
+                (click)="submitSentReschedule()" [disabled]="sentActionClaimId !== null">Send Request</button>
+            </div>
+          </ng-template>
+        </section>
+
+        <!-- Physical handover must be confirmed by both participants independently. -->
+        <section class="claims-dialog-section claims-handover" *ngIf="canConfirmSentHandover(claim)">
+          <h3>Confirm Actual Pet Handover</h3>
+          <p class="claims-muted">Only confirm after you have physically received the pet. Both residents must confirm to complete the claim.</p>
+          <button type="button" class="claims-button claims-button--primary claims-button--full"
+            (click)="confirmSentHandover(claim)" [disabled]="sentActionClaimId !== null">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            I Have Received the Pet
+          </button>
+        </section>
+        <p class="claims-notice claims-notice--success" *ngIf="claim.claimant_handover_confirmed_at">
+          Your actual handover confirmation is recorded.
+          <span *ngIf="!claim.finder_handover_confirmed_at"> Waiting for the finder to confirm.</span>
+        </p>
+        <p class="claims-notice claims-notice--success" *ngIf="claim.status === 'completed'">
+          Pet successfully returned. Both residents confirmed the handover.
+        </p>
+
+        <div class="claims-saving" *ngIf="sentActionClaimId === claim.id" role="status">
+          <ion-spinner name="dots"></ion-spinner> Saving...
+        </div>
+        <p class="claims-notice claims-notice--success" *ngIf="sentClaimActionMessage" role="status">
+          {{ sentClaimActionMessage }}
+        </p>
+        <p class="claims-notice claims-notice--error" *ngIf="sentClaimActionError" role="alert">
+          {{ sentClaimActionError }}
+        </p>
+      </div>
+      <footer class="claims-dialog-footer">
+        <button type="button" class="claims-button claims-button--subtle"
+          (click)="closeSentClaimDetails()" [disabled]="sentActionClaimId !== null">Close</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- RESIDENT A: PRIVATE CLAIM REVIEW -->
+  <div class="claims-dialog-overlay" *ngIf="selectedOwnershipClaim as claim"
+    role="dialog" aria-modal="true" aria-labelledby="receivedClaimDialogTitle">
+    <div class="claims-dialog">
+      <header class="claims-dialog-header">
+        <div class="claims-dialog-title">
+          <p>Received Claim #{{ claim.id }}</p>
+          <h2 id="receivedClaimDialogTitle">{{ claim.pet_name || 'Unnamed Pet' }}</h2>
+        </div>
+        <button type="button" class="claims-dialog-close" (click)="closeClaimReview()"
+          [disabled]="respondingClaimId !== null || finderActionClaimId !== null"
+          aria-label="Close claim review">
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </header>
+
+      <div class="claims-dialog-body">
+        <div class="claims-dialog-summary">
+          <div class="claims-dialog-state-row">
+            <span class="claims-status" [attr.data-status]="claim.status">
+              {{ getOwnershipClaimStatusLabel(claim.status) }}
+            </span>
+            <span class="claims-dialog-state-caption">Ownership claim</span>
+          </div>
+          <span class="claims-dialog-update-label">CURRENT UPDATE</span>
+          <p class="claims-next-step" role="status">{{ getFinderClaimNextStep(claim) }}</p>
+        </div>
+        <h3 class="claims-overview-label">Claim Information</h3>
+        <div class="claims-detail-grid">
+          <div><span>Claimant</span><strong>{{ claim.claimant_name }}</strong></div>
+          <div><span>Found Pet Report</span><strong>#{{ claim.found_report_id }}</strong></div>
+          <div><span>Submitted</span><strong>{{ claim.created_at | date:'mediumDate' }}</strong></div>
+        </div>
+
+        <details class="claims-disclosure">
+          <summary class="claims-disclosure-toggle">
+            <span class="claims-disclosure-heading">
+              <strong>Ownership Explanation</strong>
+              <small>Read the claimant's private proof</small>
+            </span>
+            <span class="claims-disclosure-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="claims-disclosure-content">
+            <p class="claims-prewrap">{{ claim.proof_description }}</p>
+            <p class="claims-muted" *ngIf="claim.linked_lost_report_id !== null">
+              Linked Lost Pet Report #{{ claim.linked_lost_report_id }}
+            </p>
+          </div>
+        </details>
+
+        <details class="claims-disclosure">
+          <summary class="claims-disclosure-toggle">
+            <span class="claims-disclosure-heading">
+              <strong>Private Photo Evidence</strong>
+              <small>View the submitted pet photos</small>
+            </span>
+            <span class="claims-disclosure-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="claims-disclosure-content">
+            <div class="claims-subheading">
+              <h3>Evidence photos</h3>
+              <button type="button" class="claims-text-action" (click)="retryClaimEvidence()"
+                [disabled]="claimEvidenceLoading">Retry Photos</button>
+            </div>
+            <p class="claims-muted">Visible only to the claim participants and authorized staff.</p>
+            <div class="claims-state claims-state--small" *ngIf="claimEvidenceLoading" role="status">
+              <ion-spinner name="dots"></ion-spinner> Loading photos...
+            </div>
+            <p class="claims-notice claims-notice--error" *ngIf="claimEvidenceError" role="alert">
+              {{ claimEvidenceError }}
+            </p>
+            <div class="claims-evidence-grid" *ngIf="claimEvidencePhotos.length > 0">
+              <figure *ngFor="let photo of claimEvidencePhotos; let i = index">
+                <img [src]="photo.url" [alt]="'Private ownership evidence photo ' + (i + 1)" loading="lazy">
+                <figcaption>Photo {{ i + 1 }}</figcaption>
+              </figure>
+            </div>
+            <p class="claims-muted" *ngIf="!claimEvidenceLoading && !claimEvidenceError && claimEvidencePhotos.length === 0">
+              No evidence photos submitted.
+            </p>
+          </div>
+        </details>
+
+        <p class="claims-notice claims-notice--error" *ngIf="claim.rejection_reason">
+          <strong>Rejection reason:</strong> {{ claim.rejection_reason }}
+        </p>
+        <p class="claims-notice claims-notice--muted" *ngIf="claim.cancellation_reason">
+          <strong>Cancelled:</strong> {{ claim.cancellation_reason }}
+        </p>
+        <p class="claims-notice claims-notice--error" *ngIf="claim.dispute_reason">
+          <strong>Dispute:</strong> {{ claim.dispute_reason }}
+        </p>
+
+        <!-- Finder approves or rejects only pending claims. -->
+        <section class="claims-dialog-section claims-dialog-section--action" *ngIf="claim.status === 'pending'">
+          <ng-container *ngIf="!claimDecisionMode">
+            <h3>Review Decision</h3>
+            <p class="claims-muted claims-decision-hint">Open the Ownership Explanation and Private Photo Evidence sections above before approving or rejecting this claim.</p>
+            <div class="claims-action-row">
+              <button type="button" class="claims-button claims-button--primary"
+                (click)="startClaimApproval()" [disabled]="respondingClaimId !== null">
+                Approve Claim
+              </button>
+              <button type="button" class="claims-button claims-button--outline"
+                (click)="startClaimRejection()" [disabled]="respondingClaimId !== null">
+                Reject
+              </button>
+            </div>
+          </ng-container>
+
+          <div class="claims-form" *ngIf="claimDecisionMode === 'approve'">
+            <h3>Arrange Private Pickup</h3>
+            <p class="claims-muted">This address will be shared privately with the approved claimant only.</p>
+            <div class="claims-form-field">
+              <label for="finderApprovalLocation">Pickup meeting place</label>
+              <textarea id="finderApprovalLocation" rows="2" maxlength="255"
+                [(ngModel)]="pickupLocation" (ngModelChange)="clearPickupCoordinates()"
+                [disabled]="respondingClaimId !== null"
+                placeholder="Specific safe meeting place or landmark"></textarea>
+            </div>
+            <button type="button" class="claims-button claims-button--subtle"
+              (click)="useCurrentPickupLocation()"
+              [disabled]="pickupLocationLoading || respondingClaimId !== null">
+              <ion-icon name="navigate-outline" aria-hidden="true"></ion-icon>
+              {{ pickupLocationLoading ? 'Getting GPS...' : 'Add Current GPS Pin (optional)' }}
+            </button>
+            <p class="claims-muted" *ngIf="pickupLatitude !== null && pickupLongitude !== null">
+              GPS pin added. Please still enter a written meeting place.
+            </p>
+            <p class="claims-notice claims-notice--error" *ngIf="pickupLocationError">{{ pickupLocationError }}</p>
+            <div class="claims-form-grid">
+              <div class="claims-form-field">
+                <label for="finderApprovalDate">Pickup date</label>
+                <input id="finderApprovalDate" type="date" [min]="minimumPickupDate"
+                  [(ngModel)]="pickupDate" [disabled]="respondingClaimId !== null">
+              </div>
+              <div class="claims-form-field">
+                <label for="finderApprovalTime">Pickup time (Philippine time)</label>
+                <input id="finderApprovalTime" type="time"
+                  [(ngModel)]="pickupTime" [disabled]="respondingClaimId !== null">
+              </div>
+            </div>
+            <div class="claims-action-row">
+              <button type="button" class="claims-button claims-button--outline"
+                (click)="cancelClaimDecision()" [disabled]="respondingClaimId !== null">Back</button>
+              <button type="button" class="claims-button claims-button--primary"
+                (click)="submitClaimDecision()" [disabled]="respondingClaimId !== null">
+                Approve &amp; Schedule
+              </button>
+            </div>
+          </div>
+
+          <div class="claims-form" *ngIf="claimDecisionMode === 'reject'">
+            <h3>Reject Claim</h3>
+            <div class="claims-form-field">
+              <label for="finderRejectReason">Reason (optional)</label>
+              <textarea id="finderRejectReason" rows="3" maxlength="1000"
+                [(ngModel)]="rejectionReason" [disabled]="respondingClaimId !== null"
+                placeholder="You may explain why the evidence was not sufficient"></textarea>
+            </div>
+            <div class="claims-action-row">
+              <button type="button" class="claims-button claims-button--outline"
+                (click)="cancelClaimDecision()" [disabled]="respondingClaimId !== null">Back</button>
+              <button type="button" class="claims-button claims-button--danger"
+                (click)="submitClaimDecision()" [disabled]="respondingClaimId !== null">Confirm Rejection</button>
+            </div>
+          </div>
+          <p class="claims-notice claims-notice--error" *ngIf="claimDecisionError" role="alert">
+            {{ claimDecisionError }}
+          </p>
+        </section>
+
+        <section class="claims-dialog-section claims-dialog-section--pickup" *ngIf="claim.pickup.location">
+          <h3>Private Pickup Arrangement</h3>
+          <div class="claims-pickup-summary">
+            <p><strong>Place:</strong> {{ claim.pickup.location }}</p>
+            <p><strong>Date:</strong> {{ claim.pickup.date }}</p>
+            <p><strong>Time:</strong> {{ claim.pickup.time?.slice(0, 5) }} (Philippine time)</p>
+            <p *ngIf="claim.pickup.claimant_confirmed_at" class="claims-muted">
+              <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+              Claimant confirmed the pickup arrangement.
+            </p>
+          </div>
+        </section>
+
+        <section class="claims-dialog-section claims-dialog-section--change" *ngIf="claim.latest_reschedule as proposal">
+          <h3>Latest Pickup Change</h3>
+          <p class="claims-muted">
+            Proposed by {{ proposal.requested_by_user_id === claim.claimant_user_id ? 'claimant' : 'you' }}
+            · {{ getOwnershipClaimStatusLabel(proposal.status) }}
+          </p>
+          <div class="claims-pickup-summary">
+            <p><strong>New place:</strong> {{ proposal.proposed_location }}</p>
+            <p><strong>New date:</strong> {{ proposal.proposed_date }}</p>
+            <p><strong>New time:</strong> {{ proposal.proposed_time.slice(0, 5) }} (Philippine time)</p>
+            <p *ngIf="proposal.reason"><strong>Reason:</strong> {{ proposal.reason }}</p>
+          </div>
+          <div class="claims-action-row" *ngIf="canRespondToFinderReschedule(claim)">
+            <button type="button" class="claims-button claims-button--primary"
+              (click)="respondFinderReschedule(claim, 'accept')" [disabled]="finderActionClaimId !== null">
+              Accept Change
+            </button>
+            <button type="button" class="claims-button claims-button--outline"
+              (click)="respondFinderReschedule(claim, 'reject')" [disabled]="finderActionClaimId !== null">
+              Keep Original
+            </button>
+          </div>
+          <p class="claims-muted" *ngIf="proposal.status === 'pending' && proposal.requested_by_user_id !== claim.claimant_user_id">
+            Waiting for claimant response. Original pickup details remain unchanged.
+          </p>
+        </section>
+
+        <section class="claims-dialog-section claims-dialog-section--action" *ngIf="canRequestFinderReschedule(claim)">
+          <ng-container *ngIf="!finderRescheduleMode; else finderRescheduleForm">
+            <button type="button" class="claims-button claims-button--subtle claims-button--full"
+              (click)="startFinderReschedule(claim)" [disabled]="finderActionClaimId !== null">
+              Request a Different Pickup Time or Place
+            </button>
+          </ng-container>
+          <ng-template #finderRescheduleForm>
+            <h3>Propose a Pickup Change</h3>
+            <p class="claims-muted">Claimant must approve changes to the agreed meeting arrangement.</p>
+            <div class="claims-form-field">
+              <label for="finderRescheduleLocation">New meeting location</label>
+              <textarea id="finderRescheduleLocation" rows="2" maxlength="255"
+                [(ngModel)]="finderRescheduleLocation" [disabled]="finderActionClaimId !== null"></textarea>
+            </div>
+            <div class="claims-form-grid">
+              <div class="claims-form-field">
+                <label for="finderRescheduleDate">New date</label>
+                <input id="finderRescheduleDate" type="date" [min]="minimumPickupDate"
+                  [(ngModel)]="finderRescheduleDate" [disabled]="finderActionClaimId !== null">
+              </div>
+              <div class="claims-form-field">
+                <label for="finderRescheduleTime">New time</label>
+                <input id="finderRescheduleTime" type="time"
+                  [(ngModel)]="finderRescheduleTime" [disabled]="finderActionClaimId !== null">
+              </div>
+            </div>
+            <div class="claims-form-field">
+              <label for="finderRescheduleReason">Reason (optional)</label>
+              <textarea id="finderRescheduleReason" rows="2" maxlength="1000"
+                [(ngModel)]="finderRescheduleReason" [disabled]="finderActionClaimId !== null"></textarea>
+            </div>
+            <div class="claims-action-row">
+              <button type="button" class="claims-button claims-button--outline"
+                (click)="cancelFinderReschedule()" [disabled]="finderActionClaimId !== null">Cancel</button>
+              <button type="button" class="claims-button claims-button--primary"
+                (click)="submitFinderReschedule()" [disabled]="finderActionClaimId !== null">Send Request</button>
+            </div>
+          </ng-template>
+        </section>
+
+        <section class="claims-dialog-section claims-handover" *ngIf="canConfirmFinderHandover(claim)">
+          <h3>Confirm Actual Pet Handover</h3>
+          <p class="claims-muted">
+            Only confirm after physically handing the pet to the claimant. Both residents must confirm before the claim is completed.
+          </p>
+          <button type="button" class="claims-button claims-button--primary claims-button--full"
+            (click)="confirmFinderHandover(claim)" [disabled]="finderActionClaimId !== null">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            I Have Handed Over the Pet
+          </button>
+        </section>
+        <p class="claims-notice claims-notice--success" *ngIf="claim.finder_handover_confirmed_at">
+          You confirmed handing over the pet.
+          <span *ngIf="!claim.claimant_handover_confirmed_at"> Waiting for claimant confirmation.</span>
+        </p>
+        <p class="claims-notice claims-notice--success" *ngIf="claim.status === 'completed'">
+          Handover completed and pet report resolved.
+        </p>
+
+        <div class="claims-saving" *ngIf="respondingClaimId === claim.id || finderActionClaimId === claim.id" role="status">
+          <ion-spinner name="dots"></ion-spinner> Saving...
+        </div>
+        <p class="claims-notice claims-notice--success" *ngIf="claimDecisionMessage" role="status">
+          {{ claimDecisionMessage }}
+        </p>
+        <p class="claims-notice claims-notice--success" *ngIf="finderActionMessage" role="status">
+          {{ finderActionMessage }}
+        </p>
+        <p class="claims-notice claims-notice--error" *ngIf="finderActionError" role="alert">
+          {{ finderActionError }}
+        </p>
+      </div>
+      <footer class="claims-dialog-footer">
+        <button type="button" class="claims-button claims-button--subtle"
+          (click)="closeClaimReview()"
+          [disabled]="respondingClaimId !== null || finderActionClaimId !== null">Close</button>
+      </footer>
+    </div>
+  </div>
+</ion-content>

@@ -1,7 +1,6 @@
-
 /* =====================================
-   PAGE BACKGROUND
-===================================== */
+ * PAGE BACKGROUND
+ * ===================================== */
 
 ion-content {
   --background: #f5f9f6;
@@ -10,19 +9,18 @@ ion-content {
 .page-container {
   max-width: 650px;
   margin: 0 auto;
-  padding: 24px 18px 80px;
+  padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 18px 80px;
 }
 
 /* =====================================
-   PAGE HEADER
-===================================== */
+ * PAGE HEADER
+ * ===================================== */
 
 .page-header {
   display: flex;
   align-items: center;
   gap: 15px;
   margin-bottom: 25px;
-
   h1 {
     font-size: 23px;
     font-weight: 750;
@@ -49,7 +47,6 @@ ion-content {
   border-radius: 12px;
   color: #267b4e;
   cursor: pointer;
-
   ion-icon {
     font-size: 23px;
   }
@@ -60,8 +57,8 @@ ion-content {
 }
 
 /* =====================================
-   INTRODUCTION BANNER
-===================================== */
+ * INTRODUCTION BANNER
+ * ===================================== */
 
 .info-banner {
   display: flex;
@@ -71,7 +68,6 @@ ion-content {
   border-radius: 18px;
   padding: 20px;
   margin-bottom: 25px;
-
   h2 {
     margin: 0 0 7px;
     color: #236b47;
@@ -94,8 +90,8 @@ ion-content {
 }
 
 /* =====================================
-   REPORT A PET BUTTON
-===================================== */
+ * REPORT A PET BUTTON
+ * ===================================== */
 
 .report-button {
   --background: #268554;
@@ -110,14 +106,13 @@ ion-content {
 }
 
 /* =====================================
-   REPORT FILTERS
-===================================== */
+ * REPORT FILTERS
+ * ===================================== */
 
 .filter-container {
   display: flex;
   gap: 10px;
   margin-bottom: 26px;
-
   button {
     flex: 1;
     min-width: 0;
@@ -146,15 +141,14 @@ ion-content {
 }
 
 /* =====================================
-   SECTION HEADER
-===================================== */
+ * SECTION HEADER
+ * ===================================== */
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-
   h3 {
     margin: 0;
     font-size: 18px;
@@ -175,7 +169,6 @@ ion-content {
   color: #268554;
   font-size: 22px;
   cursor: pointer;
-
   &:active {
     background: #d8eddf;
   }
@@ -187,8 +180,8 @@ ion-content {
 }
 
 /* =====================================
-   REFRESH INDICATOR
-===================================== */
+ * REFRESH INDICATOR
+ * ===================================== */
 
 .refresh-status {
   display: flex;
@@ -202,7 +195,6 @@ ion-content {
   color: #268554;
   font-size: 12px;
   font-weight: 500;
-
   ion-spinner {
     width: 17px;
     height: 17px;
@@ -211,8 +203,8 @@ ion-content {
 }
 
 /* =====================================
-   PET REPORT CARDS
-===================================== */
+ * PET REPORT CARDS
+ * ===================================== */
 
 .report-card {
   background: white;
@@ -220,7 +212,6 @@ ion-content {
   padding: 20px;
   margin-bottom: 15px;
   box-shadow: 0 3px 14px rgba(20, 70, 40, 0.05);
-
   h3 {
     font-size: 19px;
     margin: 12px 0 4px;
@@ -230,8 +221,8 @@ ion-content {
 }
 
 /* =====================================
-   PET PHOTO - NO CROPPING
-===================================== */
+ * PET PHOTO - NO CROPPING
+ * ===================================== */
 
 .pet-photo {
   display: block;
@@ -240,7 +231,6 @@ ion-content {
   overflow: hidden;
   border-radius: 14px;
   background: #edf4ef;
-
   img {
     display: block;
     width: 100%;
@@ -260,8 +250,8 @@ ion-content {
 }
 
 /* =====================================
-   REPORT TYPE AND ANIMAL ICON
-===================================== */
+ * REPORT TYPE AND ANIMAL ICON
+ * ===================================== */
 
 .report-top {
   display: flex;
@@ -304,8 +294,8 @@ ion-content {
 }
 
 /* =====================================
-   PET INFORMATION
-===================================== */
+ * PET INFORMATION
+ * ===================================== */
 
 .animal-type {
   font-size: 12px;
@@ -323,13 +313,12 @@ ion-content {
 }
 
 /* =====================================
-   REPORT LOCATION AND DATE
-===================================== */
+ * REPORT LOCATION AND DATE
+ * ===================================== */
 
 .report-details {
   border-top: 1px solid #eef1ee;
   padding-top: 15px;
-
   div {
     display: flex;
     align-items: flex-start;
@@ -352,8 +341,8 @@ ion-content {
 }
 
 /* =====================================
-   VIEW LOCATION BUTTON
-===================================== */
+ * VIEW LOCATION BUTTON
+ * ===================================== */
 
 .view-location-button {
   display: flex;
@@ -372,7 +361,6 @@ ion-content {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-
   ion-icon {
     font-size: 19px;
   }
@@ -392,8 +380,8 @@ ion-content {
 }
 
 /* =====================================
-   REPORT FOOTER
-===================================== */
+ * REPORT FOOTER
+ * ===================================== */
 
 .report-footer {
   margin-top: 12px;
@@ -405,16 +393,17 @@ ion-content {
 }
 
 /* =====================================
-   LOADING, EMPTY AND ERROR STATES
-===================================== */
+ * LOADING, EMPTY AND ERROR STATES
+ * ===================================== */
 
 .loading-state,
+
 .empty-state,
+
 .error-state {
   text-align: center;
   padding: 50px 15px;
   color: #839087;
-
   ion-icon {
     font-size: 48px;
     color: #9dcbb0;
@@ -440,7 +429,6 @@ ion-content {
 
 .error-state {
   color: #d93025;
-
   p {
     color: #d93025;
   }
@@ -454,57 +442,48 @@ ion-content {
 }
 
 /* =====================================
-   LOCATION MAP MODAL OVERLAY
-===================================== */
+ * LOCATION MAP MODAL OVERLAY
+ * ===================================== */
 
 .report-map-overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 16px;
   box-sizing: border-box;
-
   background: rgba(16, 34, 23, 0.65);
   backdrop-filter: blur(3px);
 }
 
 /* =====================================
-   MAP MODAL CONTAINER
-===================================== */
+ * MAP MODAL CONTAINER
+ * ===================================== */
 
 .report-map-modal {
   display: flex;
   flex-direction: column;
-
   width: 100%;
   max-width: 540px;
   max-height: min(90vh, 780px);
-
   overflow-y: auto;
-
   background: #ffffff;
   border-radius: 20px;
-
   box-shadow: 0 14px 45px rgba(10, 40, 20, 0.20);
 }
 
 /* =====================================
-   MAP MODAL HEADER
-===================================== */
+ * MAP MODAL HEADER
+ * ===================================== */
 
 .report-map-modal-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-
   padding: 20px 20px 12px;
-
   h2 {
     color: #213d2d;
     font-size: 19px;
@@ -525,21 +504,15 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   width: 36px;
   height: 36px;
   padding: 0;
-
   background: #eef5f0;
   color: #267b4e;
-
   border: none;
   border-radius: 10px;
-
   cursor: pointer;
-
   ion-icon {
     font-size: 21px;
   }
@@ -550,26 +523,21 @@ ion-content {
 }
 
 /* =====================================
-   MAP MODAL LOCATION DETAILS
-===================================== */
+ * MAP MODAL LOCATION DETAILS
+ * ===================================== */
 
 .report-map-location-details {
   display: flex;
   align-items: flex-start;
   gap: 9px;
-
   margin: 0 20px 15px;
   padding: 12px 14px;
-
   border-radius: 11px;
   background: #f1f8f3;
-
   color: #526c59;
   font-size: 12px;
   line-height: 1.6;
-
   overflow-wrap: anywhere;
-
   ion-icon {
     flex-shrink: 0;
     margin-top: 2px;
@@ -579,8 +547,8 @@ ion-content {
 }
 
 /* =====================================
-   LEAFLET MAP CONTAINER
-===================================== */
+ * LEAFLET MAP CONTAINER
+ * ===================================== */
 
 .report-map-container {
   width: 100%;
@@ -590,28 +558,23 @@ ion-content {
 
 .report-location-map {
   display: block;
-
   width: 100%;
   height: 340px;
   min-height: 340px;
-
   position: relative;
   z-index: 0;
-
   border: 1px solid #dce8df;
   border-radius: 12px;
-
   background: #e6eee9;
   overflow: hidden;
 }
 
 /* =====================================
-   MAP INFORMATION
-===================================== */
+ * MAP INFORMATION
+ * ===================================== */
 
 .report-map-info {
   padding: 15px 20px 5px;
-
   p {
     margin: 0 0 12px;
     font-size: 12px;
@@ -624,12 +587,10 @@ ion-content {
   display: flex;
   flex-direction: column;
   gap: 5px;
-
   padding: 12px;
   background: #f6faf7;
   border: 1px solid #e4eee6;
   border-radius: 10px;
-
   span {
     font-size: 12px;
     color: #53695a;
@@ -639,36 +600,33 @@ ion-content {
 }
 
 /* =====================================
-   CLOSE MAP ACTION BUTTON
-===================================== */
+ * CLOSE MAP ACTION BUTTON
+ * ===================================== */
 
 .close-map-action {
   --background: #268554;
   --background-hover: #207448;
   --border-radius: 11px;
   --box-shadow: none;
-
   height: 46px;
   margin: 18px 20px 20px;
-
   font-size: 13px;
   font-weight: 600;
   text-transform: none;
 }
 
 /* =====================================
-   RESPONSIVE MOBILE LAYOUT
-===================================== */
+ * RESPONSIVE MOBILE LAYOUT
+ * ===================================== */
 
 @media (max-width: 400px) {
-
   .page-container {
-    padding: 18px 14px 70px;
+    padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 14px
+      max(72px, env(safe-area-inset-bottom, 0px));
   }
 
   .page-header {
     gap: 12px;
-
     h1 {
       font-size: 21px;
     }
@@ -681,7 +639,6 @@ ion-content {
   .info-banner {
     padding: 16px;
     gap: 12px;
-
     h2 {
       font-size: 15px;
     }
@@ -689,7 +646,6 @@ ion-content {
 
   .report-card {
     padding: 16px;
-
     h3 {
       font-size: 18px;
     }
@@ -697,7 +653,6 @@ ion-content {
 
   .filter-container {
     gap: 8px;
-
     button {
       font-size: 12px;
       padding: 11px 6px;
@@ -719,7 +674,6 @@ ion-content {
 
   .report-map-modal-header {
     padding: 16px 15px 10px;
-
     h2 {
       font-size: 17px;
     }
@@ -748,8 +702,8 @@ ion-content {
 }
 
 /* =====================================
-   ACCESSIBILITY
-===================================== */
+ * ACCESSIBILITY
+ * ===================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .filter-container button {
@@ -757,10 +711,9 @@ ion-content {
   }
 }
 
-
 /* =====================================
-   MULTIPLE PET PHOTOS - POST GALLERY
-===================================== */
+ * MULTIPLE PET PHOTOS - POST GALLERY
+ * ===================================== */
 
 .pet-photo-gallery {
   width: 100%;
@@ -770,7 +723,6 @@ ion-content {
   border-radius: 14px;
   background: #f7fbf8;
   touch-action: pan-y;
-
   .pet-photo {
     position: relative;
     margin-bottom: 0;
@@ -792,7 +744,6 @@ ion-content {
   background: #edf4ef;
   cursor: zoom-in;
   overflow: hidden;
-
   img {
     display: block;
     width: 100%;
@@ -819,7 +770,6 @@ ion-content {
   background: rgba(16, 34, 23, 0.65);
   color: #ffffff;
   pointer-events: none;
-
   ion-icon {
     font-size: 18px;
   }
@@ -841,8 +791,8 @@ ion-content {
 }
 
 /* =====================================
-   PHOTO PREVIOUS / NEXT BUTTONS
-===================================== */
+ * PHOTO PREVIOUS / NEXT BUTTONS
+ * ===================================== */
 
 .pet-photo-nav {
   position: absolute;
@@ -861,7 +811,6 @@ ion-content {
   color: #ffffff;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-
   ion-icon {
     font-size: 24px;
     pointer-events: none;
@@ -881,10 +830,11 @@ ion-content {
 }
 
 /* =====================================
-   PHOTO DOT POSITION INDICATORS
-===================================== */
+ * PHOTO DOT POSITION INDICATORS
+ * ===================================== */
 
 .pet-photo-dots,
+
 .photo-viewer-dots {
   display: flex;
   align-items: center;
@@ -895,6 +845,7 @@ ion-content {
 }
 
 .pet-photo-dot,
+
 .photo-viewer-dot {
   display: block;
   width: 10px;
@@ -905,7 +856,6 @@ ion-content {
   border-radius: 50%;
   background: #c9d9ce;
   cursor: pointer;
-
   &.active {
     width: 20px;
     border-radius: 20px;
@@ -914,8 +864,8 @@ ion-content {
 }
 
 /* =====================================
-   FULL-SIZE PHOTO VIEWER OVERLAY
-===================================== */
+ * FULL-SIZE PHOTO VIEWER OVERLAY
+ * ===================================== */
 
 .photo-viewer-overlay {
   position: fixed;
@@ -925,7 +875,9 @@ ion-content {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+
   padding: max(12px, env(safe-area-inset-top)) 14px
+
     max(12px, env(safe-area-inset-bottom));
   background: rgba(10, 22, 15, 0.90);
   backdrop-filter: blur(5px);
@@ -954,7 +906,6 @@ ion-content {
 
 .photo-viewer-heading {
   min-width: 0;
-
   h2 {
     margin: 0 0 5px;
     color: #ffffff;
@@ -984,7 +935,6 @@ ion-content {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
   cursor: pointer;
-
   ion-icon {
     font-size: 23px;
   }
@@ -1035,7 +985,6 @@ ion-content {
   background: rgba(0, 0, 0, 0.55);
   color: #ffffff;
   cursor: pointer;
-
   ion-icon {
     font-size: 27px;
     pointer-events: none;
@@ -1061,7 +1010,6 @@ ion-content {
 
 .photo-viewer-dot {
   background: #647b6a;
-
   &.active {
     background: #69d194;
   }
@@ -1077,14 +1025,19 @@ ion-content {
 }
 
 /* =====================================
-   GALLERY BUTTON ACCESSIBILITY
-===================================== */
+ * GALLERY BUTTON ACCESSIBILITY
+ * ===================================== */
 
 .pet-photo-view-button,
+
 .pet-photo-nav,
+
 .pet-photo-dot,
+
 .photo-viewer-close,
+
 .photo-viewer-nav,
+
 .photo-viewer-dot {
   &:focus-visible {
     outline: 3px solid #69d194;
@@ -1093,13 +1046,12 @@ ion-content {
 }
 
 /* =====================================
-   MOBILE GALLERY ADJUSTMENTS
-===================================== */
+ * MOBILE GALLERY ADJUSTMENTS
+ * ===================================== */
 
 @media (max-width: 400px) {
   .pet-photo-view-button {
     min-height: 130px;
-
     img {
       max-height: 340px;
     }
@@ -1108,7 +1060,6 @@ ion-content {
   .pet-photo-nav {
     width: 34px;
     height: 34px;
-
     ion-icon {
       font-size: 21px;
     }
@@ -1132,6 +1083,7 @@ ion-content {
   }
 
   .photo-viewer-stage,
+
   .photo-viewer-image {
     max-height: 60vh;
   }
@@ -1139,7 +1091,6 @@ ion-content {
   .photo-viewer-nav {
     width: 36px;
     height: 36px;
-
     ion-icon {
       font-size: 23px;
     }
@@ -1155,14 +1106,1669 @@ ion-content {
 }
 
 /* =====================================
-   REDUCED MOTION PREFERENCE
-===================================== */
+ * REDUCED MOTION PREFERENCE
+ * ===================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .pet-photo-view-button,
+
   .pet-photo-nav,
+
   .photo-viewer-nav {
     scroll-behavior: auto;
     transition: none;
   }
+}
+
+/* ====================================================
+   OWNERSHIP CLAIM - FOUND PET BUTTON
+   Keeps the existing Lost & Found theme.
+   ==================================================== */
+.claim-ownership-button {
+  width: 100%;
+  min-height: 48px;
+  touch-action: manipulation;
+  font-family: inherit;
+  line-height: 1.4;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  ion-icon {
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
+  &:hover:not(:disabled) {
+    background: #216539 !important; // Overrides the template's inline background.
+    box-shadow: 0 5px 14px rgba(27, 91, 50, 0.18);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+
+  &:focus-visible {
+    outline: 3px solid #91cfa3;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.ownership-claim-success,
+.ownership-eligibility-error {
+  overflow-wrap: anywhere;
+  box-shadow: 0 2px 9px rgba(28, 75, 42, 0.04);
+}
+
+/* ====================================================
+   OWNERSHIP CLAIM - PRIVATE EVIDENCE DIALOG
+   ==================================================== */
+.ownership-claim-overlay {
+  box-sizing: border-box;
+  padding:
+    max(12px, env(safe-area-inset-top, 0px))
+    14px
+    max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  overscroll-behavior: contain;
+  backdrop-filter: blur(3px);
+}
+
+.ownership-claim-modal {
+  box-sizing: border-box;
+  max-height: min(92dvh, 850px) !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  color: #263e2e;
+}
+
+.ownership-claim-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #ffffff;
+
+  h2,
+  p {
+    overflow-wrap: anywhere;
+  }
+}
+
+.ownership-claim-close {
+  touch-action: manipulation;
+  transition: background-color 160ms ease, border-color 160ms ease;
+  &:hover:not(:disabled) {
+    background: #e5f2e9 !important;
+    border-color: #b4d9bf !important;
+  }
+
+  &:focus-visible {
+    outline: 3px solid #91cfa3;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.ownership-claim-body {
+  min-width: 0;
+  form {
+    display: block;
+    min-width: 0;
+  }
+
+  label {
+    line-height: 1.4;
+  }
+
+  textarea,
+  select,
+  input[type='file'] {
+    font-family: inherit;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    line-height: 1.5;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  textarea {
+    min-height: 124px;
+    max-height: 340px;
+  }
+
+  textarea:focus,
+  select:focus,
+  input[type='file']:focus-visible {
+    outline: none;
+    border-color: #2e8553 !important;
+    box-shadow: 0 0 0 3px rgba(45, 126, 69, 0.14);
+  }
+
+  textarea:disabled,
+  select:disabled,
+  input[type='file']:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f1f5f2 !important;
+  }
+
+  input[type='file'] {
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+
+  input[type='file']::file-selector-button {
+    padding: 8px 10px;
+    margin-right: 10px;
+    border: 1px solid #b5d4bc;
+    border-radius: 8px;
+    background: #e8f5ec;
+    color: #246b42;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  ion-button {
+    text-transform: none;
+    --border-radius: 11px;
+    letter-spacing: 0;
+  }
+}
+
+.ownership-claim-pet-summary,
+.ownership-claim-form-error {
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
+
+/* ====================================================
+   OWNERSHIP CLAIM - SELECTED EVIDENCE PHOTOS
+   ==================================================== */
+.ownership-evidence-file-list {
+  min-width: 0;
+  li {
+    min-width: 0;
+    span {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    button {
+      flex-shrink: 0;
+      touch-action: manipulation;
+      font-family: inherit;
+      transition: background-color 150ms ease;
+      &:hover:not(:disabled) {
+        background: #fff0f0 !important;
+      }
+
+      &:focus-visible {
+        outline: 2px solid #c65d5d;
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+/* ====================================================
+   OWNERSHIP CLAIM - SMALL PHONES AND ACCESSIBILITY
+   ==================================================== */
+@media (max-width: 420px) {
+  .claim-ownership-button {
+    font-size: 13px !important;
+  }
+
+  .ownership-claim-overlay {
+    padding: max(8px, env(safe-area-inset-top, 0px)) 8px
+      max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .ownership-claim-modal {
+    width: 100%;
+    max-height: 95dvh !important;
+    border-radius: 14px !important;
+  }
+
+  .ownership-claim-modal-header {
+    padding: 16px 14px 12px !important;
+    h2 {
+      font-size: 18px !important;
+    }
+  }
+
+  .ownership-claim-body {
+    padding: 15px 13px !important;
+  }
+
+  .ownership-evidence-file-list li {
+    padding: 9px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .claim-ownership-button,
+  .ownership-claim-close,
+  .ownership-claim-body textarea,
+  .ownership-claim-body select,
+  .ownership-claim-body input[type='file'],
+  .ownership-evidence-file-list li button {
+    transition: none;
+  }
+}
+
+
+/* ====================================================
+   STEP 30 - FOUND PET OWNERSHIP AVAILABILITY NOTICES
+   For the Step 29 Lost & Found HTML.
+   These styles extend, rather than replace, the
+   existing report cards, photo gallery, and claim form.
+   ==================================================== */
+
+.ownership-availability-banner {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  font-family: inherit;
+  box-shadow: 0 3px 10px rgba(22, 52, 33, 0.035);
+
+  // A subtle status indicator without introducing new HTML/icons.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background-color: currentColor;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  strong {
+    display: block;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 750;
+    letter-spacing: 0;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    display: block;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  ion-spinner {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    color: currentColor;
+  }
+}
+
+/* The HTML supplies accessible copy and matching inline status colors;
+   these styles add consistent hierarchy and visual polish. */
+.ownership-availability-reserved {
+  box-shadow: 0 3px 12px rgba(153, 103, 27, 0.055);
+
+  &::before {
+    background-color: #c38a2b;
+  }
+}
+
+.ownership-availability-disputed {
+  box-shadow: 0 3px 12px rgba(143, 64, 51, 0.05);
+
+  &::before {
+    background-color: #cb6251;
+  }
+}
+
+.ownership-availability-returned {
+  box-shadow: 0 3px 12px rgba(29, 103, 56, 0.045);
+
+  &::before {
+    background-color: #37935d;
+  }
+}
+
+.ownership-availability-checking,
+.ownership-availability-unknown {
+  box-shadow: none;
+
+  &::before {
+    background-color: #a9b8ad;
+  }
+}
+
+.ownership-availability-checking {
+  min-height: 48px;
+  align-items: center;
+
+  ion-spinner {
+    margin-left: 1px;
+  }
+}
+
+/* Maintain comfortable spacing without affecting other card actions. */
+.report-card {
+  .ownership-availability-banner + .report-footer {
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ownership-availability-banner {
+    padding: 12px 13px !important;
+    border-radius: 11px !important;
+    gap: 5px !important;
+
+    strong {
+      font-size: 12.5px !important;
+      line-height: 1.45;
+    }
+
+    span {
+      font-size: 11.5px !important;
+      line-height: 1.6;
+    }
+  }
+
+  .ownership-availability-checking {
+    gap: 8px !important;
+    font-size: 11.5px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ownership-availability-banner,
+  .ownership-availability-banner::before {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ===========================================================
+   PAWRESCUE | LOST & FOUND VISUAL REFINEMENT
+   Matches Stray Animal Assistance and My Reports.
+   Functional controls and private forms are unchanged.
+   =========================================================== */
+
+:host {
+  display: block;
+  --lf-green: #2d8038;
+  --lf-green-hover: #277232;
+  --lf-green-pressed: #23692e;
+  --lf-green-soft: #e2f4e9;
+  --lf-green-text: #214936;
+  --lf-border: #deebe2;
+}
+
+ion-content { --background: #f5f9f6; }
+
+/* Match the Report a Pet header's safe-area spacing on Android.
+   Keep the Lost & Found page's existing maximum width and card layout. */
+.page-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 20px
+           max(72px, env(safe-area-inset-bottom, 0px));
+}
+
+/* Header matches Report a Pet: title, spacing and circular back control. */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 18px;
+
+  > div { min-width: 0; }
+
+  h1 {
+    margin: 0 0 5px;
+    color: #1f4230;
+    font-size: 23px;
+    font-weight: 750;
+    line-height: 1.25;
+  }
+
+  p {
+    margin: 0;
+    color: #829087;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #e5f4ea;
+  color: #2d8038;
+  box-shadow: none;
+  cursor: pointer;
+
+  ion-icon { font-size: 23px; }
+  &:active { background: #d5eddd; }
+  &:focus-visible { outline: 3px solid #268554; outline-offset: 3px; }
+}
+
+/* Action area uses the Stray primary / outlined secondary button palette. */
+.lost-found-primary-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin: 0 0 30px;
+
+  ion-button {
+    box-sizing: border-box;
+    width: 100%;
+    height: 49px;
+    min-height: 49px;
+    min-width: 0;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    --border-radius: 11px;
+    --box-shadow: none;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    ion-icon { font-size: 18px; margin-inline-end: 5px; }
+  }
+
+  .lost-found-report-action {
+    /* First row: Report a Pet spans both columns. */
+    grid-column: 1 / -1;
+    --background: var(--lf-green);
+    --background-hover: var(--lf-green-hover);
+    --background-activated: var(--lf-green-pressed);
+    --color: #fff;
+    --box-shadow: 0 2px 6px rgba(26, 91, 42, .13);
+  }
+
+  .lost-found-my-claims-action,
+  .lost-found-my-recoveries-action {
+    --background: #fff;
+    --background-hover: #f7fcf8;
+    --background-activated: var(--lf-green-soft);
+    --color: var(--lf-green);
+    --border-color: var(--lf-green);
+    --border-width: 2px;
+    --border-style: solid;
+    --box-shadow: none;
+  }
+
+}
+
+/* Feed heading, refresh and filter tabs. */
+.section-header {
+  margin-bottom: 12px;
+  h3 {
+    margin: 0;
+    color: #263c30;
+    font-size: 19px;
+    line-height: 1.3;
+    font-weight: 750;
+  }
+}
+
+.refresh-button {
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  border: 1px solid var(--lf-border);
+  border-radius: 11px;
+  background: var(--lf-green-soft);
+  color: #268554;
+  font-size: 21px;
+  box-shadow: none;
+  &:active { background: #d5eddd; }
+  &:focus-visible { outline: 3px solid #268554; outline-offset: 2px; }
+  &:disabled { opacity: .55; }
+}
+
+.filter-label {
+  margin: 0 0 10px;
+  color: #7e8a80;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.filter-container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 19px;
+
+  button {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 49px;
+    padding: 10px 8px;
+    border: 2px solid var(--lf-green);
+    border-radius: 11px;
+    background: #fff;
+    color: var(--lf-green);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    cursor: pointer;
+  }
+
+  button.active {
+    border-color: var(--lf-green);
+    background: var(--lf-green);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(26, 91, 42, .13);
+  }
+
+  button:not(.active):active { background: var(--lf-green-soft); }
+  button.active:active { background: var(--lf-green-pressed); }
+  button:focus-visible { outline: 3px solid #268554; outline-offset: 2px; }
+}
+
+/* Reports share the lighter card / badge design of My Reports. */
+.report-card {
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0 0 17px;
+  padding: 16px;
+  border: 1px solid #e1ebe5;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(19, 55, 33, .04);
+
+  h3 {
+    margin: 13px 0 4px;
+    color: #1b4332;
+    font-size: 20px;
+    font-weight: 750;
+    line-height: 1.3;
+  }
+}
+
+.report-top { gap: 12px; }
+.animal-icon {
+  width: 43px;
+  height: 43px;
+  background: #eaf6ee;
+  color: #268554;
+  border-radius: 12px;
+  font-size: 23px;
+}
+.report-badge {
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.report-badge.lost { color: #a45d22; background: #fff1e5; }
+.report-badge.found { color: #1e8554; background: #e2f4e9; }
+.animal-type { color: #859288; font-size: 12px; }
+.description {
+  margin: 14px 0;
+  color: #5d6e62;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.report-details {
+  padding-top: 15px;
+  border-color: #e9f0ea;
+  div { gap: 10px; font-size: 12px; color: #718477; }
+  ion-icon { font-size: 18px; color: #268554; }
+}
+.report-footer { margin-top: 14px; padding-top: 13px; color: #8d9d91; }
+
+/* Portrait / landscape photos remain fully visible.  A soft blurred
+   copy of the same photo fills the unused space in the frame. */
+.pet-photo-gallery {
+  width: 100%;
+  overflow: hidden;
+  margin: 0 0 16px;
+  border: 1px solid #e1ebe5;
+  border-radius: 15px;
+  background: #edf5ef;
+
+  .pet-photo {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    background: #edf5ef;
+  }
+}
+
+.pet-photo-view-button {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: clamp(230px, 68vw, 390px);
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #dce9df;
+  border: 0;
+  border-radius: 0;
+}
+
+.pet-photo-view-button img.pet-photo-backdrop {
+  position: absolute;
+  inset: -24px;
+  z-index: 0;
+  display: block;
+  width: calc(100% + 48px);
+  height: calc(100% + 48px);
+  max-height: none;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(22px) brightness(.88);
+  opacity: .64;
+  pointer-events: none;
+}
+
+.pet-photo-view-button img.pet-photo-main-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pet-photo-expand,
+.pet-photo-counter { z-index: 4; }
+.pet-photo-nav { z-index: 5; width: 38px; height: 38px; }
+.pet-photo-dots { gap: 7px; padding: 10px; }
+.pet-photo-dot.active { background: var(--lf-green); }
+
+/* Outline = secondary, filled = primary (matching Stray Assistance). */
+.report-card .view-location-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 49px;
+  margin: 13px 0 7px;
+  padding: 12px 14px;
+  border: 2px solid var(--lf-green);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--lf-green);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: none;
+  &:hover { background: #f7fcf8; }
+  &:active { background: var(--lf-green-soft); }
+  &:focus-visible { outline: 3px solid #268554; outline-offset: 2px; }
+}
+
+.report-card .claim-ownership-button,
+.report-card .report-found-lost-pet-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 49px;
+  margin: 13px 0 0;
+  padding: 12px 14px;
+  border: 2px solid var(--lf-green);
+  border-radius: 11px;
+  background: var(--lf-green);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(26, 91, 42, .13);
+  cursor: pointer;
+  ion-icon { font-size: 19px; }
+  &:hover:not(:disabled) { border-color: var(--lf-green-hover); background: var(--lf-green-hover); box-shadow: none; }
+  &:active:not(:disabled) { border-color: var(--lf-green-pressed); background: var(--lf-green-pressed); }
+  &:disabled { opacity: .55; cursor: not-allowed; }
+  &:focus-visible { outline: 3px solid #268554; outline-offset: 2px; }
+}
+
+/* Higher specificity neutralizes an older '!important' claim-button rule. */
+.report-card button.claim-ownership-button { background: var(--lf-green) !important; border-radius: 11px !important; }
+.report-card button.claim-ownership-button:hover:not(:disabled) { background: var(--lf-green-hover) !important; }
+
+/* Status warnings and dialogs stay fully functional and readable. */
+.ownership-availability-banner {
+  border-radius: 11px !important;
+  box-shadow: none;
+  overflow-wrap: anywhere;
+}
+.close-map-action {
+  --background: var(--lf-green);
+  --background-hover: var(--lf-green-hover);
+  --background-activated: var(--lf-green-pressed);
+  --color: #fff;
+  --border-radius: 11px;
+  --box-shadow: none;
+  height: 49px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.error-state ion-button {
+  --color: var(--lf-green);
+  --border-color: var(--lf-green);
+  --border-width: 2px;
+  --border-radius: 11px;
+  --box-shadow: none;
+  text-transform: none;
+  font-weight: 700;
+}
+
+@media (max-width: 400px) {
+  .page-container { padding-left: 14px; padding-right: 14px; }
+  .page-header { gap: 12px; h1 { font-size: 21px; } }
+  .lost-found-primary-actions {
+    gap: 9px;
+    ion-button {
+      height: 48px;
+      min-height: 48px;
+      font-size: 12px;
+      --padding-start: 5px;
+      --padding-end: 5px;
+      ion-icon { font-size: 16px; margin-inline-end: 3px; }
+    }
+  }
+  .report-card { padding: 13px; }
+  .pet-photo-view-button { height: clamp(240px, 78vw, 350px); }
+  .filter-container { gap: 8px; button { min-height: 46px; font-size: 12px; padding: 9px 6px; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-container button,
+  .pet-photo-nav,
+  .claim-ownership-button,
+  .report-found-lost-pet-button { transition: none; }
+}
+
+/* ============================================================
+ * SINGLE-ROW COMMUNITY REPORT FILTER
+ * Match Stray Animal Assistance green/white button styling.
+ * ============================================================ */
+.lost-found-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 19px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  border: 1px solid #dfeae2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 14px rgba(26, 65, 38, .035);
+}
+
+.compact-filter-title {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #234936;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.compact-filter-select-wrap {
+  position: relative;
+  flex: 1 1 150px;
+  min-width: 0;
+  max-width: 205px;
+}
+
+.compact-filter-select {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0 33px 0 13px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 11px;
+  background: #fff;
+  color: #287e3b;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    border-color: #2d8038;
+    box-shadow: 0 0 0 3px rgba(45, 128, 56, .12);
+  }
+}
+
+.compact-filter-chevron {
+  position: absolute;
+  top: calc(50% - 6px);
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #2d8038;
+  border-bottom: 2px solid #2d8038;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+@media (max-width: 350px) {
+  .lost-found-filters { gap: 8px; padding: 10px; }
+  .compact-filter-title { font-size: 12px; }
+  .compact-filter-select { height: 42px; font-size: 12px; padding-left: 10px; }
+}
+
+
+/* ============================================================
+ * COMPACT TWO-ROW FILTER LAYOUT
+ * Row 1: Filter Reports + Type dropdown
+ * Row 2: Use My GPS + Within distance dropdown
+ * ============================================================ */
+.lost-found-filters {
+  display: block;
+  width: 100%;
+  padding: 13px 14px;
+  margin-bottom: 19px;
+}
+
+.compact-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.compact-gps-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(124px, .92fr);
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.compact-nearby-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 9px;
+  border: 1.5px solid #2d8038;
+  border-radius: 11px;
+  background: #fff;
+  color: #2d8038;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  ion-icon { flex-shrink: 0; font-size: 17px; }
+  ion-spinner { flex-shrink: 0; width: 16px; height: 16px; --color: currentColor; }
+  &.active { background: #2d8038; color: #fff; }
+  &:disabled { opacity: .65; cursor: wait; }
+  &:focus-visible { outline: 2px solid #2d8038; outline-offset: 2px; }
+}
+
+.compact-radius-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 9px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 11px;
+  background: #fff;
+  color: #4c6856;
+  font-size: 11px;
+  font-weight: 600;
+
+  span { white-space: nowrap; }
+  &:focus-within { border-color: #2d8038; }
+}
+
+.compact-radius-select {
+  min-width: 0;
+  max-width: 92px;
+  flex: 1 1 auto;
+  height: 40px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #287e3b;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.compact-gps-active {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid #bcdcc5;
+  border-radius: 10px;
+  background: #edf8f0;
+  color: #286841;
+  font-size: 11px;
+  line-height: 1.35;
+
+  button {
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #287e3b;
+    font: inherit;
+    font-weight: 750;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.nearby-error {
+  margin: 9px 0 0;
+  color: #ac4637;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.compact-filter-results {
+  margin: 9px 0 0;
+  color: #718479;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (max-width: 350px) {
+  .compact-gps-row { grid-template-columns: minmax(0, 1fr) minmax(110px, .85fr); gap: 7px; }
+  .compact-nearby-button { gap: 5px; padding: 6px; font-size: 11px; }
+  .compact-radius-group { padding: 0 6px; gap: 4px; font-size: 10px; }
+  .compact-radius-select { font-size: 11px; }
+}
+
+/* ============================================================
+ * COMPACT LOST & FOUND REPORT CARDS
+ * - Reduce vertical scrolling on phones.
+ * - Keep photos fully visible (object-fit: contain) with the
+ *   existing blurred image background; fullscreen stays intact.
+ * - Preserve claim, recovery, gallery and map interactions.
+ * ============================================================ */
+.report-card {
+  padding: 12px;
+  margin-bottom: 13px;
+  border-radius: 17px;
+  box-shadow: 0 3px 12px rgba(19, 55, 33, .04);
+}
+
+.report-card .pet-photo-gallery {
+  margin-bottom: 11px;
+  border-radius: 12px;
+}
+
+.report-card .pet-photo-view-button {
+  height: clamp(195px, 57vw, 246px);
+  min-height: 0;
+}
+
+/* Foreground is never cropped, even for portrait images. */
+.report-card .pet-photo-view-button img.pet-photo-main-image {
+  object-fit: contain;
+  object-position: center;
+}
+
+.report-card .pet-photo-dots {
+  padding: 7px 9px;
+  gap: 7px;
+}
+
+.report-card .pet-photo-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+}
+.report-card .pet-photo-dot.active { width: 18px; }
+
+.report-card .pet-photo-expand {
+  top: 9px;
+  left: 9px;
+  width: 30px;
+  height: 30px;
+}
+.report-card .pet-photo-counter {
+  top: 9px;
+  right: 9px;
+  padding: 5px 9px;
+  font-size: 11px;
+}
+
+/* Name and badge share the same row, eliminating the extra icon row. */
+.report-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.report-card .report-title-row h3 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  color: #1b4332;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.report-card .report-title-row .report-badge {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  font-size: 10px;
+}
+
+.report-card .animal-type {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Clamp only the card preview; the full report is not modified. */
+.report-card .description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
+  margin: 8px 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.report-card .report-details {
+  padding-top: 10px;
+}
+.report-card .report-details div {
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.report-card .report-details ion-icon {
+  font-size: 16px;
+}
+.report-card .report-details span {
+  line-height: 1.4;
+}
+
+/* Buttons remain easy to tap and keep Stray Assistance green styling. */
+.report-card .view-location-button {
+  min-height: 44px;
+  margin: 9px 0 4px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.report-card .view-location-button ion-icon {
+  font-size: 17px;
+}
+.report-card .claim-ownership-button,
+.report-card .report-found-lost-pet-button {
+  min-height: 44px;
+  margin-top: 9px !important;
+  padding: 9px 12px !important;
+  border-radius: 10px;
+  font-size: 12px !important;
+}
+
+.report-card .report-footer {
+  margin-top: 10px;
+  padding-top: 9px;
+  font-size: 10px;
+}
+
+/* Narrow devices: keep the same compact gallery, not the older 78vw rule. */
+@media (max-width: 400px) {
+  .report-card { padding: 11px; }
+  .report-card .pet-photo-view-button {
+    height: clamp(185px, 58vw, 224px);
+  }
+  .report-card .report-title-row h3 { font-size: 17px; }
+}
+
+/* ============================================================
+   COMPACT RESERVED FOUND PET NOTICE (mobile-first)
+   Keeps the claim restriction visible without a tall banner.
+   Ownership and availability checks remain in TypeScript/PHP.
+   ============================================================ */
+.report-card .ownership-availability-reserved.ownership-availability-compact {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  margin: 8px 0 0;
+  padding: 9px 11px;
+  border: 1px solid #ead6aa;
+  border-radius: 10px;
+  background: #fff9ed;
+  color: #83561c;
+  box-shadow: none;
+  line-height: 1.3;
+}
+
+.report-card .ownership-availability-reserved.ownership-availability-compact::before {
+  width: 3px;
+}
+
+.report-card .ownership-availability-compact > ion-icon {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 19px;
+  height: 19px;
+  font-size: 19px;
+  color: #9b701f;
+}
+
+.report-card .ownership-availability-compact .availability-compact-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.report-card .ownership-availability-compact .availability-compact-copy strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.report-card .ownership-availability-compact .availability-compact-copy span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 420px) {
+  .report-card .ownership-availability-reserved.ownership-availability-compact {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+  .report-card .ownership-availability-compact .availability-compact-copy strong {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
+  .report-card .ownership-availability-compact .availability-compact-copy span {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+
+/* ============================================================
+   PAWRESCUE / LOST & FOUND: CLEAN PRIVATE PET ACTION FORMS
+   Same HTML bindings, shorter mobile layouts and no helper text
+   underneath each field. Applies to Claim Ownership and Finding.
+   ============================================================ */
+.lf-private-overlay.ownership-claim-overlay,
+.lf-private-overlay.lost-recovery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1350;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 12px
+    max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  background: rgba(14, 36, 25, .64);
+  backdrop-filter: blur(3px);
+}
+.lf-private-modal.ownership-claim-modal,
+.lf-private-modal.lost-recovery-modal {
+  width: 100%;
+  max-width: 510px;
+  max-height: calc(100dvh - 30px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  border: 1px solid #e2ebe4;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 20px 55px rgba(9, 42, 22, .19);
+}
+.lf-private-header.ownership-claim-modal-header,
+.lf-private-header.lost-recovery-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 17px 17px 14px !important;
+  background: #fff;
+  border-bottom: 1px solid #ecf0ed;
+}
+.lf-private-header-copy { min-width: 0; flex: 1 1 auto; }
+.lf-private-eyebrow {
+  margin: 0 0 5px !important;
+  color: #2d8038 !important;
+  font-size: 10px !important;
+  font-weight: 800;
+  letter-spacing: .55px;
+  text-transform: uppercase;
+}
+.lf-private-header h2 {
+  margin: 0 !important;
+  color: #214936 !important;
+  font-size: 19px !important;
+  line-height: 1.3;
+  font-weight: 800;
+}
+.lf-private-header-copy > p:last-child {
+  margin: 5px 0 0 !important;
+  color: #728279 !important;
+  font-size: 12px !important;
+  line-height: 1.45;
+}
+.lf-private-close.ownership-claim-close,
+.lf-private-close.lost-recovery-close {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  flex: 0 0 35px;
+  border: 1px solid #deebe2;
+  border-radius: 11px;
+  background: #f0f7f2;
+  color: #386b45;
+  cursor: pointer;
+}
+.lf-private-close ion-icon { font-size: 21px; }
+.lf-private-close:disabled { opacity: .5; cursor: not-allowed; }
+.lf-private-body.ownership-claim-body,
+.lf-private-body.lost-recovery-body {
+  padding: 16px 17px 18px !important;
+  min-width: 0;
+}
+.lf-private-pet-summary.ownership-claim-pet-summary,
+.lf-private-pet-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 11px 12px;
+  margin: 0 0 19px !important;
+  border: 1px solid #e0ece4;
+  border-radius: 12px;
+  background: #f6faf7;
+}
+.lf-private-pet-symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #e6f4ea;
+  color: #2d8038;
+}
+.lf-private-pet-symbol ion-icon { font-size: 21px; }
+.lf-private-pet-summary > div:last-child { min-width: 0; }
+.lf-private-pet-summary strong {
+  display: block;
+  color: #214936;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.lf-private-pet-summary span {
+  display: block;
+  margin-top: 2px;
+  color: #7c8e80;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.lf-private-field { margin-bottom: 17px; min-width: 0; }
+.lf-private-field > label,
+.lf-private-field-heading > label,
+.lf-private-optional-body label {
+  display: block;
+  margin: 0 0 8px;
+  color: #254937;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 750;
+}
+.lf-private-field-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.lf-private-field-heading > label { margin-bottom: 8px; }
+.lf-required { color: #c53c38; }
+.lf-private-optional-label { color: #92a198; font-size: 11px; font-weight: 500; }
+.lf-private-file-count { color: #678773; font-size: 11px; font-weight: 750; white-space: nowrap; }
+.lf-private-body textarea,
+.lf-private-body input:not([type='file']):not([type='checkbox']),
+.lf-private-body select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 45px;
+  margin: 0;
+  padding: 11px 12px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 11px;
+  outline: none;
+  background: #fff;
+  color: #263c30;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.lf-private-body textarea {
+  min-height: 103px;
+  max-height: 250px;
+  resize: vertical;
+}
+.lf-private-body textarea:focus,
+.lf-private-body input:not([type='file']):focus,
+.lf-private-body select:focus {
+  border-color: #2d8038 !important;
+  box-shadow: 0 0 0 3px rgba(45,128,56,.12);
+}
+.lf-private-body textarea::placeholder,
+.lf-private-body input::placeholder { color: #99a59d; }
+.lf-private-optional {
+  margin: 0 0 18px;
+  border: 1px solid #e1ece4;
+  border-radius: 12px;
+  background: #fafdfa;
+}
+.lf-private-optional summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  padding: 12px 13px;
+  color: #305f3f;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 750;
+  cursor: pointer;
+  list-style: none;
+}
+.lf-private-optional summary::-webkit-details-marker { display: none; }
+.lf-private-optional summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 1.6px solid #648c6d;
+  border-bottom: 1.6px solid #648c6d;
+  transform: rotate(45deg);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.lf-private-optional[open] summary::after { transform: rotate(225deg); }
+.lf-private-optional summary span {
+  color: #84988a;
+  font-size: 10px;
+  font-weight: 500;
+}
+.lf-private-optional-body { padding: 0 13px 14px; }
+.lf-private-optional-body .lf-private-field { margin-bottom: 14px; }
+.lf-private-optional-body .lf-private-field:last-child { margin-bottom: 0; }
+.lf-private-upload-tile {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 86px;
+  margin: 0 !important;
+  padding: 11px 10px;
+  overflow: hidden;
+  border: 1.5px dashed #b6d8be;
+  border-radius: 13px;
+  background: #f5fbf6;
+  color: #28783a;
+  text-align: center;
+  cursor: pointer;
+}
+.lf-private-upload-tile > ion-icon { font-size: 22px; }
+.lf-private-upload-tile > span { color: #2d8038; font-size: 12px; font-weight: 800; }
+.lf-private-upload-tile > small { color: #829c88; font-size: 10px; font-weight: 500; }
+.lf-private-upload-tile input[type='file'] {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 2;
+  cursor: pointer;
+}
+.lf-private-upload-tile:focus-within {
+  border-color: #2d8038;
+  box-shadow: 0 0 0 3px rgba(45,128,56,.12);
+}
+.lf-private-upload-tile:has(input:disabled) { opacity: .6; cursor: not-allowed; }
+.lf-private-file-list,
+.lf-private-file-list.ownership-evidence-file-list,
+.lf-private-file-list.lost-recovery-evidence-file-list {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lf-private-file-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid #e3ece5;
+  border-radius: 9px;
+  background: #fbfdfb;
+}
+.lf-private-file-list li > ion-icon { font-size: 17px; color: #42864f; flex-shrink: 0; }
+.lf-private-file-list li > span {
+  flex: 1;
+  min-width: 0;
+  color: #4b6553;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lf-private-file-list li button {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border: 1px solid #eed7d7;
+  border-radius: 7px;
+  background: #fff4f4;
+  color: #ad4545;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lf-private-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 2px 0 16px;
+  padding: 10px 11px;
+  border: 1px solid #e0ece3;
+  border-radius: 10px;
+  background: #f3faf5;
+  color: #54725b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.lf-private-privacy ion-icon { flex: 0 0 17px; margin-top: 1px; font-size: 17px; color: #318048; }
+.lf-private-submit {
+  display: block;
+  height: 47px;
+  margin: 0;
+  --background: #2d8038;
+  --background-hover: #277232;
+  --background-activated: #23692e;
+  --color: #fff;
+  --color-hover: #fff;
+  --color-activated: #fff;
+  --border-radius: 11px;
+  --box-shadow: none;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.lf-private-submit::part(native) { color: #fff; }
+.lf-private-cancel {
+  display: block;
+  width: 100%;
+  margin: 4px 0 0;
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  color: #839188;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.lf-private-cancel:disabled { opacity: .5; cursor: not-allowed; }
+.lf-private-notice {
+  margin-bottom: 13px;
+  padding: 11px 12px;
+  border: 1px solid #e0eee5;
+  border-radius: 10px;
+  background: #f4faf5;
+  color: #3c6247;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.lf-private-notice p { margin: 6px 0 0; }
+.lf-private-notice--error { border-color: #ebc7c7; background: #fff4f4; color: #a43c3c; }
+.lf-private-notice--warning { border-color: #f0ddb2; background: #fffaf0; color: #7a612e; }
+.lf-private-upload-progress { color: #318048; font-size: 12px; line-height: 1.4; }
+.lf-private-gps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 43px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #bcdcc5;
+  border-radius: 10px;
+  background: #fff;
+  color: #2d8038;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.lf-private-gps ion-spinner { width: 18px; height: 18px; }
+.lf-private-gps-confirmed { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; color: #357e46; font-size: 11px; }
+.lf-private-gps-confirmed button { border: 0; background: transparent; color: #ae4646; font-size: 11px; cursor: pointer; }
+@media (max-width: 420px) {
+  .lf-private-overlay.ownership-claim-overlay,
+  .lf-private-overlay.lost-recovery-overlay {
+    padding: max(44px, env(safe-area-inset-top, 0px)) 8px
+      max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .lf-private-modal.ownership-claim-modal,
+  .lf-private-modal.lost-recovery-modal {
+    border-radius: 15px !important;
+    max-height: calc(100dvh - 60px - env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .lf-private-header.ownership-claim-modal-header,
+  .lf-private-header.lost-recovery-modal-header { padding: 15px 14px 12px !important; }
+  .lf-private-body.ownership-claim-body,
+  .lf-private-body.lost-recovery-body { padding: 14px 13px 14px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lf-private-body textarea,
+  .lf-private-body input,
+  .lf-private-body select { transition: none; }
 }
