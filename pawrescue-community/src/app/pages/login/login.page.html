@@ -1,63 +1,95 @@
+<ion-content class="login-page" [fullscreen]="true" [scrollY]="false">
+  <main class="login-container">
+    <section class="form-panel" aria-labelledby="login-title">
 
-<ion-content class="ion-padding">
-  <div class="login-container">
+      <!-- Decorative shapes inspired by the reference design. -->
+      <div class="card-bottom-wave" aria-hidden="true"></div>
 
-    <div class="logo">🐾</div>
+      <!-- PawConnect logo -->
+      <div class="login-logo">
+        <img
+          src="assets/images/pawrescue-logo.png"
+          alt="PawConnect logo"
+          width="210"
+          height="156"
+        />
+      </div>
 
-    <h1>PawRescue Community</h1>
-    <p>Welcome back! Please log in.</p>
+      <!-- Short, warm message -->
+      <div class="form-heading">
+        <h2 id="login-title">Every paw matters.</h2>
+        <p>Helping pets find safety and loving homes.</p>
+      </div>
 
-    <form (ngSubmit)="login()">
+      <!-- Existing authentication bindings preserved -->
+      <form class="login-form" (ngSubmit)="login()">
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Email or Username"
+            label-placement="floating"
+            fill="outline"
+            type="text"
+            name="loginInput"
+            autocomplete="username"
+            autocapitalize="off"
+            spellcheck="false"
+            [disabled]="loading"
+            [(ngModel)]="loginInput">
+          </ion-input>
+        </div>
 
-      <ion-input
-        label="Email or Username"
-        label-placement="floating"
-        fill="outline"
-        type="text"
-        name="loginInput"
-        [(ngModel)]="loginInput">
-      </ion-input>
+        <div class="field-group password-group">
+          <ion-input
+            class="auth-input"
+            label="Password"
+            label-placement="floating"
+            fill="outline"
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            autocomplete="current-password"
+            [disabled]="loading"
+            [(ngModel)]="password">
+          </ion-input>
 
-      <ion-input
-        label="Password"
-        label-placement="floating"
-        fill="outline"
-        [type]="showPassword ? 'text' : 'password'"
-        name="password"
-        [(ngModel)]="password">
-      </ion-input>
+          <button
+            class="password-toggle"
+            type="button"
+            [disabled]="loading"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [attr.aria-pressed]="showPassword"
+            (click)="showPassword = !showPassword">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
 
-      <ion-button
-        type="button"
-        fill="clear"
-        size="small"
-        (click)="showPassword = !showPassword">
-        {{ showPassword ? 'Hide' : 'Show' }} Password
-      </ion-button>
+        <p class="error" *ngIf="errorMessage" role="alert" aria-live="polite">
+          {{ errorMessage }}
+        </p>
 
-      <p class="error" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </p>
+        <ion-button
+          class="login-button"
+          expand="block"
+          type="submit"
+          [disabled]="loading">
+          <ion-spinner
+            *ngIf="loading"
+            name="crescent"
+            aria-label="Signing in">
+          </ion-spinner>
+          <span *ngIf="!loading">Log In</span>
+          <span *ngIf="loading" class="loading-label">Signing in...</span>
+        </ion-button>
+      </form>
 
-      <ion-button
-        expand="block"
-        type="submit"
-        [disabled]="loading">
+      <div class="register-section">
+        <p class="register-text">
+          New to PawConnect?
+          <a routerLink="/register">Create an account</a>
+        </p>
+      </div>
 
-        <ion-spinner
-          *ngIf="loading"
-          name="crescent">
-        </ion-spinner>
-
-        <span *ngIf="!loading">Log In</span>
-      </ion-button>
-
-    </form>
-
-    <p class="register-text">
-      Don't have an account?
-      <a routerLink="/register">Register</a>
-    </p>
-
-  </div>
+      <p class="auth-footnote">One community. More happy reunions.</p>
+    </section>
+  </main>
 </ion-content>

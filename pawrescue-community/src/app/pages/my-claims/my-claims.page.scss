@@ -1,9 +1,3 @@
-/* ==========================================================
-   PAWRESCUE COMMUNITY — MY CLAIMS
-   Mobile-first visual redesign, consistent with Report a Pet,
-   Lost & Found, and My Reports.
-   UI only: keeps all Angular/ownership workflows unchanged.
-   ========================================================== */
 
 :host {
   display: block;
@@ -1140,4 +1134,192 @@ ion-content {
   font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+
+
+/* ===== Two-layer modal design: claim details and pickup actions ===== */
+.claims-details-screen { width:100%; min-height:100%; padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 16px max(35px, env(safe-area-inset-bottom, 0px)); box-sizing:border-box; background:var(--claims-bg); }
+.claims-dialog--page { width:100%; max-width:720px; max-height:none; margin:0 auto; border-radius:20px; overflow:visible; box-shadow:none; }
+.claims-dialog--page .claims-dialog-header { border-radius:20px 20px 0 0; }
+.claims-dialog--page .claims-dialog-body { overflow:visible; max-height:none; }
+.claims-detail-actions { display:grid; gap:12px; padding:18px 0 6px; }
+.claims-detail-actions h3 { margin:0; font-size:16px; color:var(--claims-ink); }
+.claims-action-overlay { position:fixed; inset:0; z-index:10000; background:rgba(13,39,26,.55); display:flex; justify-content:center; align-items:center; padding:max(18px,env(safe-area-inset-top,0px)) 14px max(18px,env(safe-area-inset-bottom,0px)); box-sizing:border-box; }
+.claims-action-sheet { width:100%; max-width:520px; max-height:calc(100dvh - 55px); overflow:hidden; background:white; border-radius:19px; box-shadow:0 20px 60px rgba(0,0,0,.2); display:flex; flex-direction:column; }
+.claims-action-header { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:15px 18px; border-bottom:1px solid var(--claims-border); flex-shrink:0; }
+.claims-action-header h2 { margin:0; font-size:18px; color:var(--claims-ink); }
+.claims-action-content { padding:18px; overflow-y:auto; overscroll-behavior:contain; }
+.claims-gps-result { margin:12px 0; padding:14px; border:1px solid #b8dbc1; border-radius:12px; background:#eff9f1; }
+.claims-gps-heading { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:750; color:#23692e; }
+.claims-gps-heading ion-icon { font-size:20px; }
+.claims-gps-values { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-top:12px; }
+.claims-gps-values > div { background:white; border-radius:9px; padding:12px; min-width:0; }
+.claims-gps-values small { display:block; color:#60796a; font-size:11px; margin-bottom:5px; }
+.claims-gps-values strong { font-size:14px; color:#204b30; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.claims-gps-result p { font-size:12px; color:#55715e; margin:11px 0 0; }
+.claims-picker-hint { color:#657e6d; font-size:12px; margin:12px 0 4px; }
+.claims-action-content .claims-form-field label { display:flex; align-items:center; gap:6px; }
+.claims-action-content .claims-form-field label ion-icon { color:var(--claims-green); font-size:17px; }
+.claims-action-content input[type="date"], .claims-action-content input[type="time"] { min-height:52px; width:100%; font-size:16px; color:#23462e; background-color:#fff; -webkit-appearance:auto; appearance:auto; }
+.claims-action-content input[type="date"]::-webkit-calendar-picker-indicator, .claims-action-content input[type="time"]::-webkit-calendar-picker-indicator { opacity:1; width:20px; height:20px; cursor:pointer; }
+@media(max-width:420px) { .claims-gps-values { grid-template-columns:1fr; } .claims-action-overlay { padding-left:10px; padding-right:10px; } .claims-action-content { padding:14px; } }
+
+/* Claim details stay as a dialog; action modal overlays it. */
+.claims-dialog-overlay { z-index: 9000; }
+.claims-action-overlay { z-index: 10000; }
+.claims-action-content .claims-form > h3:first-child { display:none; } /* title is already in modal header */
+.claims-picker-input { position:relative; width:100%; }
+.claims-picker-input .claims-picker-placeholder {
+  position:absolute; z-index:1; left:15px; right:45px; top:50%; transform:translateY(-50%);
+  pointer-events:none; color:#768879; font-size:15px; font-weight:500; white-space:nowrap;
+}
+.claims-picker-input--empty input[type='date'],
+.claims-picker-input--empty input[type='time'] { color:transparent!important; }
+.claims-picker-input--empty input[type='date']::-webkit-datetime-edit,
+.claims-picker-input--empty input[type='time']::-webkit-datetime-edit { color:transparent!important; }
+.claims-picker-input:focus-within .claims-picker-placeholder { opacity:0; }
+.claims-picker-input:focus-within input[type='date'],
+.claims-picker-input:focus-within input[type='time'] { color:#23462e!important; }
+@media (max-width:420px) {
+  .claims-action-sheet { max-height:calc(100dvh - 36px); }
+  .claims-picker-input .claims-picker-placeholder { font-size:14px; }
+}
+
+/* Mobile refinements — compact claim details and inline GPS coordinates. */
+.claims-detail-actions:empty { display: none; }
+.claims-detail-actions { padding: 4px 0 0; gap: 9px; }
+.claims-gps-values { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+.claims-gps-values > div { min-width:0; padding:10px 9px; }
+.claims-gps-values strong { display:block; font-size: clamp(11px, 3.4vw, 15px); white-space:nowrap; overflow-wrap:normal; font-variant-numeric:tabular-nums; }
+@media (max-width: 520px) {
+  .claims-gps-values { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .claims-dialog-overlay { align-items:center; padding: max(60px, env(safe-area-inset-top, 0px)) 12px max(16px, env(safe-area-inset-bottom, 0px)); }
+  .claims-dialog { width:100%; max-width:430px; max-height: min(79dvh, 690px); border-radius:19px; border:1px solid #e1ebe5; }
+  .claims-dialog-header { padding:12px 14px 11px; }
+  .claims-dialog-title h2 { font-size:18px; }
+  .claims-dialog-title p { margin-bottom:2px; }
+  .claims-dialog-close { flex-basis:34px; width:34px; height:34px; }
+  .claims-dialog-body { padding:12px 13px 14px; }
+  .claims-dialog-summary { padding:12px; margin-bottom:10px; }
+  .claims-dialog-body .claims-detail-grid { padding: 2px 10px; }
+  .claims-dialog-body > .claims-dialog-section { padding:12px; }
+  .claims-dialog-footer { padding:9px 13px; }
+  .claims-detail-actions { gap:8px; }
+  .claims-detail-actions .claims-button { min-height:43px; }
+  .claims-dialog-body .claims-overview-label { margin-top:12px; margin-bottom:8px; }
+}
+
+/* ==========================================================
+   PRIVATE PICKUP LOCATION — LEAFLET MAP MODAL
+   The modal sits above claim details and action sheets.
+   Only the authenticated claim participant's saved pin is shown.
+   ========================================================== */
+.claims-pickup-map-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: max(18px, env(safe-area-inset-top, 0px)) 14px
+    max(18px, env(safe-area-inset-bottom, 0px));
+  background: rgba(13, 39, 26, 0.64);
+}
+
+.claims-pickup-map-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  max-height: min(88dvh, 690px);
+  overflow: hidden;
+  border: 1px solid var(--claims-border);
+  border-radius: 19px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.23);
+}
+
+.claims-pickup-map-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 17px;
+  border-bottom: 1px solid var(--claims-border);
+}
+
+.claims-pickup-map-header h2 {
+  margin: 0 0 4px;
+  color: var(--claims-ink);
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.claims-pickup-map-header p {
+  margin: 0;
+  color: var(--claims-muted);
+  font-size: 12px;
+}
+
+.claims-pickup-map-content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 15px 16px 12px;
+}
+
+.claims-pickup-map-content > .claims-muted {
+  margin: 0 0 11px;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.claims-pickup-map-content > .claims-muted:last-child {
+  margin: 10px 0 0;
+}
+
+.claims-pickup-leaflet-map {
+  display: block;
+  width: 100%;
+  height: clamp(240px, 45dvh, 405px);
+  min-height: 240px;
+  overflow: hidden;
+  border: 1px solid #dce8df;
+  border-radius: 12px;
+  background: #edf3ee;
+  isolation: isolate;
+  touch-action: pan-x pan-y;
+}
+
+.claims-pickup-map-footer {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  padding: 11px 16px 15px;
+  border-top: 1px solid var(--claims-border);
+}
+
+.claims-pickup-map-footer .claims-button {
+  min-height: 43px;
+  min-width: 115px;
+}
+
+@media (max-width: 520px) {
+  .claims-pickup-map-overlay {
+    padding: max(56px, env(safe-area-inset-top, 0px)) 10px
+      max(15px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .claims-pickup-map-dialog {
+    max-height: min(79dvh, 650px);
+    border-radius: 18px;
+  }
+
+  .claims-pickup-map-header { padding: 12px 14px; }
+  .claims-pickup-map-content { padding: 12px; }
+  .claims-pickup-map-footer { padding: 10px 12px 13px; }
+  .claims-pickup-leaflet-map { height: clamp(230px, 40dvh, 350px); }
 }

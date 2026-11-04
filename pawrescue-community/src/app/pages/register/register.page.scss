@@ -1,60 +1,342 @@
 
-ion-content {
-  --background: #f5faf6;
+
+:host {
+  display: block;
+  --paw-green: #238653;
+  --paw-green-dark: #1b704b;
+  --paw-text: #193429;
+  --paw-muted: #718076;
+  --paw-border: #dce8df;
 }
 
+ion-content.register-page {
+  --background: #f5f8f6;
+  --color: var(--paw-text);
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: max(16px, env(safe-area-inset-top));
+  --padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+/* Long form: allow vertical scrolling. */
 .register-container {
-  max-width: 400px;
-  margin: 30px auto;
-  padding: 20px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 0 28px;
+}
+
+.register-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden; /* Keep both circles clipped to the card edges. */
+  box-sizing: border-box;
+  width: 100%;
+  padding: 26px 24px 28px;
+  background: #ffffff;
+  border: 1px solid #e6eee8;
+  border-radius: 22px;
+  box-shadow: 0 8px 25px rgba(23, 69, 43, 0.06);
+}
+
+/* Two coordinated circles, cropped into the top-right of the card.
+   Similar to the reference design, with the PawRescue green palette. */
+.register-card::before,
+.register-card::after {
+  content: '';
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Main, darker green circle tucked behind the top-right corner. */
+.register-card::before {
+  width: 142px;
+  height: 142px;
+  top: -70px;
+  right: -64px;
+  background: linear-gradient(150deg, #70cb91 0%, #278f58 100%);
+  opacity: 0.87;
+}
+
+/* Smaller, lighter circle overlapping the main circle. */
+.register-card::after {
+  width: 98px;
+  height: 98px;
+  top: -44px;
+  right: 53px;
+  background: #bce9ca;
+  opacity: 0.85;
+}
+
+/* Keep the Back button visible in the top-left, above the card accents. */
+.register-back-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-start;
+  margin: 0 0 6px;
+}
+
+/* Match the Notifications page 42px rounded-square back arrow. */
+.register-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #e1ebe4;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #287f50;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.register-back-button svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+}
+
+.register-back-button:visited {
+  color: #287f50;
+}
+
+.register-back-button:active {
+  background: #eaf6ee;
+}
+
+.register-back-button:focus-visible {
+  outline: 2px solid var(--paw-green);
+  outline-offset: 3px;
+}
+
+/* Form content stays above the decorative accents. */
+.register-logo,
+.register-heading,
+.register-form,
+.login-section {
+  position: relative;
+  z-index: 1;
+}
+
+.register-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 10px;
+}
+
+.register-logo img {
+  display: block;
+  width: 180px;
+  max-width: 75%;
+  height: auto;
+  object-fit: contain;
+}
+
+.register-heading {
+  margin: 0 0 24px;
   text-align: center;
 }
 
-.logo {
-  font-size: 60px;
-  margin-bottom: 10px;
+.register-heading h1 {
+  margin: 0 0 8px;
+  color: var(--paw-text);
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
 }
 
-h1 {
-  font-size: 27px;
-  font-weight: 700;
-  color: #206c45;
+.register-heading p {
+  margin: 0;
+  color: var(--paw-muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-p {
-  color: #66736a;
-  margin-bottom: 25px;
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
 }
 
-ion-input {
-  margin-bottom: 15px;
+.form-section-heading {
+  margin: 0 0 1px;
+  color: var(--paw-green-dark);
   text-align: left;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
 }
 
-ion-button[type="submit"] {
-  --background: #238653;
-  --border-radius: 12px;
-  height: 48px;
-  margin-top: 18px;
+.account-section {
+  margin-top: 13px;
+  padding-top: 18px;
+  border-top: 1px solid #eef2ef;
+}
+
+.field-group {
+  min-width: 0;
+}
+
+.auth-input {
+  width: 100%;
+  min-height: 54px;
+  margin: 0;
+  font-size: 14px;
+  --background: #ffffff;
+  --color: var(--paw-text);
+  --border-color: var(--paw-border);
+  --border-radius: 10px;
+  --highlight-color-focused: var(--paw-green);
+  --highlight-color-valid: var(--paw-green);
+  /* Neutral invalid border instead of Ionic's default red. */
+  --highlight-color-invalid: var(--paw-border);
+  --placeholder-color: #8e9a92;
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+/* Keep borders neutral after an empty required field loses focus. */
+ion-input.auth-input.ion-invalid.ion-touched:not(.has-focus) {
+  --highlight-color-invalid: var(--paw-border);
+  --highlight-color: var(--paw-border);
+  --border-color: var(--paw-border);
+}
+
+/* Focused field border can remain green. */
+ion-input.auth-input.has-focus {
+  --highlight-color-invalid: var(--paw-green);
+  --highlight-color: var(--paw-green);
+  --border-color: var(--paw-green);
+}
+
+/*
+ * IMPORTANT LABEL COLOR FIX:
+ * Ionic uses the invalid highlight color for BOTH the outline and
+ * the floating label. Because the invalid outline is intentionally gray,
+ * the label was also becoming pale gray after blur/form submission.
+ *
+ * Ionic's internal label wrapper is rendered by a scoped web component.
+ * ::ng-deep targets only labels inside this Register Page, allowing their
+ * text to remain dark regardless of focus/validation state.
+ * It does not affect the Angular form validation or actual input values.
+ */
+:host ::ng-deep ion-input.auth-input .label-text-wrapper {
+  color: var(--paw-text) !important;
+  opacity: 1 !important;
+}
+
+.error,
+.success {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .error {
-  color: #d93025;
-  font-size: 13px;
+  border: 1px solid #f1c9c6;
+  background: #fff5f4;
+  color: #ab2924;
 }
 
 .success {
-  color: #238653;
-  font-size: 13px;
+  border: 1px solid #bfdec9;
+  background: #eef8f1;
+  color: var(--paw-green-dark);
   font-weight: 600;
+}
+
+.register-button {
+  height: 50px;
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: none;
+  --background: var(--paw-green);
+  --background-hover: var(--paw-green-dark);
+  --background-activated: #155f40;
+  --color: #ffffff;
+  --border-radius: 10px;
+  --box-shadow: none;
+}
+
+.register-button ion-spinner {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  color: #ffffff;
+}
+
+.register-button.button-disabled {
+  opacity: 0.7;
+}
+
+.login-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #eef2ef;
+  text-align: center;
 }
 
 .login-text {
-  margin-top: 25px;
+  margin: 0;
+  color: var(--paw-muted);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-a {
-  color: #238653;
-  font-weight: 600;
+.login-text a {
+  margin-left: 3px;
+  color: var(--paw-green-dark);
+  font-weight: 700;
   text-decoration: none;
+}
+
+.login-text a:focus-visible {
+  outline: 2px solid var(--paw-green);
+  outline-offset: 3px;
+}
+
+@media (max-width: 360px) {
+  ion-content.register-page {
+    --padding-start: 12px;
+    --padding-end: 12px;
+  }
+
+  .register-card {
+    padding: 24px 18px 26px;
+  }
+
+  .register-heading h1 {
+    font-size: 22px;
+  }
+
+  .register-logo img {
+    width: 160px;
+  }
+}
+
+@media (min-width: 760px) {
+  .register-container {
+    max-width: 480px;
+  }
+
+  .register-card {
+    padding: 34px 36px 36px;
+  }
 }

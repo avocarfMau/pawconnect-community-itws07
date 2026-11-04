@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 
 /**
- * PawRescue Community — shared development backend configuration.
+ * PawConnect — shared development backend configuration.
  *
  * When your XAMPP computer's LAN IP changes, update ONLY this value.
  * Your Android phone and computer must be able to reach each other.

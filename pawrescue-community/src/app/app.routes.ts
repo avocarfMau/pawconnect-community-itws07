@@ -11,17 +11,20 @@ export const routes: Routes = [
 
   {
     path: 'login',
-    loadComponent: () => import('./pages/login/login.page').then((m) => m.LoginPage),
+    loadComponent: () =>
+      import('./pages/login/login.page').then((m) => m.LoginPage),
   },
 
   {
     path: 'register',
-    loadComponent: () => import('./pages/register/register.page').then((m) => m.RegisterPage),
+    loadComponent: () =>
+      import('./pages/register/register.page').then((m) => m.RegisterPage),
   },
 
   {
     path: 'home',
-    loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
+    loadComponent: () =>
+      import('./home/home.page').then((m) => m.HomePage),
     canActivate: [residentGuard],
   },
 
@@ -40,19 +43,22 @@ export const routes: Routes = [
   // =====================================
   {
     path: 'lost-found',
-    loadComponent: () => import('./pages/lost-found/lost-found.page').then((m) => m.LostFoundPage),
+    loadComponent: () =>
+      import('./pages/lost-found/lost-found.page').then((m) => m.LostFoundPage),
     canActivate: [residentGuard],
   },
 
   {
     path: 'report-pet',
-    loadComponent: () => import('./pages/report-pet/report-pet.page').then((m) => m.ReportPetPage),
+    loadComponent: () =>
+      import('./pages/report-pet/report-pet.page').then((m) => m.ReportPetPage),
     canActivate: [residentGuard],
   },
 
   {
     path: 'my-reports',
-    loadComponent: () => import('./pages/my-reports/my-reports.page').then((m) => m.MyReportsPage),
+    loadComponent: () =>
+      import('./pages/my-reports/my-reports.page').then((m) => m.MyReportsPage),
     canActivate: [residentGuard],
   },
 
@@ -61,7 +67,8 @@ export const routes: Routes = [
   // =====================================
   {
     path: 'my-claims',
-    loadComponent: () => import('./pages/my-claims/my-claims.page').then((m) => m.MyClaimsPage),
+    loadComponent: () =>
+      import('./pages/my-claims/my-claims.page').then((m) => m.MyClaimsPage),
     canActivate: [residentGuard],
   },
 
@@ -78,33 +85,6 @@ export const routes: Routes = [
       import('./pages/edit-report/edit-report.page').then((m) => m.EditReportPage),
     canActivate: [residentGuard],
   },
-
-  // =====================================
-  // STRAY ANIMAL ASSISTANCE
-  // =====================================
-  {
-    path: 'stray-assistance',
-    loadComponent: () =>
-      import('./pages/stray-assistance/stray-assistance.page').then((m) => m.StrayAssistancePage),
-    canActivate: [residentGuard],
-  },
-
-  {
-    path: 'report-stray',
-    loadComponent: () =>
-      import('./pages/report-stray/report-stray.page').then((m) => m.ReportStrayPage),
-    canActivate: [residentGuard],
-  },
-
-  {
-    path: 'stray-report-details/:id',
-    loadComponent: () =>
-      import('./pages/stray-report-details/stray-report-details.page').then((m) => m.StrayReportDetailsPage),
-    canActivate: [residentGuard],
-  },
-
-  // Add the 'my-stray-reports' route once the teammate's
-  // my-stray-reports page has been added to this local project.
 
   // =====================================
   // PET ADOPTION COMMUNITY

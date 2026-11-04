@@ -5,6 +5,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
+import * as L from 'leaflet';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -63,6 +64,81 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
   // Minimal navigation: two views instead of multiple sections on My Reports.
   activeClaimsTab: 'sent' | 'received' = 'sent';
+
+  // Claim details are an in-page full-screen view, NOT a router page.
+  // The upcoming HTML/SCSS updates render this state in place of the lists.
+  get isClaimDetailsOpen(): boolean {
+    return this.selectedOwnershipClaim !== null || this.selectedSentClaim !== null;
+  }
+
+  get claimDetailsType(): 'sent' | 'received' | null {
+    if (this.selectedOwnershipClaim) return 'received';
+    if (this.selectedSentClaim) return 'sent';
+    return null;
+  }
+
+  // Action forms/dialogs are separate overlays ON TOP of the details view.
+  // No extra component, file or route is needed.
+  claimActionModal: 'approve' | 'reject' | 'sent-reschedule' |
+    'finder-reschedule' | 'sent-confirm-pickup' | 'sent-handover' |
+    'finder-handover' | 'sent-reschedule-response' |
+    'finder-reschedule-response' | null = null;
+
+  openClaimActionModal(action: NonNullable<MyClaimsPage['claimActionModal']>): void {
+    if (!this.isClaimDetailsOpen || this.isClaimActionBusy) return;
+    const received = !!this.selectedOwnershipClaim;
+    if (action === 'approve' && received) {
+      this.startClaimApproval();
+      return;
+    }
+    if (action === 'reject' && received) {
+      this.startClaimRejection();
+      return;
+    }
+    if (action === 'sent-reschedule' && this.selectedSentClaim) {
+      this.startSentReschedule(this.selectedSentClaim);
+      return;
+    }
+    if (action === 'finder-reschedule' && this.selectedOwnershipClaim) {
+      this.startFinderReschedule(this.selectedOwnershipClaim);
+      return;
+    }
+    if (action.startsWith('sent-') && !this.selectedSentClaim) return;
+    if (action.startsWith('finder-') && !received) return;
+    this.claimActionModal = action;
+    this.cdr.detectChanges();
+  }
+
+  get isClaimActionBusy(): boolean {
+    return this.respondingClaimId !== null ||
+      this.finderActionClaimId !== null || this.sentActionClaimId !== null ||
+      this.pickupLocationLoading;
+  }
+
+  closeClaimActionModal(): void {
+    if (this.isClaimActionBusy) return;
+    this.claimActionModal = null;
+    this.claimDecisionMode = null;
+    this.claimDecisionError = '';
+    this.sentRescheduleMode = false;
+    this.finderRescheduleMode = false;
+    this.sentClaimActionError = '';
+    this.finderActionError = '';
+    this.pickupLocationError = '';
+    if (!this.destroyed) this.cdr.detectChanges();
+  }
+
+  backFromClaimDetails(): void {
+    if (this.pickupMapOpen) { this.closePickupLeafletMap(); return; }
+    if (this.isClaimActionBusy) return;
+    if (this.claimActionModal) {
+      this.closeClaimActionModal();
+      return;
+    }
+    if (this.selectedOwnershipClaim) this.closeClaimReview();
+    else if (this.selectedSentClaim) this.closeSentClaimDetails();
+  }
+
 
   // =====================================
   // RECEIVED OWNERSHIP CLAIMS (RESIDENT A)
@@ -155,6 +231,122 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   sentRescheduleDate = '';
   sentRescheduleTime = '';
   sentRescheduleReason = '';
+
+  // PRIVATE LEAFLET MAP: render only a validated, saved pickup pin.
+  pickupMapOpen = false;
+  pickupMapLocation = '';
+  private pickupLeafletMap: L.Map | null = null;
+  private pickupMapRenderTimer: ReturnType<typeof setTimeout> | null = null;
+
+  hasPickupMapCoordinates(pickup: OwnershipClaim['pickup'] | null | undefined): boolean {
+    if (!pickup || pickup.latitude == null || pickup.longitude == null) return false;
+    const latitude = Number(pickup.latitude);
+    const longitude = Number(pickup.longitude);
+    return Number.isFinite(latitude) && Number.isFinite(longitude) &&
+      latitude >= -90 && latitude <= 90 &&
+      longitude >= -180 && longitude <= 180;
+  }
+
+  openPickupLeafletMap(pickup: OwnershipClaim['pickup'] | null | undefined): void {
+    if (this.destroyed || !this.isClaimDetailsOpen || !this.hasPickupMapCoordinates(pickup) || !pickup) {
+      return;
+    }
+
+    // Save the pin at the time of tapping; do not request device GPS.
+    const latitude = Number(pickup.latitude);
+    const longitude = Number(pickup.longitude);
+    this.destroyPickupLeafletMap();
+    this.pickupMapLocation = pickup.location || '';
+    this.pickupMapOpen = true;
+    this.cdr.detectChanges();
+
+    // *ngIf must first add the modal's map element to the DOM.
+    this.pickupMapRenderTimer = setTimeout(() => {
+      this.pickupMapRenderTimer = null;
+      if (this.destroyed || !this.pickupMapOpen) return;
+      const container = document.getElementById('claims-pickup-leaflet-map');
+      if (!container) return;
+      try {
+        this.pickupLeafletMap = L.map(container, {
+          center: [latitude, longitude],
+          zoom: 17,
+          zoomControl: true
+        });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(this.pickupLeafletMap);
+        // Same red location pin used by the Lost & Found report map.
+        L.marker([latitude, longitude], {
+          icon: this.createLocationIcon(),
+          draggable: false,
+          keyboard: true,
+          zIndexOffset: 1000
+        }).addTo(this.pickupLeafletMap).bindPopup('Pickup meeting point').openPopup();
+        this.pickupLeafletMap.invalidateSize();
+      } catch (error) {
+        console.warn('[MY CLAIMS] Unable to initialize private pickup map:', error);
+        this.destroyPickupLeafletMap();
+      }
+    }, 80);
+  }
+
+  // Shared marker appearance with Lost & Found.
+  private createLocationIcon(): L.DivIcon {
+    const svg = `
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="44"
+        height="56"
+        viewBox="0 0 44 56"
+        aria-hidden="true"
+      >
+        <path
+          d="M22 2 C10.4 2 2 10.8 2 22 C2 37.5 22 54 22 54 C22 54 42 37.5 42 22 C42 10.8 33.6 2 22 2 Z"
+          fill="#e53935"
+          stroke="#ffffff"
+          stroke-width="2.5"
+        />
+        <circle
+          cx="22"
+          cy="21"
+          r="11"
+          fill="#ffffff"
+        />
+        <circle
+          cx="22"
+          cy="21"
+          r="5"
+          fill="#e53935"
+        />
+      </svg>
+    `;
+    return L.divIcon({
+      className: 'pawrescue-custom-marker',
+      html: svg,
+      iconSize: [44, 56],
+      iconAnchor: [22, 54],
+      popupAnchor: [0, -48]
+    });
+  }
+
+  closePickupLeafletMap(): void {
+    this.destroyPickupLeafletMap();
+    this.pickupMapOpen = false;
+    this.pickupMapLocation = '';
+    if (!this.destroyed) this.cdr.detectChanges();
+  }
+
+  private destroyPickupLeafletMap(): void {
+    if (this.pickupMapRenderTimer !== null) {
+      clearTimeout(this.pickupMapRenderTimer);
+      this.pickupMapRenderTimer = null;
+    }
+    if (this.pickupLeafletMap) {
+      this.pickupLeafletMap.remove();
+      this.pickupLeafletMap = null;
+    }
+  }
 
   get minimumPickupDate(): string {
     // The API validates the exact future time in Asia/Manila.
@@ -285,6 +477,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
     this.updateClaimUI(() => {
       this.selectedOwnershipClaim = claim;
+      this.claimActionModal = null;
       this.claimDecisionMode = null;
       this.claimDecisionMessage = '';
       this.claimDecisionError = '';
@@ -295,6 +488,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
       this.pickupLongitude = null;
       this.rejectionReason = '';
       this.finderRescheduleMode = false;
+      this.claimActionModal = null;
       this.finderActionError = '';
       this.finderActionMessage = '';
       this.resetFinderRescheduleForm(claim);
@@ -319,11 +513,13 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   closeClaimReview(): void {
+    if (this.pickupMapOpen) this.closePickupLeafletMap();
     // Don't leave while an approval or rejection is being submitted:
     // the backend may already be processing the request.
     if (this.respondingClaimId !== null || this.finderActionClaimId !== null) return;
     this.clearClaimEvidence();
     this.selectedOwnershipClaim = null;
+    this.claimActionModal = null;
     this.finderRescheduleMode = false;
     this.finderActionError = '';
     this.finderActionMessage = '';
@@ -518,6 +714,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         this.finderActionClaimId !== null) return;
     this.updateClaimUI(() => {
       this.claimDecisionMode = 'approve';
+      this.claimActionModal = 'approve';
       this.claimDecisionError = '';
       this.claimDecisionMessage = '';
     });
@@ -528,6 +725,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         this.finderActionClaimId !== null) return;
     this.updateClaimUI(() => {
       this.claimDecisionMode = 'reject';
+      this.claimActionModal = 'reject';
       this.claimDecisionError = '';
       this.claimDecisionMessage = '';
     });
@@ -537,15 +735,19 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     if (this.respondingClaimId !== null) return;
     this.updateClaimUI(() => {
       this.claimDecisionMode = null;
+      this.claimActionModal = null;
       this.claimDecisionError = '';
     });
   }
 
   clearPickupCoordinates(): void {
-    // If the user manually changes a GPS-derived address, discard the
-    // old coordinates so an unrelated private pin isn't shared.
-    this.pickupLatitude = null;
-    this.pickupLongitude = null;
+    // Called by the existing meeting-place textarea on each text edit.
+    // Do NOT clear a GPS pin already captured explicitly by the resident:
+    // otherwise typing the written meeting place AFTER capturing GPS
+    // silently removes both coordinates from the approval request.
+    // The resident can tap "GPS Pin Added — Tap to Update" to recapture
+    // the location. The written place must describe that same GPS pin.
+    this.pickupLocationError = '';
   }
 
   async useCurrentPickupLocation(): Promise<void> {
@@ -685,6 +887,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
             existing => existing.id === claim.id ? updated : existing
           );
           this.claimDecisionMode = null;
+          this.claimActionModal = null;
           this.claimDecisionMessage = response.message ||
             (mode === 'approve' ? 'Claim approved and pickup arranged.' : 'Claim rejected.');
           this.claimsMessage = this.claimDecisionMessage;
@@ -800,6 +1003,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
       this.finderActionError = '';
       this.finderActionMessage = '';
       this.finderRescheduleMode = true;
+      this.claimActionModal = 'finder-reschedule';
     });
   }
 
@@ -881,6 +1085,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
             }
             this.patchReceivedClaim(claim.id, { status: 'reschedule_requested' });
             this.finderRescheduleMode = false;
+            this.claimActionModal = null;
             this.finderActionMessage = response.message || 'Reschedule sent to the claimant.';
             this.claimsMessage = this.finderActionMessage;
           });
@@ -1085,6 +1290,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     this.closeClaimReview();
     this.updateClaimUI(() => {
       this.selectedSentClaim = claim;
+      this.claimActionModal = null;
       this.sentClaimActionError = '';
       this.sentClaimActionMessage = '';
       this.sentRescheduleMode = false;
@@ -1093,8 +1299,10 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   closeSentClaimDetails(): void {
+    if (this.pickupMapOpen) this.closePickupLeafletMap();
     if (this.sentActionClaimId !== null) return;
     this.selectedSentClaim = null;
+    this.claimActionModal = null;
     this.sentClaimActionError = '';
     this.sentClaimActionMessage = '';
     this.sentRescheduleMode = false;
@@ -1232,12 +1440,13 @@ export class MyClaimsPage implements OnInit, OnDestroy {
       this.resetSentRescheduleForm(claim);
       this.sentClaimActionError = '';
       this.sentRescheduleMode = true;
+      this.claimActionModal = 'sent-reschedule';
     });
   }
 
   cancelSentReschedule(): void {
     if (this.sentActionClaimId !== null) return;
-    this.updateClaimUI(() => { this.sentRescheduleMode = false; this.sentClaimActionError = ''; });
+    this.updateClaimUI(() => { this.sentRescheduleMode = false; this.claimActionModal = null; this.sentClaimActionError = ''; });
   }
 
   submitSentReschedule(): void {
@@ -1297,6 +1506,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
             }
             this.patchSentClaim(claim.id, { status: 'reschedule_requested' });
             this.sentRescheduleMode = false;
+            this.claimActionModal = null;
             this.sentClaimActionMessage = response.message || 'Pickup change requested.';
             this.sentClaimsMessage = this.sentClaimActionMessage;
           });
@@ -1433,8 +1643,11 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    if (this.respondingClaimId !== null || this.finderActionClaimId !== null ||
-        this.sentActionClaimId !== null) return;
+    if (this.isClaimActionBusy) return;
+    if (this.isClaimDetailsOpen) {
+      this.backFromClaimDetails();
+      return;
+    }
     this.router.navigateByUrl('/lost-found');
   }
 
@@ -1487,6 +1700,9 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   private cleanupClaimSubscriptionsAndEvidence(): void {
+    this.destroyPickupLeafletMap();
+    this.pickupMapOpen = false;
+    this.pickupMapLocation = '';
     ++this.claimRequestVersion;
     ++this.sentClaimsVersion;
     ++this.evidenceRequestVersion;
@@ -1502,6 +1718,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
     this.selectedOwnershipClaim = null;
     this.selectedSentClaim = null;
+    this.claimActionModal = null;
     this.claimDecisionMode = null;
     this.finderRescheduleMode = false;
     this.sentRescheduleMode = false;

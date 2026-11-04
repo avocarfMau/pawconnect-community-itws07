@@ -634,7 +634,7 @@ export class EditReportPage implements OnInit, OnDestroy {
   async takePhoto(): Promise<void> {
     if (this.isPhotoBusy() || this.remainingPhotoSlots <= 0 || this.photoUploadUncertain) return;
     if (!Capacitor.isNativePlatform()) {
-      this.photoError = 'Camera capture requires the PawRescue Android app. You can use Choose Photos instead.';
+      this.photoError = 'Camera capture requires the PawConnect Android app. You can use Choose Photos instead.';
       this.cdr.detectChanges();
       return;
     }
@@ -664,7 +664,7 @@ export class EditReportPage implements OnInit, OnDestroy {
       const code = String(error?.code || '').toLowerCase();
       if (!message.includes('cancel') && !code.includes('cancel')) {
         this.photoError = 'Unable to capture photo. Check permissions and try again.';
-        console.error('[PAWRESCUE EDIT PHOTO]', error);
+        console.error('[PAWCONNECT EDIT PHOTO]', error);
       }
     } finally {
       if (!this.destroyed) {
@@ -754,7 +754,7 @@ export class EditReportPage implements OnInit, OnDestroy {
       }
       this.photoActionMessage = `${totalToUpload} photo(s) added successfully!`;
     } catch (error: any) {
-      console.error('[PAWRESCUE EDIT PHOTO UPLOAD]', error);
+      console.error('[PAWCONNECT EDIT PHOTO UPLOAD]', error);
       const uncertain = error?.status === 0 || error?.name === 'TimeoutError';
       this.photoUploadUncertain = uncertain;
       this.photoError = uncertain
@@ -837,7 +837,7 @@ export class EditReportPage implements OnInit, OnDestroy {
       }
       this.photoActionMessage = 'Photo removed successfully.';
     } catch (error: any) {
-      console.error('[PAWRESCUE DELETE PHOTO]', error);
+      console.error('[PAWCONNECT DELETE PHOTO]', error);
       this.photoError = error?.status === 0 || error?.name === 'TimeoutError'
         ? 'Unable to confirm deletion. Tap Refresh Photos to check before trying again.'
         : error?.error?.message || error?.message || 'Unable to delete photo.';

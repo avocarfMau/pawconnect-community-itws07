@@ -27,7 +27,7 @@ import { firstValueFrom, isObservable, timeout } from 'rxjs';
 import { AuthService, UpdateProfileRequest } from '../../services/auth';
 
 // =====================================
-// PAWRESCUE COMMUNITY - MY ACCOUNT
+// PAWCONNECT - MY ACCOUNT
 // Initial profile visibility + fast return visits; one request at a time
 // =====================================
 
@@ -333,7 +333,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
       });
 
       console.info(
-        '[PawRescue My Account] Profile loaded in',
+        '[PawConnect My Account] Profile loaded in',
         Math.round(performance.now() - startedAt),
         'ms'
       );
@@ -367,7 +367,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
       });
 
       console.warn(
-        '[PawRescue My Account] Profile request failed after',
+        '[PawConnect My Account] Profile request failed after',
         Math.round(performance.now() - startedAt),
         'ms'
       );
@@ -594,7 +594,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
       }
 
       console.info(
-        '[PawRescue My Account] Profile saved in',
+        '[PawConnect My Account] Profile saved in',
         Math.round(performance.now() - startedAt),
         'ms'
       );
@@ -636,7 +636,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
       }
 
       console.warn(
-        '[PawRescue My Account] Profile save was not confirmed after',
+        '[PawConnect My Account] Profile save was not confirmed after',
         Math.round(performance.now() - startedAt),
         'ms'
       );
@@ -669,7 +669,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
 
   async logout(): Promise<void> {
     if (this.destroyed || this.loggingOut || this.savingProfile) return;
-    if (!window.confirm('Log out of PawRescue Community?')) return;
+    if (!window.confirm('Log out of PawConnect?')) return;
 
     this.applyViewUpdate(() => {
       this.loggingOut = true;

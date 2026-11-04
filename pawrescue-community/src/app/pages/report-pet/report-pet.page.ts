@@ -887,7 +887,7 @@ export class ReportPetPage implements OnDestroy {
     if (!Capacitor.isNativePlatform()) {
       this.updateUI(() => {
         this.photoError =
-          'Take Photo requires the installed PawRescue Android app. ' +
+          'Take Photo requires the installed PawConnect Android app. ' +
           'You can still choose a photo from your gallery.';
       });
       return;
@@ -957,7 +957,7 @@ export class ReportPetPage implements OnDestroy {
       const code = String(error?.code || '').toLowerCase();
 
       if (!message.includes('cancel') && !code.includes('cancel')) {
-        console.error('[PAWRESCUE CAMERA] Capture failed:', error);
+        console.error('[PAWCONNECT CAMERA] Capture failed:', error);
 
         this.updateUI(() => {
           this.photoError =
@@ -1022,7 +1022,7 @@ export class ReportPetPage implements OnDestroy {
       }
 
       console.log(
-        '[PAWRESCUE CAMERA] Photo bytes:',
+        '[PAWCONNECT CAMERA] Photo bytes:',
         blob.size,
         '->',
         compressed.size
@@ -1153,7 +1153,7 @@ export class ReportPetPage implements OnDestroy {
 
     if (addedCount > 0) {
       console.log(
-        '[PAWRESCUE PHOTOS] Added',
+        '[PAWCONNECT PHOTOS] Added',
         addedCount,
         'photo(s). Total:',
         this.selectedPhotos.length
@@ -1424,7 +1424,7 @@ export class ReportPetPage implements OnDestroy {
     const startTime = performance.now();
 
     console.log(
-      '[PAWRESCUE PHOTOS] Uploading',
+      '[PAWCONNECT PHOTOS] Uploading',
       pendingPhotos.length,
       'photo(s)...'
     );
@@ -1458,7 +1458,7 @@ export class ReportPetPage implements OnDestroy {
           const elapsed = Math.round(performance.now() - startTime);
 
           console.log(
-            '[PAWRESCUE PHOTOS] Upload session finished in',
+            '[PAWCONNECT PHOTOS] Upload session finished in',
             elapsed,
             'ms'
           );
@@ -1488,13 +1488,13 @@ export class ReportPetPage implements OnDestroy {
           });
 
           console.log(
-            '[PAWRESCUE PHOTOS] Uploaded:',
+            '[PAWCONNECT PHOTOS] Uploaded:',
             response.photo_path
           );
         },
 
         error: (error) => {
-          console.error('[PAWRESCUE PHOTOS] Upload failed:', error);
+          console.error('[PAWCONNECT PHOTOS] Upload failed:', error);
 
           this.updateUI(() => {
             const isUncertain =
