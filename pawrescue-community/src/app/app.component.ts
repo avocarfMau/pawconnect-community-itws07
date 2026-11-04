@@ -47,7 +47,7 @@ export class AppComponent {
       return;
     }
 
-    // Every other configured PawRescue page requires residentGuard.
+    // Every other configured PawConnect page requires residentGuard.
     // Wait for NavigationEnd so that guard has already succeeded.
     const sessionToken = this.authService.getToken();
 
@@ -73,7 +73,7 @@ export class AppComponent {
       if (this.pushRegistrationStartedFor === sessionToken) {
         this.pushRegistrationStartedFor = null;
       }
-      console.warn('[PawRescue] Push notification registration failed.');
+      console.warn('[PawConnect] Push notification registration failed.');
     }
   }
 }

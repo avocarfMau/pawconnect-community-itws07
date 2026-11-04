@@ -515,7 +515,7 @@ export class LostFoundPage implements OnDestroy {
     const message = String(value?.message ?? '');
     if (code === 1 || code === 'LOCATION_DENIED' ||
         code === 'OS-PLUG-GLOC-0003' || /permission denied/i.test(message)) {
-      return 'Location permission denied. Allow PawRescue location access in Android settings.';
+      return 'Location permission denied. Allow PawConnect location access in Android settings.';
     }
     if (code === 'OS-PLUG-GLOC-0007' ||
         code === 'OS-PLUG-GLOC-0017' ||
@@ -1688,7 +1688,7 @@ export class LostFoundPage implements OnDestroy {
       }
 
             console.info(
-        '[PawRescue Finding] Report confirmed by API in',
+        '[PawConnect Finding] Report confirmed by API in',
         Math.round(performance.now() - requestStartedAt),
         'ms. Recovery ID:',
         response.recovery_id
@@ -1781,7 +1781,7 @@ export class LostFoundPage implements OnDestroy {
         if (!response?.success) throw new Error(response?.message || 'Unable to upload photo.');
         this.unuploadedRecoveryPhotos.shift();
         console.info(
-          `[PawRescue Finding] Evidence photo ${uploaded + 1} uploaded in`,
+          `[PawConnect Finding] Evidence photo ${uploaded + 1} uploaded in`,
           Math.round(performance.now() - photoStartedAt),
           'ms'
         );

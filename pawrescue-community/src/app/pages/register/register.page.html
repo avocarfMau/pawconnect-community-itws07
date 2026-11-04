@@ -1,153 +1,195 @@
+<ion-content class="register-page" [fullscreen]="true">
+  <main class="register-container">
+    <section class="register-card" aria-labelledby="register-title">
 
-<ion-content class="ion-padding">
+      <!-- Back button styled like the Notifications page; returns to Login. -->
+      <nav class="register-back-row" aria-label="Registration navigation">
+        <a class="register-back-button" routerLink="/login" aria-label="Back to Login" title="Back to Login">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true" focusable="false">
+            <path d="M244 400 100 256l144-144M120 256h292"
+                  fill="none" stroke="currentColor" stroke-width="32"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      </nav>
 
-  <div class="register-container">
+      <!-- PawConnect logo -->
+      <div class="register-logo">
+        <img
+          src="assets/images/pawrescue-logo.png"
+          alt="PawConnect logo"
+          width="180"
+          height="135"
+        />
+      </div>
 
-    <div class="logo">🐾</div>
+      <!-- Short welcome message -->
+      <header class="register-heading">
+        <h1 id="register-title">Create Account</h1>
+        <p>Help pets find safety and loving homes.</p>
+      </header>
 
-    <h1>Create Account</h1>
-    <p>Join the PawRescue Community</p>
+      <!-- Preserve the existing register() method and form bindings. -->
+      <form class="register-form" (ngSubmit)="register()">
+        <div class="form-section-heading">Personal Information</div>
 
-    <form (ngSubmit)="register()">
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="First Name"
+            label-placement="floating"
+            fill="outline"
+            type="text"
+            name="first_name"
+            autocomplete="given-name"
+            [maxlength]="100"
+            [disabled]="loading"
+            [(ngModel)]="form.first_name"
+            required>
+          </ion-input>
+        </div>
 
-      <!-- First Name -->
-      <ion-input
-        label="First Name"
-        label-placement="floating"
-        fill="outline"
-        type="text"
-        name="first_name"
-        autocomplete="given-name"
-        [maxlength]="100"
-        [(ngModel)]="form.first_name"
-        required>
-      </ion-input>
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Middle Name (Optional)"
+            label-placement="floating"
+            fill="outline"
+            type="text"
+            name="middle_name"
+            autocomplete="additional-name"
+            [maxlength]="100"
+            [disabled]="loading"
+            [(ngModel)]="form.middle_name">
+          </ion-input>
+        </div>
 
-      <!-- Middle Name -->
-      <ion-input
-        label="Middle Name (Optional)"
-        label-placement="floating"
-        fill="outline"
-        type="text"
-        name="middle_name"
-        autocomplete="additional-name"
-        [maxlength]="100"
-        [(ngModel)]="form.middle_name">
-      </ion-input>
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Last Name"
+            label-placement="floating"
+            fill="outline"
+            type="text"
+            name="last_name"
+            autocomplete="family-name"
+            [maxlength]="100"
+            [disabled]="loading"
+            [(ngModel)]="form.last_name"
+            required>
+          </ion-input>
+        </div>
 
-      <!-- Last Name -->
-      <ion-input
-        label="Last Name"
-        label-placement="floating"
-        fill="outline"
-        type="text"
-        name="last_name"
-        autocomplete="family-name"
-        [maxlength]="100"
-        [(ngModel)]="form.last_name"
-        required>
-      </ion-input>
+        <div class="form-section-heading account-section">Account Information</div>
 
-      <!-- Email Address -->
-      <ion-input
-        label="Email Address"
-        label-placement="floating"
-        fill="outline"
-        type="email"
-        name="email"
-        autocomplete="email"
-        [maxlength]="150"
-        [(ngModel)]="form.email"
-        required>
-      </ion-input>
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Email Address"
+            label-placement="floating"
+            fill="outline"
+            type="email"
+            name="email"
+            autocomplete="email"
+            [maxlength]="150"
+            [disabled]="loading"
+            [(ngModel)]="form.email"
+            required>
+          </ion-input>
+        </div>
 
-      <!-- Username -->
-      <ion-input
-        label="Username"
-        label-placement="floating"
-        fill="outline"
-        type="text"
-        name="username"
-        autocomplete="username"
-        [maxlength]="50"
-        [(ngModel)]="form.username"
-        required>
-      </ion-input>
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Username"
+            label-placement="floating"
+            fill="outline"
+            type="text"
+            name="username"
+            autocomplete="username"
+            autocapitalize="off"
+            spellcheck="false"
+            [maxlength]="50"
+            [disabled]="loading"
+            [(ngModel)]="form.username"
+            required>
+          </ion-input>
+        </div>
 
-      <!-- Contact Number -->
-      <ion-input
-        label="Contact Number"
-        label-placement="floating"
-        fill="outline"
-        type="tel"
-        name="contact_number"
-        autocomplete="tel"
-        [maxlength]="16"
-        [(ngModel)]="form.contact_number"
-        required>
-      </ion-input>
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Contact Number"
+            label-placement="floating"
+            fill="outline"
+            type="tel"
+            name="contact_number"
+            autocomplete="tel"
+            [maxlength]="16"
+            [disabled]="loading"
+            [(ngModel)]="form.contact_number"
+            required>
+          </ion-input>
+        </div>
 
-      <!-- Password -->
-      <ion-input
-        label="Password"
-        label-placement="floating"
-        fill="outline"
-        type="password"
-        name="password"
-        autocomplete="new-password"
-        [maxlength]="72"
-        [(ngModel)]="form.password"
-        required>
-      </ion-input>
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Password"
+            label-placement="floating"
+            fill="outline"
+            type="password"
+            name="password"
+            autocomplete="new-password"
+            [maxlength]="72"
+            [disabled]="loading"
+            [(ngModel)]="form.password"
+            required>
+          </ion-input>
+        </div>
 
-      <!-- Confirm Password -->
-      <ion-input
-        label="Confirm Password"
-        label-placement="floating"
-        fill="outline"
-        type="password"
-        name="confirm_password"
-        autocomplete="new-password"
-        [maxlength]="72"
-        [(ngModel)]="form.confirm_password"
-        required>
-      </ion-input>
+        <div class="field-group">
+          <ion-input
+            class="auth-input"
+            label="Confirm Password"
+            label-placement="floating"
+            fill="outline"
+            type="password"
+            name="confirm_password"
+            autocomplete="new-password"
+            [maxlength]="72"
+            [disabled]="loading"
+            [(ngModel)]="form.confirm_password"
+            required>
+          </ion-input>
+        </div>
 
-      <!-- Error Message -->
-      <p class="error" *ngIf="errorMessage" role="alert">
-        {{ errorMessage }}
-      </p>
+        <!-- Existing registration feedback -->
+        <p class="error" *ngIf="errorMessage" role="alert" aria-live="polite">
+          {{ errorMessage }}
+        </p>
 
-      <!-- Success Message -->
-      <p class="success" *ngIf="successMessage" role="status">
-        {{ successMessage }}
-      </p>
+        <p class="success" *ngIf="successMessage" role="status" aria-live="polite">
+          {{ successMessage }}
+        </p>
 
-      <!-- Register Button -->
-      <ion-button
-        expand="block"
-        type="submit"
-        [disabled]="loading">
+        <ion-button
+          class="register-button"
+          expand="block"
+          type="submit"
+          [disabled]="loading">
+          <ion-spinner *ngIf="loading" name="crescent" aria-label="Creating account"></ion-spinner>
+          <span *ngIf="!loading">Create Account</span>
+          <span *ngIf="loading" class="loading-label">Creating account...</span>
+        </ion-button>
+      </form>
 
-        <ion-spinner
-          *ngIf="loading"
-          name="crescent">
-        </ion-spinner>
-
-        <span *ngIf="!loading">
-          Register
-        </span>
-
-      </ion-button>
-
-    </form>
-
-    <!-- Login Navigation -->
-    <p class="login-text">
-      Already have an account?
-      <a routerLink="/login">Log In</a>
-    </p>
-
-  </div>
-
+      <div class="login-section">
+        <p class="login-text">
+          Already have an account?
+          <a routerLink="/login">Log In</a>
+        </p>
+      </div>
+    </section>
+  </main>
 </ion-content>

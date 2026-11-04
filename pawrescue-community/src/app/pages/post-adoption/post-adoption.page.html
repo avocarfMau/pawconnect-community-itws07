@@ -1,609 +1,557 @@
-
 <!-- =====================================
-     PAWRESCUE COMMUNITY
-     POST A PET FOR ADOPTION
+     PAWCONNECT
+     CREATE ADOPTION LISTING
+
+     Compatible with post-adoption.report-style.updated.txt
+     Uses the existing post-adoption.page.scss classes.
 ===================================== -->
 
-<ion-content
-  [fullscreen]="true"
-  class="post-adoption-content"
->
-
+<ion-content [fullscreen]="true" class="post-adoption-content">
   <div class="post-adoption-container">
 
-    <!-- =====================================
-         HEADER
-    ===================================== -->
-
-    <div class="page-header">
-
+    <!-- PAGE HEADER: ONE CLEAR TITLE, NO REPEATED INTRO CARD -->
+    <header class="page-header">
       <button
         type="button"
         class="back-button"
         (click)="goBack()"
-        [disabled]="saving || uploading"
+        [disabled]="saving || uploading || cameraOpening"
+        aria-label="Back to Pet Adoption"
       >
         <ion-icon name="arrow-back-outline"></ion-icon>
       </button>
 
       <div class="header-text">
-        <h1>Post a Pet</h1>
-        <p>Pet Adoption Community</p>
+        <h1>New Adoption Listing</h1>
+        <p>Share your pet's details with the community</p>
       </div>
-
-    </div>
+    </header>
 
     <!-- =====================================
-         INTRODUCTION
+         SUCCESS SCREEN
+         Appears immediately after the post is saved.
+         Photo uploading may still be in progress.
     ===================================== -->
-
-    <div class="intro-card">
-
-      <ion-icon name="paw-outline"></ion-icon>
-
-      <div>
-        <h2>Help a Pet Find a Home</h2>
-
-        <p>
-          Share information about a pet
-          looking for a loving family.
-        </p>
-      </div>
-
-    </div>
-
-    <!-- =====================================
-         ERROR MESSAGE
-    ===================================== -->
-
-    <div
-      class="message-box error-message"
-      *ngIf="errorMessage"
-      role="alert"
-    >
-      <ion-icon
-        name="information-circle-outline"
-      ></ion-icon>
-
-      <span>{{ errorMessage }}</span>
-    </div>
-
-    <!-- =====================================
-         SUCCESS MESSAGE
-    ===================================== -->
-
-    <div
-      class="message-box success-message"
-      *ngIf="successMessage"
-      role="status"
-    >
-      <ion-icon
-        name="checkmark-circle-outline"
-      ></ion-icon>
-
-      <span>{{ successMessage }}</span>
-    </div>
-
-    <!-- =====================================
-         ADOPTION FORM
-    ===================================== -->
-
-    <form
-      class="adoption-form"
-      #adoptionForm="ngForm"
-      (ngSubmit)="submitPost()"
-    >
-
-      <!-- =====================================
-           BASIC PET INFORMATION
-      ===================================== -->
-
-      <div class="form-section">
-
-        <h2>Pet Information</h2>
-
-        <p class="section-description">
-          Provide the basic information about
-          the pet you want to rehome.
-        </p>
-
-        <!-- PET NAME -->
-
-        <div class="form-group">
-
-          <label for="petName">
-            Pet Name <span class="required">*</span>
-          </label>
-
-          <input
-            id="petName"
-            name="pet_name"
-            type="text"
-            [(ngModel)]="model.pet_name"
-            placeholder="Enter pet's name"
-            maxlength="100"
-            required
-            [disabled]="saving || uploading || createdId !== null"
-          />
-
-        </div>
-
-        <!-- ANIMAL TYPE -->
-
-        <div class="form-group">
-
-          <label for="animalType">
-            Animal Type <span class="required">*</span>
-          </label>
-
-          <select
-            id="animalType"
-            name="animal_type"
-            [(ngModel)]="model.animal_type"
-            required
-            [disabled]="saving || uploading || createdId !== null"
-          >
-            <option value="dog">Dog</option>
-            <option value="cat">Cat</option>
-          </select>
-
-        </div>
-
-        <!-- SEX -->
-
-        <div class="form-group">
-
-          <label for="petSex">
-            Sex
-          </label>
-
-          <select
-            id="petSex"
-            name="sex"
-            [(ngModel)]="model.sex"
-            [disabled]="saving || uploading || createdId !== null"
-          >
-            <option value="unknown">Unknown</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-
-        </div>
-
-        <!-- AGE -->
-
-        <div class="form-group">
-
-          <label for="petAge">
-            Age (Months)
-          </label>
-
-          <input
-            id="petAge"
-            name="age_months"
-            type="number"
-            min="0"
-            max="600"
-            step="1"
-            [(ngModel)]="model.age_months"
-            placeholder="Example: 12"
-            [disabled]="saving || uploading || createdId !== null"
-          />
-
-          <small>
-            Enter the estimated age in months.
-            Leave blank if unknown.
-          </small>
-
-        </div>
-
-        <!-- BREED -->
-
-        <div class="form-group">
-
-          <label for="petBreed">
-            Breed
-          </label>
-
-          <input
-            id="petBreed"
-            name="breed"
-            type="text"
-            [(ngModel)]="model.breed"
-            placeholder="Example: Aspin, Puspin, Mixed"
-            maxlength="120"
-            [disabled]="saving || uploading || createdId !== null"
-          />
-
-        </div>
-
-        <!-- DESCRIPTION -->
-
-        <div class="form-group">
-
-          <label for="petDescription">
-            Pet Description
-            <span class="required">*</span>
-          </label>
-
-          <textarea
-            id="petDescription"
-            name="description"
-            [(ngModel)]="model.description"
-            rows="5"
-            maxlength="5000"
-            required
-            placeholder="Describe the pet's personality, behavior, and other important information..."
-            [disabled]="saving || uploading || createdId !== null"
-          ></textarea>
-
-          <small>
-            Include details that may help
-            potential adopters.
-          </small>
-
-        </div>
-
-        <!-- HEALTH NOTES -->
-
-        <div class="form-group">
-
-          <label for="healthNotes">
-            Health Information
-          </label>
-
-          <textarea
-            id="healthNotes"
-            name="health_notes"
-            [(ngModel)]="model.health_notes"
-            rows="4"
-            maxlength="3000"
-            placeholder="Vaccination status, medical needs, or other health information..."
-            [disabled]="saving || uploading || createdId !== null"
-          ></textarea>
-
-          <small>
-            Optional. Share known health information
-            to help adopters make informed decisions.
-          </small>
-
-        </div>
-
-      </div>
-
-      <!-- =====================================
-           PET LOCATION
-      ===================================== -->
-
-      <div class="form-section">
-
-        <h2>Pet Location</h2>
-
-        <p class="section-description">
-          Select the barangay where the
-          pet is currently located.
-        </p>
-
-        <!-- BARANGAY -->
-
-        <div class="form-group">
-
-          <label for="barangay">
-            Barangay <span class="required">*</span>
-          </label>
-
-          <select
-            id="barangay"
-            name="barangay"
-            [(ngModel)]="model.barangay"
-            required
-            [disabled]="saving || uploading || createdId !== null"
-          >
-            <option value="" disabled>
-              Select Barangay
-            </option>
-
-            <option
-              *ngFor="let barangay of barangays"
-              [value]="barangay"
-            >
-              {{ barangay }}
-            </option>
-
-          </select>
-
-        </div>
-
-        <!-- LOCATION DETAILS -->
-
-        <div class="form-group">
-
-          <label for="locationDetails">
-            Additional Location Details
-          </label>
-
-          <textarea
-            id="locationDetails"
-            name="location_details"
-            [(ngModel)]="model.location_details"
-            rows="3"
-            maxlength="255"
-            placeholder="Optional landmark or general area"
-            [disabled]="saving || uploading || createdId !== null"
-          ></textarea>
-
-          <small>
-            For privacy, avoid posting your exact
-            home address publicly.
-          </small>
-
-        </div>
-
-      </div>
-
-      <!-- =====================================
-           PET PHOTOS
-      ===================================== -->
-
-      <div class="form-section">
-
-        <div class="photo-section-header">
-
+    <ng-container *ngIf="createdId !== null">
+      <section class="form-section" aria-live="polite">
+        <div class="intro-card">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
           <div>
-            <h2>Pet Photos</h2>
+            <h2>Listing Created!</h2>
+            <p>Your adoption listing has been saved successfully.</p>
+          </div>
+        </div>
 
-            <p class="section-description">
-              Add up to 10 photos of the pet.
+        <p class="section-description">
+          Listing ID: #{{ createdId }}
+        </p>
+
+        <!-- Photos upload separately from the successful post creation. -->
+        <div
+          class="submission-progress"
+          *ngIf="uploading"
+          role="status"
+          aria-live="polite"
+        >
+          <ion-spinner name="crescent"></ion-spinner>
+          <div>
+            <strong>
+              Uploading photo {{ uploadPosition }} of {{ selectedPhotos.length }}
+            </strong>
+            <p>
+              {{ uploadedCount }} of {{ selectedPhotos.length }} confirmed.
+              Please keep this page open until uploads finish.
             </p>
           </div>
+        </div>
 
-          <span class="photo-count">
-            {{ selectedPhotos.length }} / {{ maxPhotos }}
+        <div
+          class="message-box success-message"
+          *ngIf="!uploading && (!selectedPhotos.length || photoUploaded)"
+          role="status"
+        >
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <span>
+            {{ selectedPhotos.length
+              ? 'All ' + uploadedCount + ' photo(s) uploaded successfully.'
+              : 'Your listing is ready for residents to view.' }}
           </span>
-
         </div>
 
-        <!-- HIDDEN FILE INPUT -->
-
-        <input
-          #photoInput
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          hidden
-          (change)="onPhotosSelected($event)"
-          [disabled]="
-            saving ||
-            uploading ||
-            cameraOpening ||
-            createdId !== null ||
-            selectedPhotos.length >= maxPhotos
-          "
-        />
-
-        <!-- PHOTO ACTION BUTTONS -->
-
-        <div class="photo-actions">
-
-          <button
-            type="button"
-            class="photo-action-button gallery-button"
-            (click)="photoInput.click()"
-            [disabled]="
-              saving ||
-              uploading ||
-              cameraOpening ||
-              createdId !== null ||
-              selectedPhotos.length >= maxPhotos
-            "
-          >
-
-            <ion-icon
-              name="images-outline"
-            ></ion-icon>
-
-            <span>Choose Photos</span>
-
-          </button>
-
-          <button
-            type="button"
-            class="photo-action-button camera-button"
-            (click)="takePhoto()"
-            [disabled]="
-              saving ||
-              uploading ||
-              cameraOpening ||
-              createdId !== null ||
-              selectedPhotos.length >= maxPhotos
-            "
-          >
-
-            <ion-icon
-              name="camera-outline"
-            ></ion-icon>
-
-            <span>
-              {{ cameraOpening ? 'Opening...' : 'Take Photo' }}
-            </span>
-
-          </button>
-
-        </div>
-
-        <!-- PHOTO ERROR -->
-
-        <p
-          class="photo-error"
-          *ngIf="photoError"
+        <!-- Never show a false 'all uploaded' message on partial failure. -->
+        <div
+          class="message-box error-message"
+          *ngIf="!uploading && photoError"
           role="alert"
         >
-          {{ photoError }}
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>{{ photoError }}</span>
+        </div>
+
+        <p
+          class="section-description"
+          *ngIf="!uploading && photoError && selectedPhotos.length > 0"
+        >
+          {{ uploadedCount }} of {{ selectedPhotos.length }} photo(s) confirmed.
+          Your adoption listing itself is already saved.
         </p>
 
-        <!-- PHOTO PREVIEW GRID -->
-
-        <div
-          class="selected-photos"
-          *ngIf="selectedPhotos.length > 0"
+        <!-- Retry only confirmed failed uploads. No automatic uncertain retries. -->
+        <ion-button
+          *ngIf="
+            !uploading &&
+            photoError &&
+            !photoUploadUncertain &&
+            !photoUploaded &&
+            selectedPhotos.length > 0
+          "
+          type="button"
+          expand="block"
+          fill="outline"
+          class="my-adoptions-button"
+          (click)="uploadSelectedPhotos()"
         >
+          Retry Remaining Photos
+        </ion-button>
 
-          <div
-            class="selected-photo"
-            *ngFor="
-              let photo of selectedPhotos;
-              let i = index
-            "
-          >
-
-            <img
-              [src]="photo.preview"
-              [alt]="'Selected pet photo ' + (i + 1)"
-            />
-
-            <span class="photo-number">
-              {{ i + 1 }}
-            </span>
-
-            <button
-              type="button"
-              class="remove-photo-button"
-              (click)="removePhoto(i)"
-              [disabled]="
-                saving ||
-                uploading ||
-                createdId !== null
-              "
-              [attr.aria-label]="'Remove photo ' + (i + 1)"
-            >
-
-              <ion-icon
-                name="close-circle-outline"
-              ></ion-icon>
-
-            </button>
-
-          </div>
-
-        </div>
-
-        <!-- NO PHOTOS SELECTED -->
-
-        <div
-          class="no-photos"
-          *ngIf="selectedPhotos.length === 0"
+        <ion-button
+          type="button"
+          expand="block"
+          class="my-adoptions-button"
+          (click)="viewMyAdoptions()"
+          [disabled]="saving || uploading"
         >
+          View My Adoptions
+        </ion-button>
 
-          <ion-icon
-            name="images-outline"
-          ></ion-icon>
+        <ion-button
+          type="button"
+          expand="block"
+          fill="clear"
+          class="cancel-button"
+          (click)="goBack()"
+          [disabled]="saving || uploading"
+        >
+          Browse Pets
+        </ion-button>
+      </section>
+    </ng-container>
 
-          <p>No photos selected yet.</p>
-
-        </div>
-
-        <p class="photo-help">
-          Supported formats: JPG, PNG, WebP.
-          Maximum 5 MB per photo.
-        </p>
-
+    <!-- =====================================
+         UNCERTAIN SUBMISSION
+         Prevent users from unintentionally creating duplicates.
+    ===================================== -->
+    <section
+      class="form-section"
+      *ngIf="createdId === null && submissionUncertain"
+    >
+      <div class="message-box error-message" role="alert">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>
+          {{ errorMessage ||
+            'Unable to confirm whether your listing was created.' }}
+        </span>
       </div>
 
-      <!-- =====================================
-           SUBMISSION PROGRESS
-      ===================================== -->
-
-      <div
-        class="submission-progress"
-        *ngIf="saving || uploading"
-      >
-
-        <ion-spinner
-          name="crescent"
-        ></ion-spinner>
-
-        <div>
-
-          <strong *ngIf="saving && !uploading">
-            Saving adoption post...
-          </strong>
-
-          <strong *ngIf="uploading">
-            Uploading photo
-            {{ uploadPosition }}
-            of
-            {{ selectedPhotos.length }}
-          </strong>
-
-          <p>
-            Please keep this page open
-            while your post is being saved.
-          </p>
-
-        </div>
-
-      </div>
-
-      <!-- =====================================
-           SUBMIT BUTTON
-      ===================================== -->
+      <p class="section-description">
+        Check My Adoptions before submitting another listing.
+        The server may already have saved your post.
+      </p>
 
       <ion-button
-        *ngIf="createdId === null && !submissionUncertain"
-        type="submit"
-        expand="block"
-        class="submit-button"
-        [disabled]="
-          saving ||
-          uploading ||
-          cameraOpening ||
-          !adoptionForm.valid
-        "
-      >
-
-        <ion-icon
-          name="paw-outline"
-          slot="start"
-        ></ion-icon>
-
-        {{ saving || uploading
-          ? 'Please Wait...'
-          : 'Post Pet for Adoption' }}
-
-      </ion-button>
-
-      <!-- =====================================
-           VIEW MY ADOPTIONS
-      ===================================== -->
-
-      <ion-button
-        *ngIf="createdId !== null || submissionUncertain"
         type="button"
         expand="block"
         class="my-adoptions-button"
         (click)="viewMyAdoptions()"
         [disabled]="saving || uploading"
       >
-
-        View My Adoptions
-
+        Check My Adoptions
       </ion-button>
+    </section>
 
-      <!-- CANCEL -->
+    <!-- =====================================
+         ADOPTION FORM
+         Hidden after a confirmed or uncertain submission.
+    ===================================== -->
+    <ng-container *ngIf="createdId === null && !submissionUncertain">
 
-      <ion-button
-        type="button"
-        expand="block"
-        fill="clear"
-        class="cancel-button"
-        (click)="goBack()"
-        [disabled]="saving || uploading"
+      <div
+        class="message-box error-message"
+        *ngIf="errorMessage"
+        role="alert"
       >
-        Back to Pet Adoption
-      </ion-button>
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
 
-    </form>
+      <form
+        class="adoption-form"
+        #adoptionForm="ngForm"
+        (ngSubmit)="submitPost()"
+      >
 
+        <!-- SECTION 1: PET DETAILS -->
+        <section class="form-section">
+          <h2>Pet Details</h2>
+          <p class="section-description">
+            Tell potential adopters about the pet.
+          </p>
+
+          <div class="form-group">
+            <label for="petName">
+              Pet Name <span class="required">*</span>
+            </label>
+            <input
+              id="petName"
+              name="pet_name"
+              type="text"
+              [(ngModel)]="model.pet_name"
+              placeholder="Enter pet's name"
+              maxlength="100"
+              required
+              [disabled]="saving || uploading"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="animalType">
+              Animal Type <span class="required">*</span>
+            </label>
+            <select
+              id="animalType"
+              name="animal_type"
+              [(ngModel)]="model.animal_type"
+              (ngModelChange)="model.breed = ''"
+              required
+              [disabled]="saving || uploading"
+            >
+              <option value="dog">Dog</option>
+              <option value="cat">Cat</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="petSex">Sex</label>
+            <select
+              id="petSex"
+              name="sex"
+              [(ngModel)]="model.sex"
+              [disabled]="saving || uploading"
+            >
+              <option value="unknown">Unknown</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
+          <!-- Age stays numeric in months for the PHP API, but residents
+               select an easy-to-read age instead of typing a number. -->
+          <div class="form-group">
+            <label for="petAge">Approximate Age</label>
+            <select
+              id="petAge"
+              name="age_months"
+              [(ngModel)]="model.age_months"
+              [disabled]="saving || uploading"
+            >
+              <option [ngValue]="null">Unknown / Not sure</option>
+              <optgroup label="Puppy / Kitten (Under 1 year)">
+                <option [ngValue]="0">Less than 1 month</option>
+                <option [ngValue]="1">1 month</option>
+                <option [ngValue]="2">2 months</option>
+                <option [ngValue]="3">3 months</option>
+                <option [ngValue]="4">4 months</option>
+                <option [ngValue]="5">5 months</option>
+                <option [ngValue]="6">6 months</option>
+                <option [ngValue]="7">7 months</option>
+                <option [ngValue]="8">8 months</option>
+                <option [ngValue]="9">9 months</option>
+                <option [ngValue]="10">10 months</option>
+                <option [ngValue]="11">11 months</option>
+              </optgroup>
+              <optgroup label="1 to 3 years">
+                <option [ngValue]="12">1 year</option>
+                <option [ngValue]="18">1 year, 6 months</option>
+                <option [ngValue]="24">2 years</option>
+                <option [ngValue]="30">2 years, 6 months</option>
+                <option [ngValue]="36">3 years</option>
+              </optgroup>
+              <optgroup label="4 years and older">
+                <option [ngValue]="48">4 years</option>
+                <option [ngValue]="60">5 years</option>
+                <option [ngValue]="72">6 years</option>
+                <option [ngValue]="84">7 years</option>
+                <option [ngValue]="96">8 years</option>
+                <option [ngValue]="108">9 years</option>
+                <option [ngValue]="120">10 years</option>
+                <option [ngValue]="132">11 years</option>
+                <option [ngValue]="144">12 years</option>
+                <option [ngValue]="156">13 years</option>
+                <option [ngValue]="168">14 years</option>
+                <option [ngValue]="180">15 years</option>
+                <option [ngValue]="192">16 years</option>
+                <option [ngValue]="204">17 years</option>
+                <option [ngValue]="216">18 years</option>
+                <option [ngValue]="228">19 years</option>
+                <option [ngValue]="240">20 years</option>
+              </optgroup>
+            </select>
+            <small>Select the closest age. Choose Unknown if unsure.</small>
+          </div>
+
+          <!-- Show relevant breed choices for the selected animal. -->
+          <div class="form-group">
+            <label for="petBreed">Breed (Optional)</label>
+            <select
+              id="petBreed"
+              name="breed"
+              [(ngModel)]="model.breed"
+              [disabled]="saving || uploading"
+            >
+              <option value="">Select a breed</option>
+              <ng-container *ngIf="model.animal_type === 'dog'">
+                <option value="Aspin">Aspin (Local Dog)</option>
+                <option value="Mixed Breed">Mixed Breed</option>
+                <option value="Shih Tzu">Shih Tzu</option>
+                <option value="Pomeranian">Pomeranian</option>
+                <option value="Chihuahua">Chihuahua</option>
+                <option value="Poodle">Poodle</option>
+                <option value="Labrador Retriever">Labrador Retriever</option>
+                <option value="Golden Retriever">Golden Retriever</option>
+                <option value="German Shepherd">German Shepherd</option>
+                <option value="Siberian Husky">Siberian Husky</option>
+                <option value="Beagle">Beagle</option>
+                <option value="Dachshund">Dachshund</option>
+                <option value="French Bulldog">French Bulldog</option>
+              </ng-container>
+              <ng-container *ngIf="model.animal_type === 'cat'">
+                <option value="Puspin">Puspin (Local Cat)</option>
+                <option value="Mixed Breed">Mixed Breed</option>
+                <option value="Persian">Persian</option>
+                <option value="Siamese">Siamese</option>
+                <option value="British Shorthair">British Shorthair</option>
+                <option value="Maine Coon">Maine Coon</option>
+                <option value="Ragdoll">Ragdoll</option>
+                <option value="Bengal">Bengal</option>
+                <option value="Sphynx">Sphynx</option>
+              </ng-container>
+            </select>
+            <small>Breed is optional. If unsure, leave it unselected.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="petDescription">
+              Description <span class="required">*</span>
+            </label>
+            <textarea
+              id="petDescription"
+              name="description"
+              [(ngModel)]="model.description"
+              rows="4"
+              maxlength="5000"
+              required
+              placeholder="Personality, behavior, and what makes this pet special..."
+              [disabled]="saving || uploading"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="healthPreset">Health Information (Optional)</label>
+            <select
+              id="healthPreset"
+              [ngModel]="''"
+              (ngModelChange)="model.health_notes = $event || model.health_notes"
+              [ngModelOptions]="{ standalone: true }"
+              [disabled]="saving || uploading"
+            >
+              <option value="" disabled>Choose a quick answer (optional)</option>
+              <option value="Vaccinated">Vaccinated</option>
+              <option value="Dewormed">Dewormed</option>
+              <option value="Vaccinated and dewormed">Vaccinated and dewormed</option>
+              <option value="Not yet vaccinated">Not yet vaccinated</option>
+              <option value="Health status unknown">Health status unknown</option>
+              <option value="Needs special medical attention">Needs special medical attention</option>
+            </select>
+            <textarea
+              id="healthNotes"
+              name="health_notes"
+              [(ngModel)]="model.health_notes"
+              rows="2"
+              maxlength="3000"
+              placeholder="Selected answer appears here. Add details if necessary."
+              aria-label="Health information and additional notes"
+              [disabled]="saving || uploading"
+            ></textarea>
+            <small>Select a quick answer or type specific health information.</small>
+          </div>
+        </section>
+
+        <!-- SECTION 2: LOCATION -->
+        <section class="form-section">
+          <h2>Location</h2>
+
+          <div class="form-group">
+            <label for="barangay">
+              Barangay <span class="required">*</span>
+            </label>
+            <select
+              id="barangay"
+              name="barangay"
+              [(ngModel)]="model.barangay"
+              required
+              [disabled]="saving || uploading"
+            >
+              <option value="" disabled>Select Barangay</option>
+              <option
+                *ngFor="let barangay of barangays"
+                [value]="barangay"
+              >
+                {{ barangay }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="locationDetails">Nearby Landmark (Optional)</label>
+            <textarea
+              id="locationDetails"
+              name="location_details"
+              [(ngModel)]="model.location_details"
+              rows="2"
+              maxlength="255"
+              placeholder="General area or landmark (not your exact home address)"
+              [disabled]="saving || uploading"
+            ></textarea>
+            <small>For privacy, avoid posting your full home address.</small>
+          </div>
+        </section>
+
+        <!-- SECTION 3: PHOTOS -->
+        <section class="form-section">
+          <div class="photo-section-header">
+            <div>
+              <h2>Photos</h2>
+              <p class="section-description">
+                Add clear photos so adopters can recognize the pet.
+              </p>
+            </div>
+            <span class="photo-count" aria-live="polite">
+              {{ selectedPhotos.length }} / {{ maxPhotos }}
+            </span>
+          </div>
+
+          <input
+            #photoInput
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            hidden
+            (change)="onPhotosSelected($event)"
+            [disabled]="
+              saving || uploading || cameraOpening ||
+              selectedPhotos.length >= maxPhotos
+            "
+          />
+
+          <div class="photo-actions">
+            <button
+              type="button"
+              class="photo-action-button gallery-button"
+              (click)="photoInput.click()"
+              [disabled]="
+                saving || uploading || cameraOpening ||
+                selectedPhotos.length >= maxPhotos
+              "
+            >
+              <ion-icon name="images-outline"></ion-icon>
+              Choose Photos
+            </button>
+
+            <button
+              type="button"
+              class="photo-action-button camera-button"
+              (click)="takePhoto()"
+              [disabled]="
+                saving || uploading || cameraOpening ||
+                selectedPhotos.length >= maxPhotos
+              "
+            >
+              <ion-icon name="camera-outline"></ion-icon>
+              {{ cameraOpening ? 'Opening...' : 'Take Photo' }}
+            </button>
+          </div>
+
+          <p class="photo-error" *ngIf="photoError" role="alert">
+            {{ photoError }}
+          </p>
+
+          <div class="selected-photos" *ngIf="selectedPhotos.length > 0">
+            <div
+              class="selected-photo"
+              *ngFor="let photo of selectedPhotos; let i = index"
+            >
+              <img
+                [src]="photo.preview"
+                [alt]="'Pet photo ' + (i + 1)"
+              />
+              <span class="photo-number">{{ i + 1 }}</span>
+              <button
+                type="button"
+                class="remove-photo-button"
+                (click)="removePhoto(i)"
+                [disabled]="saving || uploading || cameraOpening"
+                [attr.aria-label]="'Remove photo ' + (i + 1)"
+              >
+                <ion-icon name="close-circle-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="no-photos" *ngIf="selectedPhotos.length === 0">
+            <ion-icon name="images-outline"></ion-icon>
+            <p>No photos selected</p>
+          </div>
+
+          <p class="photo-help">
+            Up to 10 photos · JPG, PNG, or WebP · Maximum 5 MB each.
+          </p>
+        </section>
+
+        <!-- SUBMIT / SAVE STATUS -->
+        <div
+          class="submission-progress"
+          *ngIf="saving"
+          role="status"
+          aria-live="polite"
+        >
+          <ion-spinner name="crescent"></ion-spinner>
+          <div>
+            <strong>Publishing your listing...</strong>
+            <p>Please keep this page open until the listing is saved.</p>
+          </div>
+        </div>
+
+        <ion-button
+          type="submit"
+          expand="block"
+          class="submit-button"
+          [disabled]="saving || uploading || cameraOpening || adoptionForm.invalid"
+        >
+          <ion-icon name="paw-outline" slot="start"></ion-icon>
+          {{ saving ? 'Publishing...' : 'Publish Adoption Listing' }}
+        </ion-button>
+
+        <ion-button
+          type="button"
+          expand="block"
+          fill="clear"
+          class="cancel-button"
+          (click)="goBack()"
+          [disabled]="saving || uploading || cameraOpening"
+        >
+          Cancel
+        </ion-button>
+      </form>
+    </ng-container>
   </div>
-
 </ion-content>

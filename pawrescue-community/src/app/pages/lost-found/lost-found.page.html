@@ -861,71 +861,62 @@
       </p>
     </div>
   </div>
-  <!-- REPORT LOCATION MAP OVERLAY -->
+  <!-- REPORT LOCATION — LEAFLET MAP MODAL (MATCHES MY CLAIMS) -->
   <div
     class="report-map-overlay"
     *ngIf="showLocationMap && selectedReport"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="reportMapTitle">
-    <div class="report-map-modal">
-      <!-- MAP MODAL HEADER -->
-      <div class="report-map-modal-header">
+    role="presentation">
+    <section
+      class="report-map-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reportMapTitle">
+      <header class="report-map-modal-header">
         <div>
-          <h2 id="reportMapTitle">
-            {{ selectedReport.pet_name || 'Pet' }} Location
-          </h2>
-          <p>
-            Last seen / found location
-          </p>
+          <h2 id="reportMapTitle">{{ selectedReport.pet_name || 'Pet' }} Location</h2>
+          <p>Last seen / found location</p>
         </div>
         <button
           type="button"
           class="close-map-button"
           (click)="closeLocationMap()"
           aria-label="Close location map">
-          <ion-icon name="close-outline"></ion-icon>
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
         </button>
-      </div>
-      <!-- PET LOCATION DETAILS -->
-      <div class="report-map-location-details">
-        <ion-icon name="location-outline"></ion-icon>
-        <span>
-          {{ selectedReport.location_address }}
-        </span>
-      </div>
-      <!-- INTERACTIVE MAP -->
-      <div class="report-map-container">
-        <div
-          #reportLocationMap
-          class="report-location-map"
-          aria-label="Map showing the reported pet location">
-        </div>
-      </div>
-      <!-- MAP INFORMATION -->
-      <div class="report-map-info">
-        <p>
-          The marker shows the location provided
-          when this pet was reported.
+      </header>
+
+      <div class="report-map-modal-content">
+        <p class="report-map-location-details">
+          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+          <span>{{ selectedReport.location_address }}</span>
         </p>
-        <div class="report-map-coordinates">
-          <span>
-            Latitude:
-            {{ selectedReport.latitude }}
-          </span>
-          <span>
-            Longitude:
-            {{ selectedReport.longitude }}
-          </span>
+
+        <div class="report-map-container">
+          <div
+            #reportLocationMap
+            class="report-location-map"
+            role="img"
+            aria-label="Interactive Leaflet map showing the reported pet location">
+          </div>
+        </div>
+
+        <p class="report-map-help">
+          The marker shows the location provided when this pet was reported.
+        </p>
+        <div class="report-map-coordinates" aria-label="Reported GPS coordinates">
+          <span>Latitude: {{ selectedReport.latitude }}</span>
+          <span>Longitude: {{ selectedReport.longitude }}</span>
         </div>
       </div>
-      <!-- CLOSE BUTTON -->
-      <ion-button
-        expand="block"
-        class="close-map-action"
-        (click)="closeLocationMap()">
-        Close Map
-      </ion-button>
-    </div>
+
+      <footer class="report-map-modal-footer">
+        <ion-button
+          expand="block"
+          class="close-map-action"
+          (click)="closeLocationMap()">
+          Close Map
+        </ion-button>
+      </footer>
+    </section>
   </div>
 </ion-content>

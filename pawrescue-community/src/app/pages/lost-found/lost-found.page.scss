@@ -2772,3 +2772,156 @@ ion-content { --background: #f5f9f6; }
   .lf-private-body input,
   .lf-private-body select { transition: none; }
 }
+
+
+/* ==========================================================
+   LOST & FOUND REPORT MAP — MATCH MY CLAIMS LEAFLET MODAL
+   Styling only; existing Leaflet view and handlers are reused.
+   ========================================================== */
+.report-map-overlay {
+  z-index: 11000;
+  padding: max(18px, env(safe-area-inset-top, 0px)) 14px
+    max(18px, env(safe-area-inset-bottom, 0px));
+  background: rgba(13, 39, 26, 0.64);
+  backdrop-filter: none;
+}
+
+.report-map-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: min(88dvh, 690px);
+  overflow: hidden;
+  border: 1px solid #dce8df;
+  border-radius: 19px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.23);
+}
+
+.report-map-modal-header {
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 15px 17px;
+  border-bottom: 1px solid #dce8df;
+
+  h2 {
+    margin: 0 0 4px;
+    color: #213d2d;
+    font-size: 18px;
+    font-weight: 750;
+  }
+
+  p {
+    margin: 0;
+    color: #738579;
+    font-size: 12px;
+  }
+}
+
+.report-map-modal-content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 15px 16px 12px;
+}
+
+.report-map-modal-content .report-map-location-details {
+  margin: 0 0 11px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #738579;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.report-map-modal-content .report-map-container {
+  padding: 0;
+}
+
+.report-map-modal-content .report-location-map {
+  height: clamp(240px, 45dvh, 405px);
+  min-height: 240px;
+  border: 1px solid #dce8df;
+  border-radius: 12px;
+  background: #edf3ee;
+  isolation: isolate;
+  touch-action: pan-x pan-y;
+}
+
+.report-map-help {
+  margin: 10px 0;
+  color: #738579;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.report-map-modal-content .report-map-coordinates {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+
+  span {
+    color: #738579;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.report-map-modal-footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  padding: 11px 16px 15px;
+  border-top: 1px solid #dce8df;
+}
+
+.report-map-modal-footer .close-map-action {
+  --background: #2d8038;
+  --background-hover: #256e30;
+  --border-radius: 10px;
+  --box-shadow: none;
+  display: block;
+  width: auto;
+  min-width: 115px;
+  min-height: 43px;
+  height: 43px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+}
+
+@media (max-width: 520px) {
+  .report-map-overlay {
+    padding: max(56px, env(safe-area-inset-top, 0px)) 10px
+      max(15px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .report-map-modal {
+    max-height: min(79dvh, 650px);
+    border-radius: 18px;
+  }
+
+  .report-map-modal-header { padding: 12px 14px; }
+  .report-map-modal-content { padding: 12px; }
+  .report-map-modal-footer { padding: 10px 12px 13px; }
+  .report-map-modal-content .report-location-map {
+    height: clamp(230px, 40dvh, 350px);
+  }
+}
+
+
+/* Report map: outlined Close Map action, matching My Claims. */
+.report-map-modal-footer .close-map-action {
+  --background: transparent;
+  --background-hover: #eef7f0;
+  --background-activated: #e4f2e8;
+  --color: #2d8038;
+  --border-color: #2d8038;
+  --border-style: solid;
+  --border-width: 1px;
+  --box-shadow: none;
+}

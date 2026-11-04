@@ -1,5 +1,5 @@
 <!-- ============================================================
-     PAWRESCUE COMMUNITY — MY RECOVERIES
+     PAWCONNECT — MY RECOVERIES
      Step 65: Sent / Received Lost Pet recovery management
      Companion: my-recoveries.page.ts (Step 64)
      Private details and evidence are intentionally shown only here.
@@ -277,21 +277,9 @@
           <p class="recoveries-muted" *ngIf="proposal.status === 'pending' && !canRespondReschedule">
             Waiting for the other participant. The current pickup arrangement remains unchanged.
           </p>
-          <div class="recoveries-inline-actions" *ngIf="canRespondReschedule">
-            <label class="recoveries-field recoveries-field--full">
-              <span>Optional response note</span>
-              <textarea [(ngModel)]="responseNote" rows="2" maxlength="1000"
-                placeholder="Add a note (optional)" [disabled]="actionBusy"></textarea>
-            </label>
-            <button type="button" class="recoveries-button recoveries-button--primary"
-              (click)="respondReschedule('accept')" [disabled]="actionBusy">
-              <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon> Accept Change
-            </button>
-            <button type="button" class="recoveries-button recoveries-button--outline"
-              (click)="respondReschedule('reject')" [disabled]="actionBusy">
-              Keep Original
-            </button>
-          </div>
+          <button type="button" class="recoveries-button recoveries-button--primary recoveries-button--full"
+            *ngIf="canRespondReschedule" (click)="openActionModal('reschedule_response')"
+            [disabled]="actionBusy || detailLoading">Review Schedule Change</button>
         </section>
 
         <!-- The owner can review finding submissions; the finder cannot approve their own. -->
@@ -310,147 +298,24 @@
           </div>
         </section>
 
-        <!-- Approve/reject forms reuse Step 64 component state. -->
-        <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="formMode === 'approve' || formMode === 'reject'">
-          <form class="recoveries-form" (ngSubmit)="submitDecision()">
-            <h3>{{ formMode === 'approve' ? 'Arrange a Private Pickup' : 'Reject Finding Submission' }}</h3>
-            <p class="recoveries-muted" *ngIf="formMode === 'approve'">
-              The finder must confirm your schedule before the physical handover.
-            </p>
-            <ng-container *ngIf="formMode === 'approve'">
-              <label class="recoveries-field">
-                <span>Meeting location <em>*</em></span>
-                <textarea [ngModel]="pickupLocation" (ngModelChange)="onPickupLocationChanged($event)"
-                  name="approvalPickupLocation" rows="2" maxlength="255" required
-                  placeholder="Enter a safe public meeting place" [disabled]="actionBusy"></textarea>
-              </label>
-              <div class="recoveries-form-grid">
-                <label class="recoveries-field">
-                  <span>Pickup date <em>*</em></span>
-                  <input type="date" name="approvalPickupDate" [(ngModel)]="pickupDate"
-                    [min]="minPickupDate" required [disabled]="actionBusy" />
-                </label>
-                <label class="recoveries-field">
-                  <span>Pickup time <em>*</em></span>
-                  <input type="time" name="approvalPickupTime" [(ngModel)]="pickupTime"
-                    required [disabled]="actionBusy" />
-                </label>
-              </div>
-              <button type="button" class="recoveries-button recoveries-button--subtle"
-                (click)="capturePickupLocation()" [disabled]="actionBusy || pickupLocationLoading">
-                <ion-spinner name="dots" *ngIf="pickupLocationLoading"></ion-spinner>
-                <ion-icon name="navigate-outline" *ngIf="!pickupLocationLoading" aria-hidden="true"></ion-icon>
-                {{ pickupLocationLoading ? 'Getting GPS...' : 'Attach Current GPS (optional)' }}
-              </button>
-              <p class="recoveries-muted" *ngIf="pickupLatitude !== null && pickupLongitude !== null">
-                GPS attached: {{ pickupLatitude }}, {{ pickupLongitude }}
-              </p>
-            </ng-container>
-            <label class="recoveries-field" *ngIf="formMode === 'reject'">
-              <span>Reason (optional)</span>
-              <textarea name="rejectionReason" [(ngModel)]="rejectionReason"
-                rows="3" maxlength="1000" [disabled]="actionBusy"
-                placeholder="Explain why this finding does not match your pet"></textarea>
-            </label>
-            <div class="recoveries-inline-actions">
-              <button type="submit" class="recoveries-button"
-                [class.recoveries-button--primary]="formMode === 'approve'"
-                [class.recoveries-button--danger]="formMode === 'reject'"
-                [disabled]="actionBusy || pickupLocationLoading || detailLoading">
-                {{ formMode === 'approve' ? 'Approve Recovery' : 'Reject Recovery' }}
-              </button>
-              <button type="button" class="recoveries-button recoveries-button--outline"
-                (click)="cancelForm()" [disabled]="actionBusy || pickupLocationLoading">Cancel</button>
-            </div>
-          </form>
-        </section>
-
         <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="canConfirmPickup">
-          <h3><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon> Confirm Pickup Schedule</h3>
-          <p class="recoveries-muted">
-            Confirm the proposed place, date and time. This does <strong>not</strong> mean the pet was handed over.
-          </p>
+          <h3>Confirm Pickup Schedule</h3>
+          <p class="recoveries-muted">Review the agreed meeting place, date and time before confirming.</p>
           <button type="button" class="recoveries-button recoveries-button--primary recoveries-button--full"
-            (click)="confirmPickup()" [disabled]="actionBusy || detailLoading">
-            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Confirm Pickup Arrangement
+            (click)="openActionModal('pickup')" [disabled]="actionBusy || detailLoading">
+            <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon> Confirm Pickup Arrangement
           </button>
         </section>
-
-        <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="canRequestReschedule || formMode === 'reschedule'">
-          <ng-container *ngIf="formMode !== 'reschedule'">
-            <h3><ion-icon name="time-outline" aria-hidden="true"></ion-icon> Need a Different Pickup Arrangement?</h3>
-            <button type="button" class="recoveries-button recoveries-button--subtle recoveries-button--full"
-              (click)="startReschedule()" [disabled]="actionBusy || detailLoading">
-              Request Reschedule
-            </button>
-          </ng-container>
-          <form class="recoveries-form" *ngIf="formMode === 'reschedule'"
-            (ngSubmit)="requestReschedule()">
-            <h3>Propose a Pickup Change</h3>
-            <p class="recoveries-muted">The other resident must accept this proposal before the schedule changes.</p>
-            <label class="recoveries-field">
-              <span>Proposed meeting place <em>*</em></span>
-              <textarea [ngModel]="pickupLocation" (ngModelChange)="onPickupLocationChanged($event)"
-                name="reschedulePickupLocation" rows="2" maxlength="255" required
-                [disabled]="actionBusy"></textarea>
-            </label>
-            <div class="recoveries-form-grid">
-              <label class="recoveries-field">
-                <span>Proposed date <em>*</em></span>
-                <input type="date" name="reschedulePickupDate" [(ngModel)]="pickupDate"
-                  [min]="minPickupDate" required [disabled]="actionBusy" />
-              </label>
-              <label class="recoveries-field">
-                <span>Proposed time <em>*</em></span>
-                <input type="time" name="reschedulePickupTime" [(ngModel)]="pickupTime"
-                  required [disabled]="actionBusy" />
-              </label>
-            </div>
-            <button type="button" class="recoveries-button recoveries-button--subtle"
-              (click)="capturePickupLocation()" [disabled]="actionBusy || pickupLocationLoading">
-              <ion-spinner name="dots" *ngIf="pickupLocationLoading"></ion-spinner>
-              <ion-icon name="navigate-outline" *ngIf="!pickupLocationLoading" aria-hidden="true"></ion-icon>
-              {{ pickupLocationLoading ? 'Getting GPS...' : 'Attach Current GPS (optional)' }}
-            </button>
-            <p class="recoveries-muted" *ngIf="pickupLatitude !== null && pickupLongitude !== null">
-              GPS attached: {{ pickupLatitude }}, {{ pickupLongitude }}
-            </p>
-            <label class="recoveries-field">
-              <span>Reason (optional)</span>
-              <textarea name="rescheduleReason" [(ngModel)]="rescheduleReason" rows="2"
-                maxlength="1000" placeholder="Why do you need to change the schedule?"
-                [disabled]="actionBusy"></textarea>
-            </label>
-            <div class="recoveries-inline-actions">
-              <button type="submit" class="recoveries-button recoveries-button--primary"
-                [disabled]="actionBusy || pickupLocationLoading || detailLoading">Send Proposal</button>
-              <button type="button" class="recoveries-button recoveries-button--outline"
-                (click)="cancelForm()" [disabled]="actionBusy || pickupLocationLoading">Cancel</button>
-            </div>
-          </form>
+        <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="canRequestReschedule">
+          <button type="button" class="recoveries-button recoveries-button--subtle recoveries-button--full"
+            (click)="startReschedule()" [disabled]="actionBusy || detailLoading">Request Reschedule</button>
         </section>
-
-        <section class="recoveries-dialog-section recoveries-handover"
-          *ngIf="canConfirmHandover">
-          <h3><ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon> Confirm Actual Pet Handover</h3>
-          <p class="recoveries-muted" *ngIf="isFinder">
-            Confirm only after you have physically given the missing pet back to its owner.
-          </p>
-          <p class="recoveries-muted" *ngIf="isOwner">
-            Confirm only after you have physically received your missing pet from the finder.
-          </p>
-          <label class="recoveries-checkbox">
-            <input type="checkbox" [(ngModel)]="handoverAcknowledged" [disabled]="actionBusy" />
-            <span>I confirm that the pet has actually been handed over in person.</span>
-          </label>
+        <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="canConfirmHandover">
           <button type="button" class="recoveries-button recoveries-button--primary recoveries-button--full"
-            (click)="confirmHandover()" [disabled]="actionBusy || !handoverAcknowledged || detailLoading">
-            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
-            Confirm Actual Handover
+            (click)="openActionModal('handover')" [disabled]="actionBusy || detailLoading">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Confirm Actual Pet Handover
           </button>
-          <p class="recoveries-muted">The Lost Pet report will be resolved only after both residents confirm.</p>
         </section>
-
         <section class="recoveries-dialog-section" *ngIf="recovery.owner_handover_confirmed_at || recovery.finder_handover_confirmed_at">
           <h3><ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Handover Progress</h3>
           <div class="recoveries-confirmation-list">
@@ -477,6 +342,193 @@
         <button type="button" class="recoveries-button recoveries-button--outline"
           (click)="closeDetails()" [disabled]="actionBusy">Close</button>
       </footer>
+    </div>
+  </div>
+
+  <!-- Recovery actions are separate modals above the compact details modal. -->
+  <div class="recoveries-action-overlay" *ngIf="selectedRecovery && (formMode !== null || actionModal !== null)"
+    role="dialog" aria-modal="true" aria-labelledby="recoveryActionTitle">
+    <div class="recoveries-action-dialog">
+      <header class="recoveries-action-header">
+        <h2 id="recoveryActionTitle">{{ formMode === 'approve' ? 'Arrange Private Pickup' : formMode === 'reject' ? 'Reject Recovery' : formMode === 'reschedule' ? 'Propose a Pickup Change' : actionModal === 'pickup' ? 'Confirm Pickup Arrangement' : actionModal === 'handover' ? 'Confirm Pet Handover' : 'Review Pickup Change' }}</h2>
+        <button type="button" class="recoveries-dialog-close" (click)="closeActionModal()"
+          [disabled]="actionBusy || pickupLocationLoading" aria-label="Close action dialog">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </header>
+      <div class="recoveries-action-body">
+        <div class="recoveries-notice recoveries-notice--error" *ngIf="actionError" role="alert">{{ actionError }}</div>
+        <!-- Approve/reject forms reuse Step 64 component state. -->
+        <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="formMode === 'approve' || formMode === 'reject'">
+          <form class="recoveries-form" (ngSubmit)="submitDecision()">
+            
+            <p class="recoveries-muted" *ngIf="formMode === 'approve'">
+              This meeting place will be shared privately with the approved finder only.
+            </p>
+            <ng-container *ngIf="formMode === 'approve'">
+              <label class="recoveries-field">
+                <span>Pickup meeting place <em>*</em></span>
+                <textarea [ngModel]="pickupLocation" (ngModelChange)="onPickupLocationChanged($event)"
+                  name="approvalPickupLocation" rows="2" maxlength="255" required
+                  placeholder="Specific safe meeting place or landmark" [disabled]="actionBusy"></textarea>
+              </label>
+              <button type="button" class="recoveries-button recoveries-button--subtle"
+                (click)="capturePickupLocation()" [disabled]="actionBusy || pickupLocationLoading">
+                <ion-spinner name="dots" *ngIf="pickupLocationLoading"></ion-spinner>
+                <ion-icon name="navigate-outline" *ngIf="!pickupLocationLoading" aria-hidden="true"></ion-icon>
+                {{ pickupLocationLoading ? 'Getting GPS...' : (pickupLatitude !== null && pickupLongitude !== null ? 'GPS Pin Added — Tap to Update' : 'Add Current GPS Pin (Optional)') }}
+              </button>
+              <div class="recoveries-gps-result" *ngIf="pickupLatitude !== null && pickupLongitude !== null" role="status">
+                <strong><ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Location captured successfully</strong>
+                <div class="recoveries-gps-coordinates">
+                  <div><span>Latitude</span><b>{{ pickupLatitude | number:'1.6-6' }}</b></div>
+                  <div><span>Longitude</span><b>{{ pickupLongitude | number:'1.6-6' }}</b></div>
+                </div>
+                <small>Also enter the written meeting place above.</small>
+              </div>
+              <p class="recoveries-schedule-helper">Tap the calendar or clock field to choose a pickup schedule.</p>
+              <div class="recoveries-form-grid">
+                <label class="recoveries-field">
+                  <span><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon> Pickup date <em>*</em></span>
+                  <span class="recoveries-picker-wrap"><span class="recoveries-picker-hint" *ngIf="!pickupDate"><ion-icon name="calendar-outline"></ion-icon> Select pickup date</span><input type="date" name="approvalPickupDate" [(ngModel)]="pickupDate"
+                    [min]="minPickupDate" required [disabled]="actionBusy" /></span>
+                </label>
+                <label class="recoveries-field">
+                  <span><ion-icon name="time-outline" aria-hidden="true"></ion-icon> Pickup time (Philippine time) <em>*</em></span>
+                  <span class="recoveries-picker-wrap"><span class="recoveries-picker-hint" *ngIf="!pickupTime"><ion-icon name="time-outline"></ion-icon> Select pickup time</span><input type="time" name="approvalPickupTime" [(ngModel)]="pickupTime"
+                    required [disabled]="actionBusy" /></span>
+                </label>
+              </div>
+            </ng-container>
+            <label class="recoveries-field" *ngIf="formMode === 'reject'">
+              <span>Reason (optional)</span>
+              <textarea name="rejectionReason" [(ngModel)]="rejectionReason"
+                rows="3" maxlength="1000" [disabled]="actionBusy"
+                placeholder="Explain why this finding does not match your pet"></textarea>
+            </label>
+            <div class="recoveries-inline-actions recoveries-modal-decision-actions">
+              <button type="button" class="recoveries-button recoveries-button--outline"
+                (click)="cancelForm()" [disabled]="actionBusy || pickupLocationLoading">Back</button>
+              <button type="submit" class="recoveries-button"
+                [class.recoveries-button--primary]="formMode === 'approve'"
+                [class.recoveries-button--danger]="formMode === 'reject'"
+                [disabled]="actionBusy || pickupLocationLoading || detailLoading">
+                {{ formMode === 'approve' ? 'Approve & Schedule' : 'Confirm Rejection' }}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="formMode === 'reschedule'">
+          <form class="recoveries-form" *ngIf="formMode === 'reschedule'"
+            (ngSubmit)="requestReschedule()">
+            <h3>Propose a Pickup Change</h3>
+            <p class="recoveries-muted">The other resident must accept this proposal before the schedule changes.</p>
+            <label class="recoveries-field">
+              <span>Proposed meeting place <em>*</em></span>
+              <textarea [ngModel]="pickupLocation" (ngModelChange)="onPickupLocationChanged($event)"
+                name="reschedulePickupLocation" rows="2" maxlength="255" required
+                [disabled]="actionBusy"></textarea>
+            </label>
+            <div class="recoveries-form-grid">
+              <label class="recoveries-field">
+                <span><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon> Proposed date <em>*</em></span>
+                <span class="recoveries-picker-wrap"><span class="recoveries-picker-hint" *ngIf="!pickupDate"><ion-icon name="calendar-outline"></ion-icon> Select pickup date</span><input type="date" name="reschedulePickupDate" [(ngModel)]="pickupDate"
+                  [min]="minPickupDate" required [disabled]="actionBusy" /></span>
+              </label>
+              <label class="recoveries-field">
+                <span><ion-icon name="time-outline" aria-hidden="true"></ion-icon> Proposed time (Philippine time) <em>*</em></span>
+                <span class="recoveries-picker-wrap"><span class="recoveries-picker-hint" *ngIf="!pickupTime"><ion-icon name="time-outline"></ion-icon> Select pickup time</span><input type="time" name="reschedulePickupTime" [(ngModel)]="pickupTime"
+                  required [disabled]="actionBusy" /></span>
+              </label>
+            </div>
+            <button type="button" class="recoveries-button recoveries-button--subtle"
+              (click)="capturePickupLocation()" [disabled]="actionBusy || pickupLocationLoading">
+              <ion-spinner name="dots" *ngIf="pickupLocationLoading"></ion-spinner>
+              <ion-icon name="navigate-outline" *ngIf="!pickupLocationLoading" aria-hidden="true"></ion-icon>
+              {{ pickupLocationLoading ? 'Getting GPS...' : (pickupLatitude !== null && pickupLongitude !== null ? 'GPS Pin Added — Tap to Update' : 'Add Current GPS Pin (Optional)') }}
+            </button>
+            <div class="recoveries-gps-result" *ngIf="pickupLatitude !== null && pickupLongitude !== null" role="status">
+                <strong><ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Location captured successfully</strong>
+                <div class="recoveries-gps-coordinates">
+                  <div><span>Latitude</span><b>{{ pickupLatitude | number:'1.6-6' }}</b></div>
+                  <div><span>Longitude</span><b>{{ pickupLongitude | number:'1.6-6' }}</b></div>
+                </div>
+                <small>Also enter the written meeting place above.</small>
+              </div>
+            <label class="recoveries-field">
+              <span>Reason (optional)</span>
+              <textarea name="rescheduleReason" [(ngModel)]="rescheduleReason" rows="2"
+                maxlength="1000" placeholder="Why do you need to change the schedule?"
+                [disabled]="actionBusy"></textarea>
+            </label>
+            <div class="recoveries-inline-actions">
+              <button type="submit" class="recoveries-button recoveries-button--primary"
+                [disabled]="actionBusy || pickupLocationLoading || detailLoading">Send Proposal</button>
+              <button type="button" class="recoveries-button recoveries-button--outline"
+                (click)="cancelForm()" [disabled]="actionBusy || pickupLocationLoading">Cancel</button>
+            </div>
+          </form>
+        </section>
+
+
+        <section class="recoveries-dialog-section" *ngIf="actionModal === 'pickup' && selectedRecovery as recovery">
+          <p class="recoveries-muted">Confirming the schedule does not mean you have received or handed over the pet.</p>
+          <div class="recoveries-pickup-box">
+            <p><strong>Place:</strong> {{ recovery.pickup.location }}</p>
+            <p><strong>Date:</strong> {{ recovery.pickup.date }}</p>
+            <p><strong>Time:</strong> {{ (recovery.pickup.time || '').slice(0, 5) }} (Philippine time)</p>
+          </div>
+          <button type="button" class="recoveries-button recoveries-button--primary recoveries-button--full"
+            (click)="confirmPickup()" [disabled]="actionBusy">Confirm Pickup Arrangement</button>
+        </section>
+        <section class="recoveries-dialog-section recoveries-handover"
+          *ngIf="actionModal === 'handover'">
+          <h3><ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon> Confirm Actual Pet Handover</h3>
+          <p class="recoveries-muted" *ngIf="isFinder">
+            Confirm only after you have physically given the missing pet back to its owner.
+          </p>
+          <p class="recoveries-muted" *ngIf="isOwner">
+            Confirm only after you have physically received your missing pet from the finder.
+          </p>
+          <label class="recoveries-checkbox">
+            <input type="checkbox" [(ngModel)]="handoverAcknowledged" [disabled]="actionBusy" />
+            <span>I confirm that the pet has actually been handed over in person.</span>
+          </label>
+          <button type="button" class="recoveries-button recoveries-button--primary recoveries-button--full"
+            (click)="confirmHandover()" [disabled]="actionBusy || !handoverAcknowledged || detailLoading">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            Confirm Actual Handover
+          </button>
+          <p class="recoveries-muted">The Lost Pet report will be resolved only after both residents confirm.</p>
+        </section>
+
+
+        <section class="recoveries-dialog-section" *ngIf="actionModal === 'reschedule_response' && selectedRecovery as recovery">
+          <p class="recoveries-muted">Review the proposed arrangement before responding.</p>
+          <div class="recoveries-pickup-box" *ngIf="recovery.latest_reschedule as proposal">
+            <p><strong>Place:</strong> {{ proposal.proposed_location }}</p>
+            <p><strong>Date:</strong> {{ proposal.proposed_date }}</p>
+            <p><strong>Time:</strong> {{ proposal.proposed_time.slice(0, 5) }} (Philippine time)</p>
+          </div>
+          <div class="recoveries-inline-actions" *ngIf="actionModal === 'reschedule_response'">
+            <label class="recoveries-field recoveries-field--full">
+              <span>Optional response note</span>
+              <textarea [(ngModel)]="responseNote" rows="2" maxlength="1000"
+                placeholder="Add a note (optional)" [disabled]="actionBusy"></textarea>
+            </label>
+            <button type="button" class="recoveries-button recoveries-button--primary"
+              (click)="respondReschedule('accept')" [disabled]="actionBusy">
+              <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon> Accept Change
+            </button>
+            <button type="button" class="recoveries-button recoveries-button--outline"
+              (click)="respondReschedule('reject')" [disabled]="actionBusy">
+              Keep Original
+            </button>
+          </div>
+
+        </section>
+      </div>
     </div>
   </div>
 </ion-content>

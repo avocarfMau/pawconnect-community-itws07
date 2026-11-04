@@ -1,200 +1,111 @@
+<ion-content [fullscreen]="true" class="pawrescue-home">
+  <main class="home-container">
 
-<ion-content [fullscreen]="true">
-
-  <div class="home-container">
-
-    <!-- Header -->
-    <div class="app-header">
-
+    <!-- Brand header -->
+    <header class="app-header">
       <div class="brand">
-        <div class="brand-icon">
+        <div class="brand-icon" aria-hidden="true">
           <ion-icon name="paw"></ion-icon>
         </div>
-
-        <div>
-          <h2>PawRescue</h2>
+        <div class="brand-copy">
+          <h2>PawConnect</h2>
           <p>Community</p>
         </div>
       </div>
 
+      <!-- Notifications -->
       <button
         class="profile-button"
         type="button"
-        (click)="openAccount()">
+        aria-label="Open notifications"
+        title="Notifications"
+        (click)="openNotifications()">
+        <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </header>
 
-        <ion-icon name="person-circle-outline"></ion-icon>
+    <!-- Welcome banner -->
+    <section class="welcome-card" aria-labelledby="welcome-heading">
+      <div class="welcome-card-content">
+        <div class="welcome-topline">
+          <span class="welcome-label">PAWCONNECT COMMUNITY</span>
+          <span class="welcome-paw" aria-hidden="true">
+            <ion-icon name="paw"></ion-icon>
+          </span>
+        </div>
+        <h1 id="welcome-heading">Welcome to PawConnect!</h1>
+        <p>Together, we can help pets find safety, care, and loving homes.</p>
+      </div>
+    </section>
 
+    <!-- Community services -->
+    <section class="services-section" aria-labelledby="services-heading">
+      <div class="section-heading">
+        <span class="section-eyebrow">EXPLORE PAWCONNECT</span>
+        <h2 id="services-heading">How can we help today?</h2>
+        <p>Explore our community services</p>
+      </div>
+
+      <!-- Lost and Found Pets -->
+      <button
+        class="feature-card"
+        type="button"
+        (click)="openFeature('lost-found')"
+        aria-label="Open Lost and Found Pets">
+        <span class="feature-icon lost" aria-hidden="true">
+          <ion-icon name="search-outline"></ion-icon>
+        </span>
+        <span class="feature-content">
+          <span class="feature-title">Lost and Found Pets</span>
+          <span class="feature-description">
+            Report missing pets or help reunite found pets with their owners.
+          </span>
+        </span>
+        <span class="feature-arrow" aria-hidden="true">
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </span>
       </button>
 
-    </div>
-
-    <!-- Welcome Banner -->
-    <div class="welcome-card">
-
-      <h1>Welcome to PawRescue! 🐾</h1>
-
-      <p>
-        Together, we can help pets find safety,
-        care, and loving homes.
-      </p>
-
-    </div>
-
-    <!-- Temporary Logout Section -->
-    <div class="logout-section">
-
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="danger"
-        (click)="logout()"
-        [disabled]="loggingOut">
-
-        {{ loggingOut ? 'Logging Out...' : 'Log Out' }}
-
-      </ion-button>
-
-      <p
-        class="logout-error"
-        *ngIf="logoutError"
-        role="alert">
-
-        {{ logoutError }}
-
-      </p>
-
-    </div>
-
-    <!-- Main Features Heading -->
-    <div class="section-heading">
-
-      <h3>How can we help today?</h3>
-
-      <p>Explore our community services</p>
-
-    </div>
-
-    <!-- Lost and Found Pets -->
-    <div
-      class="feature-card"
-      (click)="openFeature('lost-found')">
-
-      <div class="feature-icon lost">
-        <ion-icon name="search-outline"></ion-icon>
-      </div>
-
-      <div class="feature-content">
-
-        <h3>Lost and Found Pets</h3>
-
-        <p>
-          Report missing pets or help reunite
-          found pets with their owners.
-        </p>
-
-      </div>
-
-      <ion-icon
-        name="arrow-forward-outline"
-        class="arrow">
-      </ion-icon>
-
-    </div>
-
-    <!-- Pet Adoption -->
-    <div
-      class="feature-card"
-      (click)="openFeature('adoption')">
-
-      <div class="feature-icon adoption">
-        <ion-icon name="heart-outline"></ion-icon>
-      </div>
-
-      <div class="feature-content">
-
-        <h3>Pet Adoption</h3>
-
-        <p>
-          Browse pets available for adoption
-          and give them a loving home.
-        </p>
-
-      </div>
-
-      <ion-icon
-        name="arrow-forward-outline"
-        class="arrow">
-      </ion-icon>
-
-    </div>
-
-    <!-- Stray Animal Assistance -->
-    <div
-      class="feature-card"
-      (click)="openFeature('stray')">
-
-      <div class="feature-icon stray">
-        <ion-icon name="medkit-outline"></ion-icon>
-      </div>
-
-      <div class="feature-content">
-
-        <h3>Stray Animal Assistance</h3>
-
-        <p>
-          Report stray animals that need
-          attention and assistance.
-        </p>
-
-      </div>
-
-      <ion-icon
-        name="arrow-forward-outline"
-        class="arrow">
-      </ion-icon>
-
-    </div>
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-
-      <!-- Home -->
+      <!-- Pet Adoption -->
       <button
-        class="nav-item active"
-        type="button">
+        class="feature-card"
+        type="button"
+        (click)="openFeature('adoption')"
+        aria-label="Open Pet Adoption">
+        <span class="feature-icon adoption" aria-hidden="true">
+          <ion-icon name="heart-outline"></ion-icon>
+        </span>
+        <span class="feature-content">
+          <span class="feature-title">Pet Adoption</span>
+          <span class="feature-description">
+            Browse pets available for adoption and give them a loving home.
+          </span>
+        </span>
+        <span class="feature-arrow" aria-hidden="true">
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </span>
+      </button>
 
-        <ion-icon name="home-outline"></ion-icon>
+    </section>
+  </main>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <div class="bottom-nav-inner">
+      <button class="nav-item active" type="button" aria-current="page">
+        <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
         <span>Home</span>
-
       </button>
 
-      <!-- My Reports -->
-      <button
-        class="nav-item"
-        type="button"
-        (click)="openReports()">
-
-        <ion-icon name="document-text-outline"></ion-icon>
+      <button class="nav-item" type="button" (click)="openReports()">
+        <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
         <span>My Reports</span>
-
       </button>
 
-      <!-- My Account -->
-      <button
-        class="nav-item"
-        type="button"
-        (click)="openAccount()">
-
-        <ion-icon name="person-circle-outline"></ion-icon>
+      <button class="nav-item" type="button" (click)="openAccount()">
+        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
         <span>My Account</span>
-
       </button>
-
     </div>
-
-  </div>
-
-
-
-
+  </nav>
 </ion-content>

@@ -130,6 +130,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   evidenceError = '';
 
   formMode: RecoveryFormMode = null;
+  actionModal: 'pickup' | 'handover' | 'reschedule_response' | null = null;
   pickupLocation = '';
   pickupDate = '';
   pickupTime = '';
@@ -361,6 +362,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     this.actionError = '';
     this.actionMessage = '';
     this.formMode = null;
+    this.actionModal = null;
     this.handoverAcknowledged = false;
   }
 
@@ -560,6 +562,23 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     this.pickupTime = (r.pickup.time || '').slice(0, 5);
   }
 
+  openActionModal(mode: 'pickup' | 'handover' | 'reschedule_response'): void {
+    if (this.actionBusy || this.detailLoading || !this.selectedRecovery) return;
+    if (mode === 'pickup' && !this.canConfirmPickup) return;
+    if (mode === 'handover' && !this.canConfirmHandover) return;
+    if (mode === 'reschedule_response' && !this.canRespondReschedule) return;
+    this.actionError = '';
+    this.actionModal = mode;
+    this.handoverAcknowledged = false;
+    this.responseNote = '';
+  }
+
+  closeActionModal(): void {
+    if (this.actionBusy || this.pickupLocationLoading) return;
+    this.actionModal = null;
+    this.resetForm();
+  }
+
   cancelForm(): void {
     if (this.actionBusy || this.pickupLocationLoading) return;
     this.resetForm();
@@ -567,6 +586,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
 
   private resetForm(): void {
     this.formMode = null;
+    this.actionModal = null;
     this.pickupLocation = '';
     this.pickupDate = '';
     this.pickupTime = '';
@@ -740,6 +760,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
         this.render(() => {
           this.actionMessage = response.message || fallbackMessage;
           this.formMode = null;
+          this.actionModal = null;
           this.handoverAcknowledged = false;
           this.responseNote = '';
         });
@@ -849,6 +870,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     this.detailLoading = false;
     this.actionBusy = false;
     this.formMode = null;
+    this.actionModal = null;
     this.handoverAcknowledged = false;
   }
 
