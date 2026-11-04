@@ -2,10 +2,8 @@
 <!-- PAWCONNECT - MY ACCOUNT PAGE -->
 <!-- Profile loading, editing, refresh, and logout use MyAccountPage state. -->
 <!-- ===================================== -->
-
 <ion-content [fullscreen]="true" class="my-account-content" style="--background: #f5f8f5;">
   <main class="my-account-container" style="max-width: 720px; margin: 0 auto; padding: 18px 16px 36px;">
-
     <!-- PAGE HEADER -->
     <header class="account-page-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 22px;">
       <button
@@ -18,12 +16,10 @@
       >
         <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
       </button>
-
       <div class="account-heading" style="flex: 1; min-width: 0;">
         <h1 style="margin: 0; color: #173d28; font-size: 23px; font-weight: 800;">My Account</h1>
         <p style="margin: 3px 0 0; color: #687b6e; font-size: 12px;">View your PawConnect profile</p>
       </div>
-
       <button
         type="button"
         class="account-refresh-button"
@@ -36,7 +32,6 @@
         <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
       </button>
     </header>
-
     <!-- LOADING STATE -->
     <section
       class="account-loading"
@@ -47,7 +42,6 @@
       <ion-spinner name="crescent" color="success"></ion-spinner>
       <p style="margin: 14px 0 0; color: #617568; font-size: 13px;">Loading your account information...</p>
     </section>
-
     <!-- PROFILE LOAD ERROR (ALSO SHOWN IF REFRESH FAILS) -->
     <div
       class="account-error-message"
@@ -57,7 +51,6 @@
     >
       {{ errorMessage }}
     </div>
-
     <!-- EMPTY / EXPIRED ACCOUNT STATE -->
     <section
       class="account-unavailable"
@@ -77,10 +70,8 @@
         Go to Login
       </ion-button>
     </section>
-
     <!-- AUTHENTICATED RESIDENT PROFILE -->
     <ng-container *ngIf="profile as account">
-
       <!-- PROFILE CARD -->
       <section
         class="account-profile-card"
@@ -106,7 +97,6 @@
           </p>
         </div>
       </section>
-
       <!-- ACCOUNT DETAILS -->
       <section
         class="account-details-card"
@@ -134,7 +124,6 @@
             Edit Profile
           </button>
         </div>
-
         <!-- FEEDBACK OUTSIDE THE FORM (e.g., after saving) -->
         <div
           *ngIf="editSuccess && !editingProfile"
@@ -153,7 +142,6 @@
         >
           {{ editError }}
         </div>
-
         <!-- READ-ONLY ACCOUNT INFORMATION -->
         <dl *ngIf="!editingProfile" class="account-details" style="display: grid; gap: 12px; margin: 0;">
           <div class="account-detail-item" style="display: flex; align-items: flex-start; gap: 13px; padding: 13px; border: 1px solid #edf2ee; border-radius: 12px; background: #fafcf9;">
@@ -163,7 +151,6 @@
               <dd style="margin: 4px 0 0; color: #263e2e; font-size: 14px; font-weight: 600; overflow-wrap: anywhere;">{{ account.full_name }}</dd>
             </div>
           </div>
-
           <div class="account-detail-item" style="display: flex; align-items: flex-start; gap: 13px; padding: 13px; border: 1px solid #edf2ee; border-radius: 12px; background: #fafcf9;">
             <ion-icon name="mail-outline" aria-hidden="true" style="flex-shrink: 0; margin-top: 3px; color: #2d7748; font-size: 21px;"></ion-icon>
             <div style="min-width: 0; flex: 1;">
@@ -171,7 +158,6 @@
               <dd style="margin: 4px 0 0; color: #263e2e; font-size: 14px; font-weight: 600; overflow-wrap: anywhere;">{{ account.email }}</dd>
             </div>
           </div>
-
           <div class="account-detail-item" *ngIf="account.username" style="display: flex; align-items: flex-start; gap: 13px; padding: 13px; border: 1px solid #edf2ee; border-radius: 12px; background: #fafcf9;">
             <ion-icon name="person-circle-outline" aria-hidden="true" style="flex-shrink: 0; margin-top: 3px; color: #2d7748; font-size: 21px;"></ion-icon>
             <div style="min-width: 0; flex: 1;">
@@ -179,7 +165,6 @@
               <dd style="margin: 4px 0 0; color: #263e2e; font-size: 14px; font-weight: 600; overflow-wrap: anywhere;">{{ account.username }}</dd>
             </div>
           </div>
-
           <div class="account-detail-item" style="display: flex; align-items: flex-start; gap: 13px; padding: 13px; border: 1px solid #edf2ee; border-radius: 12px; background: #fafcf9;">
             <ion-icon name="call-outline" aria-hidden="true" style="flex-shrink: 0; margin-top: 3px; color: #2d7748; font-size: 21px;"></ion-icon>
             <div style="min-width: 0; flex: 1;">
@@ -187,7 +172,6 @@
               <dd style="margin: 4px 0 0; color: #263e2e; font-size: 14px; font-weight: 600; overflow-wrap: anywhere;">{{ account.contact_number || 'Not provided' }}</dd>
             </div>
           </div>
-
           <div class="account-detail-item" style="display: flex; align-items: flex-start; gap: 13px; padding: 13px; border: 1px solid #edf2ee; border-radius: 12px; background: #fafcf9;">
             <ion-icon name="location-outline" aria-hidden="true" style="flex-shrink: 0; margin-top: 3px; color: #2d7748; font-size: 21px;"></ion-icon>
             <div style="min-width: 0; flex: 1;">
@@ -196,7 +180,6 @@
             </div>
           </div>
         </dl>
-
         <!-- EDIT PROFILE FORM: MATCHES my-account.page.ts / UpdateProfileRequest -->
         <form
           *ngIf="editingProfile"
@@ -210,7 +193,6 @@
           <p style="margin: 0; color: #617568; font-size: 12px; line-height: 1.6;">
             Fields marked <strong style="color: #b43d3d;">*</strong> are required.
           </p>
-
           <div class="account-edit-field" style="display: grid; gap: 7px;">
             <label for="account-first-name" style="font-size: 12px; font-weight: 700; color: #32583f;">
               First Name <span style="color: #b43d3d;">*</span>
@@ -224,7 +206,6 @@
               style="width: 100%; box-sizing: border-box; min-height: 46px; padding: 11px 12px; border: 1px solid #cdded1; border-radius: 11px; background: #ffffff; color: #263e2e; font: inherit; font-size: 14px;"
             />
           </div>
-
           <div class="account-edit-field" style="display: grid; gap: 7px;">
             <label for="account-middle-name" style="font-size: 12px; font-weight: 700; color: #32583f;">
               Middle Name <span style="font-weight: 400; color: #738478;">(optional)</span>
@@ -238,7 +219,6 @@
               style="width: 100%; box-sizing: border-box; min-height: 46px; padding: 11px 12px; border: 1px solid #cdded1; border-radius: 11px; background: #ffffff; color: #263e2e; font: inherit; font-size: 14px;"
             />
           </div>
-
           <div class="account-edit-field" style="display: grid; gap: 7px;">
             <label for="account-last-name" style="font-size: 12px; font-weight: 700; color: #32583f;">
               Last Name <span style="color: #b43d3d;">*</span>
@@ -252,7 +232,6 @@
               style="width: 100%; box-sizing: border-box; min-height: 46px; padding: 11px 12px; border: 1px solid #cdded1; border-radius: 11px; background: #ffffff; color: #263e2e; font: inherit; font-size: 14px;"
             />
           </div>
-
           <div class="account-edit-field" style="display: grid; gap: 7px;">
             <label for="account-username" style="font-size: 12px; font-weight: 700; color: #32583f;">
               Username <span style="color: #b43d3d;">*</span>
@@ -270,7 +249,6 @@
               3–50 characters; letters, numbers, or underscores only.
             </small>
           </div>
-
           <div class="account-edit-field" style="display: grid; gap: 7px;">
             <label for="account-contact-number" style="font-size: 12px; font-weight: 700; color: #32583f;">
               Contact Number <span style="color: #b43d3d;">*</span>
@@ -278,7 +256,7 @@
             <input
               id="account-contact-number" name="contact_number" type="tel"
               [(ngModel)]="editForm.contact_number"
-              required maxlength="16" pattern="\+?[0-9]{10,15}"
+              required maxlength="16" pattern="\\+?[0-9]{10,15}"
               autocomplete="tel" inputmode="tel"
               [disabled]="savingProfile"
               placeholder="e.g., 09123456789"
@@ -288,7 +266,6 @@
               10–15 digits; an optional leading + is allowed.
             </small>
           </div>
-
           <div class="account-edit-field" style="display: grid; gap: 7px;">
             <label for="account-email-readonly" style="font-size: 12px; font-weight: 700; color: #32583f;">
               Email Address <span style="font-weight: 400; color: #738478;">(read-only)</span>
@@ -303,7 +280,6 @@
               Email changes require a separate verification process.
             </small>
           </div>
-
           <!-- FORM ERROR MESSAGE -->
           <div
             *ngIf="editError"
@@ -313,7 +289,6 @@
           >
             {{ editError }}
           </div>
-
           <div class="account-edit-actions" style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px;">
             <ion-button
               type="button" fill="outline" color="medium"
@@ -336,7 +311,6 @@
           </div>
         </form>
       </section>
-
       <!-- ACCOUNT PRIVACY NOTE -->
       <aside
         class="account-privacy-note"
@@ -350,7 +324,6 @@
           </p>
         </div>
       </aside>
-
       <!-- LOGOUT -->
       <section class="account-session-actions" aria-label="Account actions">
         <div
@@ -375,7 +348,6 @@
           {{ loggingOut ? 'Logging out...' : 'Log Out' }}
         </ion-button>
       </section>
-
     </ng-container>
   </main>
 </ion-content>
