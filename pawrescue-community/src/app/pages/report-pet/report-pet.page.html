@@ -192,6 +192,76 @@
               aria-hidden="true">MM/DD/YYYY</span>
           </div>
         </div>
+
+        <!-- FOUND PET ONLY: request Animal Assistance from  Veterinary Office. -->
+        <div class="assistance-section" *ngIf="form.report_type === 'found'" aria-labelledby="foundAssistanceHeading">
+          <div class="wizard-panel-title assistance-section-heading">
+            <h3 id="foundAssistanceHeading">Animal Assistance</h3>
+            <p>Does this found pet need help from the Veterinary Office?</p>
+          </div>
+
+          <div class="assistance-choice-grid" role="group" aria-labelledby="foundAssistanceHeading">
+            <label class="assistance-choice" [class.is-selected]="needsAssistance">
+              <input
+                type="radio"
+                name="animal_assistance_choice"
+                [checked]="needsAssistance"
+                [disabled]="loading || submissionUncertain"
+                (change)="onNeedsAssistanceChange(true)">
+              <span>Yes, needs assistance</span>
+            </label>
+            <label class="assistance-choice" [class.is-selected]="!needsAssistance">
+              <input
+                type="radio"
+                name="animal_assistance_choice"
+                [checked]="!needsAssistance"
+                [disabled]="loading || submissionUncertain"
+                (change)="onNeedsAssistanceChange(false)">
+              <span>No assistance needed</span>
+            </label>
+          </div>
+
+          <div class="assistance-followup" *ngIf="needsAssistance">
+            <div class="form-group">
+              <label for="assistanceReason">Reason for Assistance <span>*</span></label>
+              <select
+                id="assistanceReason"
+                name="assistance_reason"
+                [(ngModel)]="assistanceReason"
+                [disabled]="loading || submissionUncertain"
+                required>
+                <option value="" disabled>Select a reason</option>
+                <option *ngFor="let reason of assistanceReasonOptions" [value]="reason.value">
+                  {{ reason.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="assistanceDetails">
+                Additional Assistance Details
+                <span *ngIf="assistanceReason === 'other'">*</span>
+                <span *ngIf="assistanceReason !== 'other'">(Optional)</span>
+              </label>
+              <textarea
+                id="assistanceDetails"
+                name="assistance_details"
+                rows="3"
+                [maxlength]="maxAssistanceDetailsLength"
+                [required]="assistanceReason === 'other'"
+                [(ngModel)]="assistanceDetails"
+                [disabled]="loading || submissionUncertain"
+                placeholder="Describe the animal's condition or the help it may need..."></textarea>
+              <small>{{ assistanceDetails.length }} / {{ maxAssistanceDetailsLength }} characters</small>
+            </div>
+
+            <p class="assistance-disclaimer">
+              The pet will still be listed as a Found Pet. Your assistance request will
+              be referred to Veterinary Office staff for assessment.
+              Do not approach an animal that may be dangerous.
+            </p>
+          </div>
+        </div>
         </section>
         <section class="wizard-panel" [hidden]="formStep !== 2" aria-labelledby="wizardLocationTitle">
           <div class="wizard-panel-title">
@@ -513,6 +583,18 @@
             <div class="wizard-review-row" *ngIf="form.report_type === 'lost' && landmark.trim()"><span>Landmark</span><strong>{{ landmark }}</strong></div>
             <div class="wizard-review-row" *ngIf="form.report_type === 'lost'"><span>Map Pin</span><strong>{{ selectedLatitude !== null && selectedLongitude !== null ? 'Added' : 'Not added (optional)' }}</strong></div>
             <div class="wizard-review-row" *ngIf="form.report_type === 'found'"><span>Found Pet GPS</span><strong>{{ foundGpsVerified && selectedLatitude !== null && selectedLongitude !== null ? (selectedLatitude | number:'1.6-7') + ', ' + (selectedLongitude | number:'1.6-7') : 'Not captured' }}</strong></div>
+            <div class="wizard-review-row" *ngIf="form.report_type === 'found'">
+              <span>Animal Assistance</span>
+              <strong>{{ needsAssistance ? 'Requested' : 'Not requested' }}</strong>
+            </div>
+            <div class="wizard-review-row" *ngIf="form.report_type === 'found' && needsAssistance">
+              <span>Assistance Reason</span>
+              <strong>{{ assistanceReasonLabel }}</strong>
+            </div>
+            <div class="wizard-review-row" *ngIf="form.report_type === 'found' && needsAssistance && assistanceDetails.trim()">
+              <span>Assistance Details</span>
+              <strong>{{ assistanceDetails }}</strong>
+            </div>
             <div class="wizard-review-row"><span>Photos</span><strong>{{ selectedPhotos.length }} selected</strong></div>
           </div>
         <!-- REPORT VALIDATION ERROR -->

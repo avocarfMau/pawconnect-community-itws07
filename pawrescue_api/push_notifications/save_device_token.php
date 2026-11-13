@@ -22,8 +22,8 @@ header('X-Content-Type-Options: nosniff');
 $allowedOrigins = [
     'http://localhost:8100',
     'http://127.0.0.1:8100',
-    'http://192.168.100.23:8100',
-    'http://192.168.100.66:8100',
+    'http://192.168.0.146:8100',
+     "htp://localhost:8101", //localhost
     'http://10.253.195.97:8100',
     'http://localhost',
     'https://localhost',

@@ -4,6 +4,7 @@
 // =====================================
 // PAWRESCUE COMMUNITY
 // CREATE LOST OR FOUND PET REPORT
+// AUTO-CREATE ASSISTANCE REFERRALS FOR FLAGGED FOUND PETS
 // =====================================
 
 // CORS is automatically handled by
@@ -192,6 +193,16 @@ try {
     $longitude = $data["longitude"] ?? null;
 
     // =====================================
+    // ANIMAL ASSISTANCE DATA (FOUND PET ONLY)
+    // =====================================
+    // These optional fields are sent only when the resident selects
+    // "Yes, needs assistance" on the Found Pet form.
+
+    $needsAssistance = $data["needs_assistance"] ?? false;
+    $assistanceReason = $data["assistance_reason"] ?? null;
+    $assistanceDetails = $data["assistance_details"] ?? null;
+
+    // =====================================
     // VALIDATE REPORT TYPE
     // =====================================
 
@@ -266,9 +277,12 @@ try {
     // VALIDATE INCIDENT DATE
     // =====================================
 
+    $incidentTimezone = new DateTimeZone("Asia/Manila");
+
     $date = DateTimeImmutable::createFromFormat(
         "!Y-m-d",
-        $incidentDate
+        $incidentDate,
+        $incidentTimezone
     );
 
     if (
@@ -283,7 +297,7 @@ try {
     }
 
     if (
-        $date > new DateTimeImmutable("today")
+        $date > new DateTimeImmutable("today", $incidentTimezone)
     ) {
         sendResponse(
             400,
@@ -330,6 +344,119 @@ try {
         }
     }
 
+    // =====================================
+    // VALIDATE ANIMAL ASSISTANCE INFORMATION
+    // =====================================
+
+    // Do not accept truthy strings such as "false" or "yes".
+    // The Angular app sends a real JSON boolean when assistance is requested.
+    if (!is_bool($needsAssistance)) {
+        sendResponse(400, false, "Invalid animal assistance selection.");
+    }
+
+    if (
+        $assistanceReason !== null &&
+        !is_string($assistanceReason)
+    ) {
+        sendResponse(400, false, "Invalid assistance reason.");
+    }
+
+    if (
+        $assistanceDetails !== null &&
+        !is_string($assistanceDetails)
+    ) {
+        sendResponse(400, false, "Invalid assistance details.");
+    }
+
+    $assistanceReason = $assistanceReason !== null
+        ? trim($assistanceReason)
+        : null;
+
+    $assistanceDetails = $assistanceDetails !== null
+        ? trim($assistanceDetails)
+        : null;
+
+    $assistanceReason = $assistanceReason === ''
+        ? null
+        : $assistanceReason;
+
+    $assistanceDetails = $assistanceDetails === ''
+        ? null
+        : $assistanceDetails;
+
+    if ($needsAssistance) {
+
+        if ($reportType !== 'found') {
+            sendResponse(
+                400,
+                false,
+                "Animal assistance can only be requested for Found Pet reports."
+            );
+        }
+
+        $allowedAssistanceReasons = [
+            'injured',
+            'sick',
+            'trapped',
+            'aggressive',
+            'abandoned',
+            'roaming',
+            'other'
+        ];
+
+        if (
+            $assistanceReason === null ||
+            !in_array($assistanceReason, $allowedAssistanceReasons, true)
+        ) {
+            sendResponse(
+                400,
+                false,
+                "Please select a valid animal assistance reason."
+            );
+        }
+
+        if (
+            $assistanceDetails !== null &&
+            mb_strlen($assistanceDetails) > 1000
+        ) {
+            sendResponse(
+                400,
+                false,
+                "Assistance details must be 1000 characters or fewer."
+            );
+        }
+
+        if (
+            $assistanceReason === 'other' &&
+            $assistanceDetails === null
+        ) {
+            sendResponse(
+                400,
+                false,
+                "Please describe the assistance needed when selecting Other concern."
+            );
+        }
+
+        // Found Pet's assistance referral needs a usable incident location.
+        // This does not change existing requirements for ordinary pet reports.
+        if ($latitude === null || $longitude === null) {
+            sendResponse(
+                400,
+                false,
+                "GPS coordinates are required for an animal assistance request."
+            );
+        }
+
+    } elseif ($assistanceReason !== null || $assistanceDetails !== null) {
+        // Prevent clients from smuggling assistance information into a
+        // Lost Pet report or a Found Pet report marked "No assistance".
+        sendResponse(
+            400,
+            false,
+            "Assistance details require selecting Needs Animal Assistance."
+        );
+    }
+
     logPerformance(
         "Validation",
         $validationStart
@@ -340,6 +467,12 @@ try {
     // =====================================
 
     $databaseStart = microtime(true);
+
+    // The Found Pet report and its assistance case are one atomic operation.
+    // If the new assistance table is missing or its insert fails, both inserts
+    // are rolled back; we never claim that an incomplete referral was saved.
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->beginTransaction();
 
     $stmt = $conn->prepare(
         "INSERT INTO pet_reports
@@ -384,6 +517,40 @@ try {
 
     $reportId = (int) $conn->lastInsertId();
 
+    $assistanceCaseId = null;
+
+    if ($needsAssistance) {
+        // Requires the animal_assistance_cases table created by our next
+        // database migration, including UNIQUE(found_report_id).
+        // Staff manage this case separately from the Found Pet report.
+        $caseStmt = $conn->prepare(
+            "INSERT INTO animal_assistance_cases
+            (
+                found_report_id,
+                assistance_reason,
+                assistance_details,
+                status
+            )
+            VALUES
+            (
+                :found_report_id,
+                :assistance_reason,
+                :assistance_details,
+                'pending'
+            )"
+        );
+
+        $caseStmt->execute([
+            ':found_report_id' => $reportId,
+            ':assistance_reason' => $assistanceReason,
+            ':assistance_details' => $assistanceDetails
+        ]);
+
+        $assistanceCaseId = (int) $conn->lastInsertId();
+    }
+
+    $conn->commit();
+
     logPerformance(
         "Database Insert",
         $databaseStart
@@ -407,11 +574,24 @@ try {
         true,
         "Pet report submitted successfully!",
         [
-            "report_id" => $reportId
+            "report_id" => $reportId,
+            "assistance_requested" => $needsAssistance,
+            "assistance_case_id" => $assistanceCaseId
         ]
     );
 
 } catch (Throwable $e) {
+
+    if (isset($conn) && $conn instanceof PDO && $conn->inTransaction()) {
+        try {
+            $conn->rollBack();
+        } catch (Throwable $rollbackError) {
+            error_log(
+                "[PawRescue Create Report Rollback Error] " .
+                $rollbackError->getMessage()
+            );
+        }
+    }
 
     error_log(
         "[PawRescue Create Report Error] " .

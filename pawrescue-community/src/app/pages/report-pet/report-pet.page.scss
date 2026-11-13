@@ -1606,3 +1606,162 @@ ion-button[disabled] {
   margin-top: 13px;
   font-size: 11px;
 }
+
+/* ==========================================================
+   FOUND PET — ANIMAL ASSISTANCE REFERRAL (PHASE 1)
+   Scoped to the conditional Found Pet section in Step 1.
+   Preserves the Lost Pet form, wizard, GPS, and photo styles.
+   ========================================================== */
+
+.assistance-section {
+  margin-top: 20px;
+  padding: 17px 15px;
+  border: 1px solid #d9e9de;
+  border-radius: 16px;
+  background: #f8fcf9;
+}
+
+.assistance-section-heading {
+  margin-bottom: 15px;
+
+  h3 {
+    margin: 0 0 6px;
+    color: #214936;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  p {
+    margin: 0;
+    color: #68806f;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+}
+
+.assistance-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.assistance-choice {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 54px;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1.5px solid #d5e5d9;
+  border-radius: 12px;
+  background: #fff;
+  color: #3a5944;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+
+  input[type='radio'] {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: #2d8038;
+    cursor: pointer;
+  }
+
+  > span {
+    min-width: 0;
+    color: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  &.is-selected {
+    border-color: #2d8038;
+    background: #e8f5ec;
+    color: #214936;
+  }
+
+  &:focus-within {
+    outline: 2px solid rgba(45, 128, 56, .45);
+    outline-offset: 2px;
+  }
+
+  &:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: .6;
+  }
+}
+
+.assistance-followup {
+  margin-top: 15px;
+  padding: 15px 13px 13px;
+  border: 1px solid #d9e8dd;
+  border-radius: 12px;
+  background: #ffffff;
+
+  .form-group {
+    margin-bottom: 15px;
+
+    &:last-of-type {
+      margin-bottom: 12px;
+    }
+  }
+
+  .form-group select,
+  .form-group textarea {
+    border-color: #bcdcc5;
+    background: #ffffff;
+  }
+
+}
+
+.assistance-disclaimer {
+  margin: 3px 0 0;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #d7eadc;
+  background: #eef8f1;
+  color: #4d7157;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+@media (max-width: 400px) {
+  .assistance-section {
+    padding: 15px 12px;
+  }
+
+  .assistance-choice-grid {
+    gap: 8px;
+  }
+
+  .assistance-choice {
+    min-height: 58px;
+    padding: 10px 9px;
+    gap: 7px;
+
+    > span {
+      font-size: 11px;
+    }
+  }
+
+  .assistance-followup {
+    padding: 13px 11px 12px;
+  }
+}
+
+@media (max-width: 320px) {
+  .assistance-choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistance-choice {
+    transition: none;
+  }
+}

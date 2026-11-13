@@ -1,4 +1,3 @@
-
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -98,7 +97,7 @@ export class LoginPage {
 
           // Redirect based on account role
           const destination =
-            role === 'staff' ? '/staff' : '/home';
+            role === 'staff' ? '/staff-dashboard' : '/home';
 
           this.router.navigateByUrl(destination, {
             replaceUrl: true
