@@ -82,6 +82,19 @@ export interface PetReportsResponse {
 }
 
 // =====================================
+// ANIMAL ASSISTANCE REFERRAL REASONS
+// =====================================
+// Used only when the resident reports a FOUND pet and requests assistance.
+export type FoundPetAssistanceReason =
+  | 'injured'
+  | 'sick'
+  | 'trapped'
+  | 'aggressive'
+  | 'abandoned'
+  | 'roaming'
+  | 'other';
+
+// =====================================
 // DATA FOR CREATING A PET REPORT
 // =====================================
 export interface CreatePetReportRequest {
@@ -101,6 +114,12 @@ export interface CreatePetReportRequest {
   latitude: number | null;
 
   longitude: number | null;
+
+  // Optional: sent only for a Found Pet marked as needing assistance.
+  // The API must validate these fields and create one linked case atomically.
+  needs_assistance?: boolean;
+  assistance_reason?: FoundPetAssistanceReason | null;
+  assistance_details?: string | null;
 
 }
 

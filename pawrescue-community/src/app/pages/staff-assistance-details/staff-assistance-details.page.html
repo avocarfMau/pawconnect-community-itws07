@@ -1,0 +1,371 @@
+<!-- ============================================================
+     PAWCONNECT — MUNICIPAL VETERINARY OFFICE
+     Animal Assistance Case Details (STAFF ONLY)
+
+     Route: /staff-animal-assistance/:id (staffGuard)
+     Paired with: staff-assistance-details.page.ts / .scss
+
+     COMPACT SINGLE-PAGE LAYOUT
+     - All essential animal, assistance, location and reporter details
+       stay on this page.
+     - Full timeline and previously saved staff notes are expandable.
+     - Existing status update / assessment form is unchanged.
+     - Found Pet report status remains separate from assistance status.
+     ============================================================ -->
+
+<ion-content [fullscreen]="true" class="staff-details-content">
+  <main class="staff-details-shell details-compact-shell">
+
+    <!-- Back and refresh: existing TypeScript methods are preserved. -->
+    <header class="details-topbar">
+      <button
+        type="button"
+        class="details-back-button"
+        (click)="backToCases()"
+        [disabled]="saving"
+        aria-label="Back to Animal Assistance Management">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+
+      <div class="details-header-copy">
+        <p class="details-eyebrow">PawConnect · Staff Portal</p>
+        <h1>Case Details</h1>
+      </div>
+
+      <button
+        type="button"
+        class="details-refresh-button"
+        (click)="refreshCase()"
+        [disabled]="loading || saving"
+        [attr.aria-label]="loading ? 'Refreshing case' : 'Refresh case details'">
+        <ion-spinner *ngIf="loading" name="crescent" aria-hidden="true"></ion-spinner>
+        <ion-icon *ngIf="!loading" name="refresh-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </header>
+
+    <!-- Existing request and network feedback. -->
+    <section
+      *ngIf="errorMessage"
+      class="details-error-card"
+      role="alert"
+      aria-label="Case details error">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <div class="details-error-copy">
+        <strong>Unable to display this case</strong>
+        <p>{{ errorMessage }}</p>
+        <button
+          *ngIf="caseId !== null"
+          type="button"
+          class="details-retry-button"
+          (click)="refreshCase()"
+          [disabled]="loading">
+          Try Again
+        </button>
+      </div>
+    </section>
+
+    <div
+      *ngIf="loading && !assistanceCase"
+      class="details-loading-card"
+      role="status"
+      aria-live="polite">
+      <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+      <span>Loading assistance case information...</span>
+    </div>
+
+    <ng-container *ngIf="assistanceCase as item">
+
+      <!-- 1. Compact case summary: case identity, concern, status. -->
+      <section class="details-summary-card details-compact-summary" aria-labelledby="detailsCaseTitle">
+        <div class="details-summary-heading">
+          <span class="details-summary-icon" aria-hidden="true">
+            <ion-icon name="paw-outline"></ion-icon>
+          </span>
+
+          <div class="details-summary-title">
+            <p class="details-case-number">
+              Case #{{ item.id }} · Found Pet Report #{{ item.found_report_id }}
+            </p>
+            <h2 id="detailsCaseTitle">{{ getAnimalName(item) }}</h2>
+            <p class="details-report-reference">
+              {{ getReasonLabel(item.assistance_reason) }}
+              <ng-container *ngIf="item.incident_date">
+                · {{ item.incident_date | date:'MMM d, y' }}
+              </ng-container>
+            </p>
+          </div>
+        </div>
+
+        <div class="details-summary-meta">
+          <span class="details-status-badge" [ngClass]="'status-' + item.status">
+            {{ getStatusLabel(item.status) }}
+          </span>
+        </div>
+      </section>
+
+      <!-- 2. Animal and assistance details are combined to avoid duplicate cards. -->
+      <section class="details-section details-compact-section" aria-labelledby="detailsAnimalTitle">
+        <div class="details-section-heading">
+          <span class="details-heading-icon" aria-hidden="true">
+            <ion-icon name="paw-outline"></ion-icon>
+          </span>
+          <h2 id="detailsAnimalTitle">Animal &amp; Assistance Details</h2>
+        </div>
+
+        <div class="details-animal-overview">
+          <ng-container *ngIf="photoUrl; else noPetPhoto">
+            <!-- This image path has already been validated by the TypeScript. -->
+            <a
+              class="details-animal-thumbnail-link"
+              [href]="photoUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="'View full photo for ' + getAnimalName(item)">
+              <img
+                class="details-animal-thumbnail"
+                [src]="photoUrl"
+                [alt]="'Photo from Found Pet report for ' + getAnimalName(item)"
+                width="96"
+                height="96"
+                loading="lazy" />
+            </a>
+          </ng-container>
+          <ng-template #noPetPhoto>
+            <div class="details-animal-thumbnail-placeholder" aria-label="No animal photo attached">
+              <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
+            </div>
+          </ng-template>
+
+          <div class="details-animal-main">
+            <p class="details-animal-name">
+              <strong>{{ getAnimalType(item) }}</strong>
+              <span> · {{ item.pet_name || 'Name not specified' }}</span>
+            </p>
+            <p class="details-paragraph details-animal-description">
+              {{ item.description || 'No description provided.' }}
+            </p>
+            <p class="details-animal-assistance-reason">
+              <strong>Needs Assistance:</strong> {{ getReasonLabel(item.assistance_reason) }}
+            </p>
+            <p class="details-photo-hint" *ngIf="photoUrl">Tap the photo to view full size.</p>
+          </div>
+        </div>
+
+        <dl class="details-info-list details-compact-info-list">
+          <div class="details-info-row" *ngIf="item.assistance_details">
+            <dt>Additional Assistance Details</dt>
+            <dd class="details-paragraph">{{ item.assistance_details }}</dd>
+          </div>
+          <div class="details-info-row" *ngIf="!item.assistance_details">
+            <dt>Additional Assistance Details</dt>
+            <dd>No additional details provided.</dd>
+          </div>
+          <div class="details-info-row">
+            <dt>Found Pet Report Status</dt>
+            <dd>{{ item.report_status }}</dd>
+          </div>
+        </dl>
+
+        <p class="details-inline-note details-compact-note">
+          The Found Pet report and this assistance case have separate statuses.
+        </p>
+      </section>
+
+      <!-- 3. Keep actual location and coordinates visible. -->
+      <section class="details-section details-compact-section" aria-labelledby="detailsLocationTitle">
+        <div class="details-section-heading">
+          <span class="details-heading-icon" aria-hidden="true">
+            <ion-icon name="location-outline"></ion-icon>
+          </span>
+          <h2 id="detailsLocationTitle">Reported Location</h2>
+        </div>
+
+        <p class="details-location-address">
+          {{ item.location_address || 'No location address provided.' }}
+        </p>
+        <p class="details-coordinates" *ngIf="hasCoordinates(item)">
+          Latitude: {{ item.latitude }} · Longitude: {{ item.longitude }}
+        </p>
+        <p class="details-inline-note" *ngIf="!hasCoordinates(item)">
+          No GPS coordinates are available for this report.
+        </p>
+        <a
+          *ngIf="hasCoordinates(item)"
+          class="details-location-map-link"
+          [href]="'https://www.google.com/maps/search/?api=1&query=' + item.latitude + ',' + item.longitude"
+          target="_blank"
+          rel="noopener noreferrer">
+          View Location on Map
+          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+        </a>
+      </section>
+
+      <!-- 4. Reporter information and main dates visible; full history is optional. -->
+      <section class="details-section details-compact-section" aria-labelledby="detailsHistoryTitle">
+        <div class="details-section-heading">
+          <span class="details-heading-icon" aria-hidden="true">
+            <ion-icon name="person-outline"></ion-icon>
+          </span>
+          <h2 id="detailsHistoryTitle">Reporter &amp; Case History</h2>
+        </div>
+
+        <dl class="details-info-list details-compact-info-list">
+          <div class="details-info-row">
+            <dt>Reported By</dt>
+            <dd>{{ item.reporter_name || 'Not available' }}</dd>
+          </div>
+          <div class="details-info-row">
+            <dt>Resident Reference</dt>
+            <dd>#{{ item.reporter_user_id }}</dd>
+          </div>
+          <div class="details-info-row">
+            <dt>Date Found</dt>
+            <dd>{{ item.incident_date ? (item.incident_date | date:'MMM d, y') : 'Not provided' }}</dd>
+          </div>
+          <div class="details-info-row">
+            <dt>Report Submitted</dt>
+            <dd>{{ item.report_created_at | date:'MMM d, y, h:mm a' }}</dd>
+          </div>
+          <div class="details-info-row">
+            <dt>Last Case Update</dt>
+            <dd>{{ item.updated_at | date:'MMM d, y, h:mm a' }}</dd>
+          </div>
+        </dl>
+
+        <!-- Native details/summary expands without a TypeScript change. -->
+        <details class="details-history-collapse">
+          <summary class="details-history-toggle">
+            View Complete Case History &amp; Notes
+          </summary>
+
+          <div class="details-history-body">
+            <dl class="details-info-list details-compact-info-list">
+              <div class="details-info-row">
+                <dt>Assistance Case Created</dt>
+                <dd>{{ item.created_at | date:'MMM d, y, h:mm a' }}</dd>
+              </div>
+              <div class="details-info-row" *ngIf="item.reviewed_at">
+                <dt>Reviewed At</dt>
+                <dd>{{ item.reviewed_at | date:'MMM d, y, h:mm a' }}</dd>
+              </div>
+              <div class="details-info-row" *ngIf="item.resolved_at">
+                <dt>Resolved At</dt>
+                <dd>{{ item.resolved_at | date:'MMM d, y, h:mm a' }}</dd>
+              </div>
+            </dl>
+
+            <div class="details-history-notes">
+              <h3>Staff Assessment Notes</h3>
+              <p *ngIf="item.staff_notes; else noAssessmentNotes" class="details-notes-text">
+                {{ item.staff_notes }}
+              </p>
+              <ng-template #noAssessmentNotes>
+                <p class="details-muted-text">No staff assessment notes recorded yet.</p>
+              </ng-template>
+              <p class="details-inline-note">
+                Earlier notes are preserved when new assessments or status updates are saved.
+              </p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- 5. Existing staff-only case management form, logic untouched. -->
+      <section
+        class="details-section details-management-section details-compact-section"
+        aria-labelledby="detailsManageTitle">
+        <div class="details-section-heading">
+          <span class="details-heading-icon" aria-hidden="true">
+            <ion-icon name="save-outline"></ion-icon>
+          </span>
+          <h2 id="detailsManageTitle">Manage Assistance Case</h2>
+        </div>
+
+        <p class="details-management-description">
+          Update this assistance case or add an assessment note. The original
+          Found Pet report will not be modified.
+        </p>
+
+        <form class="details-management-form" (ngSubmit)="saveCaseUpdate()" novalidate>
+          <div class="details-form-field">
+            <label for="assistanceCaseStatus">Case Status</label>
+            <select
+              id="assistanceCaseStatus"
+              name="assistanceCaseStatus"
+              [(ngModel)]="selectedStatus"
+              [disabled]="loading || saving || statusOptions.length <= 1"
+              aria-describedby="assistanceStatusHelp">
+              <option *ngFor="let status of statusOptions" [ngValue]="status">
+                {{ getStatusLabel(status) }}
+              </option>
+            </select>
+            <p id="assistanceStatusHelp" class="details-field-hint">
+              {{ item.status === 'resolved'
+                ? 'This case is resolved and cannot be reopened. You can still add a follow-up note.'
+                : 'You can keep the current status or advance one step to the next status.' }}
+            </p>
+          </div>
+
+          <div class="details-form-field">
+            <label for="assistanceAssessmentNote">
+              {{ selectedStatus === 'resolved' && item.status !== 'resolved'
+                ? 'Resolution Note' : 'Assessment Note' }}
+            </label>
+            <textarea
+              id="assistanceAssessmentNote"
+              name="assistanceAssessmentNote"
+              [(ngModel)]="assessmentNote"
+              [attr.maxlength]="maxAssessmentNoteLength"
+              [required]="selectedStatus === 'resolved' && item.status !== 'resolved'"
+              [disabled]="loading || saving"
+              rows="4"
+              placeholder="Record your assessment, action taken, or follow-up details..."
+              aria-describedby="assistanceNoteHelp assistanceNoteCount"></textarea>
+            <div class="details-form-meta">
+              <p id="assistanceNoteHelp" class="details-field-hint">
+                {{ selectedStatus === 'resolved' && item.status !== 'resolved'
+                  ? 'A resolution note is required before resolving this case.'
+                  : 'Add a note to document an assessment or action taken. A note is optional for other status changes.' }}
+              </p>
+              <span id="assistanceNoteCount" class="details-char-count">
+                {{ assessmentNote.length }} / {{ maxAssessmentNoteLength }}
+              </span>
+            </div>
+          </div>
+
+          <div class="details-update-feedback details-update-error" *ngIf="updateErrorMessage" role="alert">
+            <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+            <span>{{ updateErrorMessage }}</span>
+          </div>
+          <div
+            class="details-update-feedback details-update-success"
+            *ngIf="updateSuccessMessage"
+            role="status"
+            aria-live="polite">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            <span>{{ updateSuccessMessage }}</span>
+          </div>
+
+          <button
+            type="submit"
+            class="details-save-button"
+            [disabled]="!canSaveCaseUpdate()">
+            <ion-spinner *ngIf="saving" name="crescent" aria-hidden="true"></ion-spinner>
+            <ion-icon *ngIf="!saving" name="save-outline" aria-hidden="true"></ion-icon>
+            <span>{{ saving ? 'Saving Changes...' : 'Save Case Update' }}</span>
+          </button>
+        </form>
+      </section>
+
+      <p class="details-updated-label" *ngIf="lastUpdated && !loading">
+        <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+        Refreshed {{ lastUpdated | date:'MMM d, y, h:mm a' }}
+      </p>
+    </ng-container>
+
+    <footer class="details-footer">
+      <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+      PawConnect · Municipal Veterinary Office
+    </footer>
+  </main>
+</ion-content>

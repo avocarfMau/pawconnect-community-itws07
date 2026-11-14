@@ -63,6 +63,23 @@ interface SelectedPetPhoto {
   uploaded: boolean;
 }
 
+// Assistance referrals belong to existing Found Pet reports only.
+// These fields will be persisted once the Pet Reports API is updated.
+type AssistanceReason =
+  | 'injured'
+  | 'sick'
+  | 'trapped'
+  | 'aggressive'
+  | 'abandoned'
+  | 'roaming'
+  | 'other';
+
+interface FoundPetAssistanceFields {
+  needs_assistance: boolean;
+  assistance_reason: AssistanceReason | null;
+  assistance_details: string | null;
+}
+
 @Component({
   selector: 'app-report-pet',
   templateUrl: './report-pet.page.html',
@@ -140,6 +157,61 @@ export class ReportPetPage implements OnDestroy {
   }
 
   // =====================================
+  // FOUND PET ASSISTANCE REQUEST
+  // =====================================
+  // This option is never available for a Lost Pet report.
+  needsAssistance = false;
+  assistanceReason: AssistanceReason | '' = '';
+  assistanceDetails = '';
+  readonly maxAssistanceDetailsLength = 1000;
+
+  readonly assistanceReasonOptions: ReadonlyArray<{
+    value: AssistanceReason;
+    label: string;
+  }> = [
+    { value: 'injured', label: 'Injured' },
+    { value: 'sick', label: 'Sick' },
+    { value: 'trapped', label: 'Trapped' },
+    { value: 'aggressive', label: 'Aggressive / safety concern' },
+    { value: 'abandoned', label: 'Possibly abandoned' },
+    { value: 'roaming', label: 'Roaming / unattended' },
+    { value: 'other', label: 'Other concern' }
+  ];
+
+  get assistanceReasonLabel(): string {
+    if (!this.assistanceReason) return '';
+    return this.assistanceReasonOptions.find(
+      (option) => option.value === this.assistanceReason
+    )?.label ?? '';
+  }
+
+  onNeedsAssistanceChange(checked: boolean): void {
+    this.needsAssistance = this.form.report_type === 'found' && checked;
+    if (!this.needsAssistance) {
+      this.assistanceReason = '';
+      this.assistanceDetails = '';
+    }
+    this.stepError = '';
+    this.errorMessage = '';
+  }
+
+  private assistanceValidationError(): string | null {
+    if (this.form.report_type !== 'found' || !this.needsAssistance) {
+      return null;
+    }
+    if (!this.assistanceReason) {
+      return 'Please select a reason why the found pet needs assistance.';
+    }
+    if (this.assistanceReason === 'other' && !this.assistanceDetails.trim()) {
+      return 'Please explain the assistance needed when selecting Other concern.';
+    }
+    if (this.assistanceDetails.length > this.maxAssistanceDetailsLength) {
+      return `Assistance details must not exceed ${this.maxAssistanceDetailsLength} characters.`;
+    }
+    return null;
+  }
+
+  // =====================================
   // THREE STEP REPORT FORM
   // =====================================
   formStep: 1 | 2 | 3 = 1;
@@ -169,6 +241,11 @@ export class ReportPetPage implements OnDestroy {
         this.form.incident_date > this.today
       ) {
         this.stepError = 'Please select a valid date when the pet was lost or found.';
+        return;
+      }
+      const assistanceError = this.assistanceValidationError();
+      if (assistanceError) {
+        this.stepError = assistanceError;
         return;
       }
       this.formStep = 2;
@@ -297,6 +374,8 @@ export class ReportPetPage implements OnDestroy {
 
   onReportTypeChange(type: 'lost' | 'found'): void {
     this.form.report_type = type;
+    // Never carry an assistance request into a different report type.
+    this.onNeedsAssistanceChange(false);
     // Do not reuse an old Lost Pet map pin as a Found Pet GPS position,
     // or vice versa. Keep other pet information already typed.
     this.locationRequestId++;
@@ -361,6 +440,7 @@ export class ReportPetPage implements OnDestroy {
       incident_date: '',
       location_address: ''
     };
+    this.onNeedsAssistanceChange(false);
     this.selectedBarangay = '';
     this.landmark = '';
     this.selectedLatitude = null;
@@ -1236,7 +1316,16 @@ export class ReportPetPage implements OnDestroy {
 
     this.updateLocationAddress();
 
-    const data: CreatePetReportRequest = {
+    const assistanceError = this.assistanceValidationError();
+    if (assistanceError) {
+      this.errorMessage = assistanceError;
+      return;
+    }
+
+    // Existing Lost Pet and ordinary Found Pet payloads are unchanged.
+    // Once the PHP API supports assistance referrals, it must create the
+    // Found Pet report and its linked case in one database transaction.
+    const data: CreatePetReportRequest & Partial<FoundPetAssistanceFields> = {
       report_type: this.form.report_type,
       animal_type: this.form.animal_type,
       pet_name: this.form.pet_name.trim() || null,
@@ -1244,7 +1333,14 @@ export class ReportPetPage implements OnDestroy {
       incident_date: this.form.incident_date,
       location_address: this.form.location_address.trim(),
       latitude: this.selectedLatitude,
-      longitude: this.selectedLongitude
+      longitude: this.selectedLongitude,
+      ...(this.form.report_type === 'found' && this.needsAssistance
+        ? {
+            needs_assistance: true,
+            assistance_reason: this.assistanceReason || null,
+            assistance_details: this.assistanceDetails.trim() || null
+          }
+        : {})
     };
 
     // =====================================

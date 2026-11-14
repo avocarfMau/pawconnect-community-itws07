@@ -1,0 +1,235 @@
+<!-- =====================================================
+     PAWCONNECT — L VETERINARY OFFICE
+     Staff Dashboard (mobile-first)
+
+     Companion files:
+       staff-dashboard.page.ts
+       staff-dashboard.page.scss
+
+     Staff-only routing must be protected by staffGuard.
+     Animal Assistance list/details routes will be added later.
+     ===================================================== -->
+
+<ion-content [fullscreen]="true" class="staff-dashboard-content">
+  <main class="staff-dashboard-shell">
+
+    <!-- Compact header: readable on small Android screens -->
+    <header class="staff-topbar">
+      <div class="staff-brand">
+        <span class="staff-brand-icon" aria-hidden="true">
+          <ion-icon name="paw-outline"></ion-icon>
+        </span>
+        <div class="staff-brand-copy">
+          <p class="staff-brand-name">PawConnect</p>
+          <p class="staff-brand-subtitle">Veterinary Office</p>
+        </div>
+      </div>
+      <span class="staff-role-tag">Staff Portal</span>
+    </header>
+
+    <!-- Welcome / purpose -->
+    <section class="staff-welcome-card" aria-labelledby="staffDashboardTitle">
+      <div class="staff-welcome-content">
+        <span class="staff-welcome-eyebrow">
+          <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+          Staff Dashboard
+        </span>
+        <h1 id="staffDashboardTitle">Animal Care Overview</h1>
+        <p>
+          Monitor Found Pet assistance referrals and help animals receive
+          the attention they need.
+        </p>
+      </div>
+      <div class="staff-welcome-decoration" aria-hidden="true">
+        <ion-icon name="heart-outline"></ion-icon>
+      </div>
+    </section>
+
+    <!-- Dashboard heading and manual refresh -->
+    <div class="staff-section-heading staff-overview-heading">
+      <div>
+        <h2>Case Overview</h2>
+        <p>Assistance requests submitted by residents</p>
+      </div>
+      <button
+        type="button"
+        class="staff-icon-action"
+        (click)="refreshDashboard()"
+        [disabled]="loading"
+        [attr.aria-label]="loading ? 'Refreshing dashboard' : 'Refresh dashboard'">
+        <ion-spinner *ngIf="loading" name="crescent" aria-hidden="true"></ion-spinner>
+        <ion-icon *ngIf="!loading" name="refresh-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+
+    <!-- Network / server feedback (no made-up data). -->
+    <div class="staff-error-banner" *ngIf="errorMessage" role="alert">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <div>
+        <strong>Unable to update dashboard</strong>
+        <p>{{ errorMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Four cards: 2 columns on narrow phones, no horizontal scroll -->
+    <section class="staff-stats-grid" aria-label="Animal assistance case statistics">
+      <div class="staff-stat-card total">
+        <span class="staff-stat-icon" aria-hidden="true">
+          <ion-icon name="document-text-outline"></ion-icon>
+        </span>
+        <strong class="staff-stat-number" aria-label="Total cases">
+          {{ counts.total === null ? '—' : counts.total }}
+        </strong>
+        <span class="staff-stat-label">Total Cases</span>
+      </div>
+
+      <div class="staff-stat-card pending">
+        <span class="staff-stat-icon" aria-hidden="true">
+          <ion-icon name="time-outline"></ion-icon>
+        </span>
+        <strong class="staff-stat-number" aria-label="Pending cases">
+          {{ counts.pending === null ? '—' : counts.pending }}
+        </strong>
+        <span class="staff-stat-label">Pending</span>
+      </div>
+
+      <div class="staff-stat-card progress">
+        <span class="staff-stat-icon" aria-hidden="true">
+          <ion-icon name="pulse-outline"></ion-icon>
+        </span>
+        <strong class="staff-stat-number" aria-label="Cases in progress">
+          {{ counts.inProgress === null ? '—' : counts.inProgress }}
+        </strong>
+        <span class="staff-stat-label">In Progress</span>
+      </div>
+
+      <div class="staff-stat-card resolved">
+        <span class="staff-stat-icon" aria-hidden="true">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </span>
+        <strong class="staff-stat-number" aria-label="Resolved cases">
+          {{ counts.resolved === null ? '—' : counts.resolved }}
+        </strong>
+        <span class="staff-stat-label">Resolved</span>
+      </div>
+    </section>
+
+    <p class="staff-update-note" *ngIf="loading" role="status" aria-live="polite">
+      Loading the latest assistance cases...
+    </p>
+    <p class="staff-update-note" *ngIf="lastUpdated && !loading">
+      Last updated {{ lastUpdated | date:'MMM d, y, h:mm a' }}
+    </p>
+
+    <!-- Entry point to the staff-only case management section -->
+    <section class="staff-management-section" aria-labelledby="staffManagementTitle">
+      <div class="staff-section-heading">
+        <div>
+          <h2 id="staffManagementTitle">Management</h2>
+          <p>Access your staff workspace</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="staff-management-card"
+        (click)="openAnimalAssistance()"
+        aria-label="Open Animal Assistance Management">
+        <span class="staff-management-icon" aria-hidden="true">
+          <ion-icon name="heart-outline"></ion-icon>
+        </span>
+        <span class="staff-management-copy">
+          <strong>Animal Assistance</strong>
+          <small>Review referrals, assess cases, and track progress</small>
+        </span>
+        <ion-icon
+          class="staff-management-chevron"
+          name="chevron-forward-outline"
+          aria-hidden="true">
+        </ion-icon>
+      </button>
+    </section>
+
+    <!-- Live list from staff-only get_cases.php -->
+    <section class="staff-recent-section" aria-labelledby="staffRecentTitle">
+      <div class="staff-section-heading">
+        <div>
+          <h2 id="staffRecentTitle">Recent Cases</h2>
+          <p>Latest assistance referrals from Found Pet reports</p>
+        </div>
+        <button
+          type="button"
+          class="staff-text-action"
+          (click)="openAnimalAssistance()">
+          View All
+          <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Initial loading only: previous data remains readable during refresh. -->
+      <div
+        class="staff-loading-card"
+        *ngIf="loading && counts.total === null"
+        role="status"
+        aria-live="polite">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Loading recent cases...</span>
+      </div>
+
+      <div
+        class="staff-empty-card"
+        *ngIf="!loading && !errorMessage && recentCases.length === 0">
+        <span class="staff-empty-icon" aria-hidden="true">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </span>
+        <strong>No assistance cases yet</strong>
+        <p>
+          New cases will appear here when a resident marks a Found Pet
+          report as needing assistance.
+        </p>
+      </div>
+
+      <div class="staff-recent-list" *ngIf="recentCases.length > 0">
+        <button
+          type="button"
+          class="staff-case-card"
+          *ngFor="let item of recentCases; trackBy: trackCase"
+          (click)="openCase(item.id)"
+          [attr.aria-label]="'Open assistance case number ' + item.id">
+          <span class="staff-case-header">
+            <span class="staff-case-identity">
+              <span class="staff-case-icon" aria-hidden="true">
+                <ion-icon name="paw-outline"></ion-icon>
+              </span>
+              <span class="staff-case-titles">
+                <strong>{{ item.pet_name || (item.animal_type === 'cat' ? 'Found Cat' : 'Found Dog') }}</strong>
+                <small>Case #{{ item.id }} · {{ getReasonLabel(item.assistance_reason) }}</small>
+              </span>
+            </span>
+            <span class="staff-case-status" [ngClass]="'status-' + item.status">
+              {{ getStatusLabel(item.status) }}
+            </span>
+          </span>
+
+          <span class="staff-case-location" *ngIf="item.location_address">
+            <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+            <span>{{ item.location_address }}</span>
+          </span>
+
+          <span class="staff-case-footer">
+            <small>{{ item.created_at | date:'MMM d, y' }}</small>
+            <span>
+              View Details
+              <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+            </span>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <footer class="staff-dashboard-footer">
+      <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+      PawConnect ·  Veterinary Office
+    </footer>
+  </main>
+</ion-content>
