@@ -27,7 +27,7 @@ interface DeactivateDeviceTokenResponse {
 type TokenSaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
 /**
- * PawRescue Community - Capacitor/FCM registration and token storage.
+ * PawConnect - Capacitor/FCM registration and token storage.
  *
  * AppComponent calls registerForPush() after authenticated navigation.
  * The native registration event supplies the FCM token to this service,
@@ -40,7 +40,7 @@ type TokenSaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 export class PushNotificationService {
   private readonly http = inject(HttpClient);
 
-  // Shared XAMPP backend address used by all PawRescue services.
+  // Shared XAMPP backend address used by PawConnect services.
   private readonly apiBaseUrl = getApiBaseUrl();
   private readonly saveDeviceTokenUrl =
     `${this.apiBaseUrl}/push_notifications/save_device_token.php`;
@@ -66,6 +66,12 @@ export class PushNotificationService {
   private listenersReady: Promise<void> | null = null;
   private readonly listenerHandles: PluginListenerHandle[] = [];
 
+  // AppComponent invokes registerForPush() only after a residentGuard-protected
+  // route succeeds. Bind that registration to the current session so that a
+  // delayed Firebase callback cannot attach the token to a staff account.
+  // Never persist this marker or treat it as a substitute for PHP authorization.
+  private residentRegistrationSession: string | null = null;
+
   // Deduplicate successful token uploads within the current app process.
   private lastSavedFor: { session: string; deviceToken: string } | null = null;
   private activeUpload: Promise<boolean> | null = null;
@@ -75,11 +81,11 @@ export class PushNotificationService {
   private activeDeactivation: Promise<boolean> | null = null;
 
   private logStatus(message: string): void {
-    console.info(`[PawRescue Push] ${message}`);
+    console.info(`[PawConnect Push] ${message}`);
   }
 
   private logWarning(message: string): void {
-    console.warn(`[PawRescue Push] ${message}`);
+    console.warn(`[PawConnect Push] ${message}`);
   }
 
   // Avoid injecting AuthService here (it would create a dependency cycle).
@@ -128,7 +134,7 @@ export class PushNotificationService {
         'pushNotificationReceived',
         (notification: PushNotificationSchema) => {
           // Foreground delivery is not the same as a system-tray notification.
-          this.logStatus('Push received while PawRescue was in the foreground.');
+          this.logStatus('Push received while PawConnect was in the foreground.');
           this.receivedSubject.next(notification);
         }
       )
@@ -156,6 +162,13 @@ export class PushNotificationService {
       return 'not-native';
     }
 
+    // This method is called only from resident-protected navigation.
+    // Capture its session before async permission and native operations.
+    const session = this.getSessionToken();
+    if (!session) {
+      throw new Error('Resident push registration requires an active session.');
+    }
+
     await this.ensureListeners();
 
     let permission = await PushNotifications.checkPermissions();
@@ -173,6 +186,15 @@ export class PushNotificationService {
       );
       return 'denied';
     }
+
+    // The account may have changed while the Android permission prompt was
+    // open. Never authorize an old resident registration for a new session.
+    if (this.getSessionToken() !== session) {
+      throw new Error('Session changed during push registration.');
+    }
+
+    // Resident route authorization has already succeeded in the route guard.
+    this.residentRegistrationSession = session;
 
     try {
       this.logStatus('Starting native FCM registration.');
@@ -211,9 +233,14 @@ export class PushNotificationService {
     }
 
     if (!session) {
-      this.logWarning(
-        'No resident session found under pawrescue_token; token upload skipped.'
-      );
+      this.logWarning('No authenticated resident session; token upload skipped.');
+      return false;
+    }
+
+    // Token callbacks can arrive after switching accounts. Only upload while
+    // the same resident session that initiated native registration is active.
+    if (this.residentRegistrationSession !== session) {
+      this.logStatus('Skipping token upload for a session without resident push registration.');
       return false;
     }
 
@@ -252,13 +279,14 @@ export class PushNotificationService {
   ): Promise<boolean> {
     if (
       this.getSessionToken() !== session ||
+      this.residentRegistrationSession !== session ||
       this.logoutSession === session
     ) {
       return false;
     }
 
     this.tokenSaveStatusSubject.next('saving');
-    this.logStatus('Saving FCM device token to PawRescue backend.');
+    this.logStatus('Saving FCM device token to PawConnect backend.');
 
     try {
       const response = await firstValueFrom(
@@ -293,7 +321,7 @@ export class PushNotificationService {
       this.logWarning(`FCM token upload failed; HTTP status: ${httpStatus}.`);
 
       this.errorSubject.next(
-        'Firebase token received, but PawRescue could not save the device.'
+        'Firebase token received, but PawConnect could not save the device.'
       );
       return false;
     }
@@ -310,6 +338,14 @@ export class PushNotificationService {
 
     const session = this.getSessionToken();
     if (!session) {
+      return true;
+    }
+
+    // Staff sessions never initiate resident Firebase registration. Do not
+    // call the resident-only deactivation endpoint during a staff logout.
+    // AuthService can proceed to auth/logout.php normally.
+    if (this.residentRegistrationSession !== session) {
+      this.logStatus('No resident push registration for this session; skipping deactivation.');
       return true;
     }
 
@@ -396,6 +432,7 @@ export class PushNotificationService {
   resetAfterLogout(): void {
     this.logoutSession = null;
     this.lastSavedFor = null;
+    this.residentRegistrationSession = null;
     this.tokenSaveStatusSubject.next('idle');
 
     // Keep the token cached for another authenticated resident on this phone.

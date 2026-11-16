@@ -1,6 +1,6 @@
 <ion-content [fullscreen]="true">
   <div class="page-container">
-
+    <!-- PAGE HEADER -->
     <div class="page-header">
       <button
         type="button"
@@ -14,7 +14,7 @@
         <p>Help our community find missing pets</p>
       </div>
     </div>
-
+    <!-- SUCCESS SCREEN: shown only after a newly confirmed submission. -->
     <section class="success-card" *ngIf="submittedReportId !== null" aria-labelledby="reportSuccessHeading">
       <div class="success-icon-shell" aria-hidden="true">
         <ion-icon name="checkmark-circle-outline"></ion-icon>
@@ -29,6 +29,7 @@
         <strong>#{{ submittedReportId }}</strong>
       </div>
 
+      <!-- Preserve progress, retry and ambiguous upload protection. -->
       <div class="upload-status" *ngIf="uploadingPhoto" role="status" aria-live="polite">
         <ion-spinner name="crescent"></ion-spinner>
         <p>Uploading photo {{ currentPhotoNumber }} of {{ selectedPhotos.length }}...</p>
@@ -79,7 +80,7 @@
         </button>
       </div>
     </section>
-
+    <!-- STEPPED FORM: only one short section is visible at a time. -->
     <div *ngIf="submittedReportId === null">
       <section class="wizard-progress" aria-label="Report a Pet form progress">
         <div class="wizard-progress-summary">
@@ -103,9 +104,9 @@
             <h2 id="wizardPetTitle">Pet Details</h2>
             <p>Provide information that helps others recognize the pet.</p>
           </div>
-
+        <!-- Compact classification controls, one row on phones -->
         <div class="pet-classification-row">
-
+          <!-- REPORT TYPE -->
           <div class="form-group">
             <label for="reportType">
               Report Type <span>*</span>
@@ -121,7 +122,7 @@
               <option value="found">Found Pet</option>
             </select>
           </div>
-
+          <!-- ANIMAL TYPE -->
           <div class="form-group">
             <label for="animalType">
               Animal Type <span>*</span>
@@ -137,7 +138,7 @@
             </select>
           </div>
         </div>
-
+        <!-- PET NAME -->
         <div class="form-group">
           <label for="petName">
             Pet Name (Optional)
@@ -151,7 +152,7 @@
             [(ngModel)]="form.pet_name"
             [disabled]="loading || submissionUncertain">
         </div>
-
+        <!-- PET DESCRIPTION -->
         <div class="form-group">
           <label for="description">
             Pet Description <span>*</span>
@@ -169,12 +170,12 @@
             required>
           </textarea>
         </div>
-
+        <!-- INCIDENT DATE -->
         <div class="form-group">
           <label for="incidentDate">
             {{ form.report_type === 'lost' ? 'Date Last Seen' : 'Date Found' }} <span>*</span>
           </label>
-
+          <!-- Native date picker with an explicit mobile-friendly empty hint. -->
           <div class="report-date-input-wrap">
             <input
               id="incidentDate"
@@ -192,6 +193,7 @@
           </div>
         </div>
 
+        <!-- FOUND PET ONLY: request Animal Assistance from  Veterinary Office. -->
         <div class="assistance-section" *ngIf="form.report_type === 'found'" aria-labelledby="foundAssistanceHeading">
           <div class="wizard-panel-title assistance-section-heading">
             <h3 id="foundAssistanceHeading">Animal Assistance</h3>
@@ -266,7 +268,7 @@
             <h2 id="wizardLocationTitle">{{ form.report_type === 'lost' ? 'Last Seen Location' : 'Found Pet Location' }}</h2>
             <p>{{ form.report_type === 'lost' ? 'Tell us where the pet was last seen.' : 'Use GPS at the exact place where you found the pet.' }}</p>
           </div>
-
+        <!-- PET LOCATION DETAILS -->
         <div class="location-details-card" *ngIf="form.report_type === 'lost'">
           <div class="location-details-heading">
             <ion-icon name="location-outline"></ion-icon>
@@ -275,7 +277,7 @@
               <p>Where did you last see your missing pet?</p>
             </div>
           </div>
-
+          <!-- BARANGAY -->
           <div class="form-group">
             <label for="barangay">Barangay <span>*</span></label>
             <div class="location-select-wrapper">
@@ -307,7 +309,7 @@
             </div>
             <small>Select the barangay where the pet was last seen.</small>
           </div>
-
+          <!-- STREET / LANDMARK -->
           <div class="form-group">
             <label for="landmark">Street / Nearby Landmark (Optional)</label>
             <textarea
@@ -326,7 +328,7 @@
             <p>For better accuracy, you can pin the exact location on the map below.</p>
           </div>
         </div>
-
+        <!-- GPS AND MAP LOCATION -->
         <div class="form-group location-section" *ngIf="form.report_type === 'lost'">
           <label>
             Pin Last Seen Location on Map (Optional)
@@ -335,7 +337,7 @@
             Add a pin for the last place your missing pet was seen.
             Choose the location on the map, or use your GPS if you are there now.
           </p>
-
+          <!-- LOCATION ACTION BUTTONS -->
           <div class="location-actions">
             <button
               type="button"
@@ -373,21 +375,21 @@
               </span>
             </button>
           </div>
-
+          <!-- LOCATION ERROR -->
           <p
             class="error-message"
             *ngIf="locationError"
             role="alert">
             {{ locationError }}
           </p>
-
+          <!-- LOCATION SUCCESS / INSTRUCTION -->
           <p
             class="location-message"
             *ngIf="locationMessage"
             role="status">
             {{ locationMessage }}
           </p>
-
+          <!-- INTERACTIVE LEAFLET MAP -->
           <div
             class="location-map-wrapper"
             *ngIf="showMap">
@@ -407,7 +409,7 @@
               to adjust the location.
             </p>
           </div>
-
+          <!-- SELECTED COORDINATES -->
           <div
             class="selected-location-card"
             *ngIf="
@@ -444,6 +446,7 @@
           </small>
         </div>
 
+        <!-- FOUND PET: capture the actual finding location with device GPS. -->
         <div class="found-gps-section" *ngIf="form.report_type === 'found'">
           <div class="found-gps-heading">
             <ion-icon name="locate-outline" aria-hidden="true"></ion-icon>
@@ -496,7 +499,7 @@
             <h2 id="wizardPhotosTitle">Photos &amp; Review</h2>
             <p>Photos are optional. Check your details before submitting.</p>
           </div>
-
+        <!-- MULTIPLE PET PHOTO UPLOAD -->
         <div class="form-group">
           <div class="photo-upload-heading">
             <label for="petPhoto">Pet Photos (Optional)</label>
@@ -505,7 +508,7 @@
             </span>
           </div>
           <div class="photo-upload-container">
-
+            <!-- Keep direct file input overlay for Android gallery picker. -->
             <label class="photo-upload-label gallery-upload-label">
               <ion-icon name="camera-outline"></ion-icon>
               <span>
@@ -519,7 +522,7 @@
                 (change)="onPhotoSelected($event)"
                 [disabled]="loading || uploadingPhoto || cameraOpening || submissionUncertain || remainingPhotoSlots === 0">
             </label>
-
+            <!-- TAKE ADDITIONAL PHOTOS WITH NATIVE CAMERA -->
             <button
               type="button"
               class="photo-upload-label camera-upload-button"
@@ -536,7 +539,7 @@
             JPG, PNG, or WebP; maximum 5 MB per photo.
             Photos are uploaded after the report has been saved.
           </small>
-
+          <!-- PHOTO SELECTION PREVIEW GRID -->
           <div class="photo-preview-grid" *ngIf="selectedPhotos.length > 0">
             <div
               class="photo-preview photo-preview-item"
@@ -562,7 +565,7 @@
             Maximum of {{ maxPhotos }} photos selected.
             Remove a photo to add a different one.
           </p>
-
+          <!-- PHOTO VALIDATION ERROR -->
           <p class="error-message" *ngIf="photoError" role="alert">
             {{ photoError }}
           </p>
@@ -594,14 +597,14 @@
             </div>
             <div class="wizard-review-row"><span>Photos</span><strong>{{ selectedPhotos.length }} selected</strong></div>
           </div>
-
+        <!-- REPORT VALIDATION ERROR -->
         <p
           class="error-message"
           *ngIf="errorMessage"
           role="alert">
           {{ errorMessage }}
         </p>
-
+        <!-- UNCERTAIN SUBMISSION WARNING -->
         <div
           class="photo-upload-error"
           *ngIf="submissionUncertain"
@@ -641,7 +644,7 @@
             <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </button>
           <div class="wizard-submit-wrap" *ngIf="formStep === 3">
-
+        <!-- SUBMIT REPORT BUTTON -->
         <ion-button
           class="wizard-submit-button"
           expand="block"
