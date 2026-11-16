@@ -1,0 +1,21 @@
+# =====================================
+# PAWCONNECT API
+# =====================================
+
+# Disable directory listing
+Options -Indexes
+
+# =====================================
+# CENTRALIZED PHP CONFIGURATION
+# =====================================
+
+# Automatically load cors.php before
+# executing PHP endpoints.
+
+<IfModule mod_php.c>
+    php_value auto_prepend_file "C:/xampp/htdocs/pawconnect/pawconnect_api/cors.php"
+</IfModule>
+
+<IfModule php_module>
+    php_value auto_prepend_file "C:/xampp/htdocs/pawconnect/pawconnect_api/cors.php"
+</IfModule>

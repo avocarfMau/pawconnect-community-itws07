@@ -1,0 +1,7 @@
+{
+  "name": "pawconnect-community",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
