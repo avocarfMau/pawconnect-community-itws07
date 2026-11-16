@@ -1,7 +1,0 @@
-{
-  "name": "pawrescue-community",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular-standalone"
-}

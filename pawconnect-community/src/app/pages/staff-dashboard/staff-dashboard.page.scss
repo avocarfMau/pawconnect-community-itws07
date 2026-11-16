@@ -1,0 +1,619 @@
+// =====================================================
+// PAWCONNECT — VETERINARY OFFICE
+// Staff Dashboard: mobile-first responsive styling
+// Companion files: staff-dashboard.page.ts / .html
+// =====================================================
+
+:host {
+  display: block;
+  --staff-green-950: #153d32;
+  --staff-green-900: #184d3b;
+  --staff-green-700: #207551;
+  --staff-green-600: #27825b;
+  --staff-green-100: #e9f4eb;
+  --staff-surface: #ffffff;
+  --staff-page: #f5f8f6;
+  --staff-text: #23332c;
+  --staff-muted: #63736b;
+  --staff-outline: #e4ebe6;
+}
+
+ion-content.staff-dashboard-content {
+  --background: var(--staff-page);
+  --color: var(--staff-text);
+}
+
+.staff-dashboard-shell {
+  width: min(100%, 1000px);
+  margin-inline: auto;
+  padding: calc(16px + var(--ion-safe-area-top, 0px)) 16px
+    calc(28px + var(--ion-safe-area-bottom, 0px));
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.staff-topbar,
+.staff-brand,
+.staff-section-heading,
+.staff-case-header,
+.staff-case-identity,
+.staff-case-footer {
+  display: flex;
+  align-items: center;
+}
+
+.staff-topbar {
+  min-width: 0;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.staff-brand {
+  min-width: 0;
+  gap: 10px;
+}
+
+.staff-brand-icon {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #fff;
+  background: var(--staff-green-700);
+  box-shadow: 0 4px 12px rgba(32, 117, 81, 0.16);
+
+  ion-icon { font-size: 24px; }
+}
+
+.staff-brand-copy { min-width: 0; }
+
+.staff-brand-name,
+.staff-brand-subtitle {
+  margin: 0;
+}
+
+.staff-brand-name {
+  color: var(--staff-green-950);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.staff-brand-subtitle {
+  color: var(--staff-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.staff-role-tag {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  border: 1px solid #d9ebde;
+  border-radius: 999px;
+  color: var(--staff-green-700);
+  background: #eaf6ed;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+// Intro / welcome hero
+.staff-welcome-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: 150px;
+  padding: 20px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(120deg, #1d6348 0%, #21845d 100%);
+  box-shadow: 0 9px 25px rgba(26, 107, 77, 0.13);
+}
+
+.staff-welcome-content {
+  position: relative;
+  z-index: 1;
+  max-width: 440px;
+}
+
+.staff-welcome-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 11px;
+  color: #dcf3e6;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+
+  ion-icon { font-size: 15px; }
+}
+
+.staff-welcome-card h1 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: clamp(22px, 5vw, 29px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.staff-welcome-card p {
+  margin: 0;
+  max-width: 340px;
+  color: #edf8f1;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.staff-welcome-decoration {
+  position: absolute;
+  z-index: 0;
+  right: -16px;
+  bottom: -44px;
+  opacity: 0.09;
+  transform: rotate(-18deg);
+  pointer-events: none;
+
+  ion-icon { font-size: 180px; }
+}
+
+// Shared headings and compact action controls
+.staff-section-heading {
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  > div { min-width: 0; }
+
+  h2 {
+    margin: 0 0 4px;
+    color: var(--staff-text);
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    color: var(--staff-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+}
+
+.staff-icon-action,
+.staff-text-action,
+.staff-management-card,
+.staff-case-card {
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.staff-icon-action {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #dae8de;
+  border-radius: 11px;
+  color: var(--staff-green-700);
+  background: #fff;
+
+  ion-icon { font-size: 20px; }
+  ion-spinner { width: 19px; height: 19px; }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+.staff-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  margin: 0 0 14px;
+  border: 1px solid #f4cec7;
+  border-radius: 12px;
+  background: #fff4f0;
+  color: #963e31;
+
+  > ion-icon { flex: 0 0 auto; margin-top: 1px; font-size: 19px; }
+  strong { display: block; font-size: 12px; line-height: 1.4; }
+  p { margin: 3px 0 0; font-size: 11px; line-height: 1.45; }
+}
+
+// Status counters — always two columns on mobile
+.staff-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.staff-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 133px;
+  padding: 15px;
+  border: 1px solid var(--staff-outline);
+  border-radius: 16px;
+  background: var(--staff-surface);
+  box-shadow: 0 2px 9px rgba(19, 55, 38, 0.035);
+  box-sizing: border-box;
+}
+
+.staff-stat-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 9px;
+  border-radius: 10px;
+
+  ion-icon { font-size: 19px; }
+}
+
+.staff-stat-card.total .staff-stat-icon {
+  color: #236a9f;
+  background: #e9f3fb;
+}
+.staff-stat-card.pending .staff-stat-icon {
+  color: #aa6b0d;
+  background: #fff4df;
+}
+.staff-stat-card.progress .staff-stat-icon {
+  color: #8252a6;
+  background: #f3edfb;
+}
+.staff-stat-card.resolved .staff-stat-icon {
+  color: var(--staff-green-700);
+  background: #e6f4eb;
+}
+
+.staff-stat-number {
+  margin-bottom: 3px;
+  color: var(--staff-text);
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.08;
+  font-variant-numeric: tabular-nums;
+}
+
+.staff-stat-label {
+  color: var(--staff-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.staff-update-note {
+  margin: 10px 0 0;
+  color: var(--staff-muted);
+  font-size: 10px;
+  text-align: right;
+  line-height: 1.4;
+}
+
+// Primary management shortcut
+.staff-management-section,
+.staff-recent-section {
+  margin-top: 25px;
+}
+
+.staff-management-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #d7eadd;
+  border-radius: 16px;
+  color: inherit;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 2px 10px rgba(26, 81, 50, 0.035);
+}
+
+.staff-management-icon {
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--staff-green-700);
+  background: var(--staff-green-100);
+
+  ion-icon { font-size: 23px; }
+}
+
+.staff-management-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  strong {
+    color: var(--staff-green-950);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  small {
+    color: var(--staff-muted);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+}
+
+.staff-management-chevron {
+  flex: 0 0 auto;
+  color: #7c9486;
+  font-size: 20px;
+}
+
+// Recent cases
+.staff-text-action {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 0;
+  padding: 7px 0 7px 8px;
+  color: var(--staff-green-700);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  ion-icon { font-size: 15px; }
+}
+
+.staff-recent-list {
+  display: grid;
+  gap: 10px;
+}
+
+.staff-case-card {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--staff-outline);
+  border-radius: 15px;
+  color: var(--staff-text);
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(18, 63, 40, 0.025);
+}
+
+.staff-case-header {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.staff-case-identity {
+  flex: 1 1 auto;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 9px;
+}
+
+.staff-case-icon {
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--staff-green-700);
+  background: var(--staff-green-100);
+
+  ion-icon { font-size: 19px; }
+}
+
+.staff-case-titles {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+
+  strong {
+    color: var(--staff-text);
+    font-size: 12px;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+
+  small {
+    color: var(--staff-muted);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+}
+
+.staff-case-status {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #edf2ee;
+  color: #536359;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+
+  &.status-pending { background: #fff3df; color: #986314; }
+  &.status-under_review { background: #e9f3fb; color: #236b9e; }
+  &.status-in_progress { background: #f1eafa; color: #79509c; }
+  &.status-resolved { background: #e7f5ec; color: #22734d; }
+}
+
+.staff-case-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 10px 0 0 44px;
+  color: var(--staff-muted);
+  font-size: 10px;
+  line-height: 1.45;
+
+  ion-icon { flex: 0 0 auto; margin-top: 1px; font-size: 13px; }
+  span { min-width: 0; }
+}
+
+.staff-case-footer {
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 11px;
+  margin-top: 11px;
+  border-top: 1px solid #edf2ee;
+
+  small { color: var(--staff-muted); font-size: 10px; }
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--staff-green-700);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  ion-icon { font-size: 13px; }
+}
+
+.staff-loading-card,
+.staff-empty-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  border: 1px solid var(--staff-outline);
+  border-radius: 15px;
+  background: #fff;
+  color: var(--staff-muted);
+  text-align: center;
+}
+
+.staff-loading-card {
+  gap: 10px;
+  font-size: 12px;
+
+  ion-spinner { width: 20px; height: 20px; color: var(--staff-green-700); }
+}
+
+.staff-empty-card {
+  flex-direction: column;
+  gap: 6px;
+  min-height: 155px;
+
+  strong { color: var(--staff-text); font-size: 13px; }
+  p { margin: 0; max-width: 340px; font-size: 11px; line-height: 1.55; }
+}
+
+.staff-empty-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  color: var(--staff-green-700);
+  background: var(--staff-green-100);
+
+  ion-icon { font-size: 23px; }
+}
+
+.staff-dashboard-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 0 6px;
+  color: #8b9990;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.4;
+
+  ion-icon { font-size: 13px; }
+}
+
+// Accessible keyboard navigation and pressed states
+.staff-icon-action:focus-visible,
+.staff-text-action:focus-visible,
+.staff-management-card:focus-visible,
+.staff-case-card:focus-visible {
+  outline: 3px solid #91cdb1;
+  outline-offset: 2px;
+}
+
+.staff-management-card:active,
+.staff-case-card:active {
+  background: #f5faf6;
+}
+
+@media (min-width: 680px) {
+  .staff-dashboard-shell {
+    padding-inline: 26px;
+    padding-top: calc(24px + var(--ion-safe-area-top, 0px));
+  }
+
+  .staff-welcome-card {
+    min-height: 168px;
+    padding: 28px;
+  }
+
+  .staff-stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .staff-stat-card {
+    min-height: 145px;
+    padding: 18px;
+  }
+
+  .staff-brand-name { font-size: 19px; }
+  .staff-brand-subtitle { font-size: 11px; }
+  .staff-section-heading h2 { font-size: 19px; }
+}
+
+@media (max-width: 360px) {
+  .staff-dashboard-shell { padding-inline: 12px; }
+  .staff-brand-icon { flex-basis: 37px; width: 37px; height: 37px; }
+  .staff-brand-name { font-size: 15px; }
+  .staff-brand-subtitle { font-size: 9px; }
+  .staff-role-tag { font-size: 9px; padding: 6px 7px; }
+  .staff-welcome-card { padding: 18px; }
+  .staff-stat-card { min-height: 128px; padding: 12px; }
+  .staff-case-card { padding: 12px; }
+  .staff-case-status { padding: 5px 6px; font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staff-icon-action,
+  .staff-text-action,
+  .staff-management-card,
+  .staff-case-card {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
