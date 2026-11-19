@@ -1,7 +1,7 @@
 <?php
 
 // =====================================
-// PAWRESCUE COMMUNITY
+// PAWCONNECT
 // DELETE ONE PET REPORT PHOTO
 // =====================================
 
@@ -68,7 +68,7 @@ try {
     $conn->beginTransaction();
 
     $reportStmt = $conn->prepare(
-        "SELECT id, status
+        "SELECT id, status, deleted_at
          FROM pet_reports
          WHERE id = :report_id
            AND user_id = :user_id
@@ -86,6 +86,16 @@ try {
         sendDeletePhotoResponse(404, [
             "success" => false,
             "message" => "Report not found or access denied."
+        ]);
+    }
+
+    // Prevent any photo modification after the parent report is archived.
+    // The parent row is locked, so archiving cannot race this operation.
+    if ($report["deleted_at"] !== null) {
+        $conn->rollBack();
+        sendDeletePhotoResponse(409, [
+            "success" => false,
+            "message" => "Photos cannot be deleted from archived reports."
         ]);
     }
 
