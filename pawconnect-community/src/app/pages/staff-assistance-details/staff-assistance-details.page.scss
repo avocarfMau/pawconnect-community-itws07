@@ -61,8 +61,7 @@ ion-content.staff-details-content {
   margin-bottom: 12px;
 }
 
-.details-back-button,
-.details-refresh-button {
+.details-back-button {
   display: grid;
   place-items: center;
   flex: 0 0 42px;
@@ -394,6 +393,49 @@ ion-content.staff-details-content {
   line-height: 1.4;
 }
 
+// ============================================================
+// FIT-TO-SCREEN ANIMAL PHOTO VIEWER
+// ============================================================
+// Matches the photo overlay in the updated compact HTML.
+// Keep the full image visible; never crop or stretch its aspect ratio.
+
+.details-photo-viewer {
+  width: 100%;
+  height: 100vh; // Fallback for older WebViews.
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgba(0, 0, 0, 0.94);
+}
+
+.details-photo-viewer-image {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 4px;
+}
+
+.details-photo-viewer-close {
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 68px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.24);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 3px solid #98dfb3;
+    outline-offset: 3px;
+  }
+}
+
 // Used for assistance details, report status, and reporter/timeline rows.
 .details-info-list {
   display: block;
@@ -486,6 +528,94 @@ ion-content.staff-details-content {
 
   ion-icon { flex: 0 0 auto; font-size: 17px; }
   &:active { color: var(--case-green-deep); }
+}
+
+// Disabled while the case is loading or the rescue update is saving.
+.details-location-map-link:disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+// ============================================================
+// INTERACTIVE LEAFLET / OPENSTREETMAP LOCATION PANEL
+// Used by staff-assistance-details.page.html when staff tap
+// "View Location on Map". Matches the #leafletLocationMap ViewChild.
+// Leaflet's own CSS is loaded once from src/global.scss.
+// ============================================================
+
+.details-location-map-panel {
+  // Keep Leaflet's layers, popups and map controls clipped to the card,
+  // without allowing them to appear over the staff's other controls.
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+  width: 100%;
+  min-width: 0;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid #d9e8de;
+  border-radius: 14px;
+  background: #f4f8f5;
+  box-shadow: 0 3px 12px rgba(26, 64, 43, 0.045);
+}
+
+.details-leaflet-map {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 280px;
+  min-height: 280px;
+  background: #e8eee8;
+
+  // Ionic uses shadow DOM for its content, but Leaflet still needs its
+  // own tiles and controls to retain pointer events and stacking.
+  // Do not apply pointer-events: none or overflow: hidden here.
+  touch-action: manipulation;
+}
+
+.details-location-map-caption {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-top: 1px solid var(--case-border);
+  color: #526b5b;
+  background: #fbfdfb;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+
+  ion-icon {
+    display: block;
+    flex: 0 0 auto;
+    color: var(--case-green);
+    font-size: 16px;
+  }
+}
+
+// The HTML's existing inline height is 280px. These phone sizes are kept
+// equal to avoid layout jumps; the !important override is only for small
+// screens where we want a shorter panel.
+@media (max-width: 360px) {
+  .details-leaflet-map {
+    height: 246px !important;
+    min-height: 246px !important;
+  }
+
+  .details-location-map-caption {
+    font-size: 11px;
+    padding: 9px 10px;
+  }
+}
+
+// Use more map height on larger screens; override the inline 280px height
+// specifically for this panel, not for any other Leaflet maps in the app.
+@media (min-width: 768px) {
+  .details-leaflet-map {
+    height: 330px !important;
+    min-height: 330px !important;
+  }
 }
 
 // ============================================================
@@ -721,6 +851,150 @@ ion-content.staff-details-content {
 }
 
 // ============================================================
+// RESCUE COMPLETION: PROOF PICKER AND SAVED EVIDENCE
+// ============================================================
+// These rules style only the rescue elements added to Case Details.
+// Existing status/save controls, map, and photo viewers are unchanged.
+
+.details-rescue-proof-field {
+  padding: 13px;
+  border: 1px solid #cfe5d5;
+  border-radius: 12px;
+  background: #f7fbf8;
+
+  > label span { color: #b13f35; }
+
+  > .details-field-hint {
+    margin-bottom: 10px;
+  }
+
+  // Keep the file input visible for gallery/file selection on Android.
+  input[type='file'] {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 45px;
+    padding: 8px;
+    border: 1px dashed #a8c9b4;
+    border-radius: 10px;
+    color: var(--case-text);
+    background: #fff;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+
+    &::file-selector-button {
+      min-height: 32px;
+      margin-right: 9px;
+      padding: 5px 10px;
+      border: 1px solid #b8d9c4;
+      border-radius: 8px;
+      color: var(--case-green-deep);
+      background: var(--case-green-soft);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    &:focus-visible {
+      outline: 3px solid rgba(31, 115, 81, 0.25);
+      outline-offset: 2px;
+    }
+
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+}
+
+.details-rescue-camera-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  margin-top: 10px;
+  padding: 9px 13px;
+  border-color: #b8d9c4;
+  color: var(--case-green-deep);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 750;
+
+  &:active:not(:disabled) { background: var(--case-green-soft); }
+  &:focus-visible {
+    outline: 3px solid rgba(31, 115, 81, 0.3);
+    outline-offset: 2px;
+  }
+}
+
+.details-rescue-proof-preview {
+  min-width: 0;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid var(--case-border);
+  border-radius: 12px;
+  background: #fff;
+
+  img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 230px;
+    margin: 0 auto;
+    border-radius: 9px;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .details-field-hint { margin: 9px 0; }
+
+  // Remove is a secondary action, not the main Save button.
+  .details-retry-button { margin-top: 2px; }
+}
+
+.details-rescue-record {
+  border-color: #c4e2ce;
+
+  // Notes use normal wrapping instead of clipping long rescue details.
+  .details-info-row dd.details-paragraph {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+}
+
+.details-rescue-proof-display {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid var(--case-border);
+
+  .details-muted-text { margin-top: 7px; }
+}
+
+.details-rescue-proof-label {
+  margin: 0 0 9px;
+  color: var(--case-dark);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.details-rescue-proof-button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--case-border);
+  background: #f4f8f5;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 3px solid rgba(31, 115, 81, 0.3);
+    outline-offset: 3px;
+  }
+}
+
+// ============================================================
 // LAST REFRESHED AND FOOTER
 // ============================================================
 
@@ -745,7 +1019,6 @@ ion-content.staff-details-content {
 // ============================================================
 
 .details-back-button,
-.details-refresh-button,
 .details-retry-button,
 .details-location-map-link,
 .details-animal-thumbnail-link,
@@ -785,4 +1058,445 @@ ion-content.staff-details-content {
   .details-history-toggle::after { transition: none; }
   .details-form-field select,
   .details-form-field textarea { transition: none; }
+}
+
+
+// ============================================================
+// PAWCONNECT CASE DETAILS — MATCH STAFF LIST PAGE DESIGN
+// Only SCSS is changed. All Angular bindings, Leaflet behavior,
+// rescue submissions, and Back navigation remain untouched.
+//
+// "Static header": sticky app bar stays visible during scrolling.
+// "View Location": address, GPS and Leaflet map are collapsed until tap.
+// Modern Android WebView / Chromium supports :has() selectors.
+// ============================================================
+
+:host {
+  --case-page: #f5f9f5;
+  --case-card: #ffffff;
+  --case-dark: #143e2a;
+  --case-green: #187442;
+  --case-green-deep: #145d35;
+  --case-green-soft: #e8f5ed;
+  --case-text: #263c2e;
+  --case-muted: #68786e;
+  --case-border: #d8e6dc;
+  --case-shadow: 0 3px 12px rgba(18, 60, 37, 0.045);
+}
+
+// Keep ion-content as the one scrolling surface.
+// No overflow on the shell: sticky positioning depends on it.
+.staff-details-shell {
+  max-width: 760px;
+  padding-top: 0;
+  padding-bottom: calc(38px + env(safe-area-inset-bottom, 0px));
+}
+
+// ============================================================
+// STICKY TOP BAR — no extra PawConnect branding line
+// ============================================================
+
+.details-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 110;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% + 28px);
+  min-height: 73px;
+  margin: 0 -14px 15px;
+  padding: calc(10px + var(--ion-safe-area-top, 0px)) 14px 10px;
+  border-bottom: 1px solid #dce9df;
+  background: rgba(245, 249, 245, 0.98);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 3px 9px rgba(22, 65, 38, 0.04);
+}
+
+.details-back-button {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #cde2d3;
+  border-radius: 13px;
+  background: #e8f5ed;
+  color: #176b3f;
+  box-shadow: none;
+}
+
+.details-eyebrow {
+  display: none;
+}
+
+.details-header-copy h1 {
+  margin: 0;
+  color: #153d2c;
+  font-size: 22px;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+}
+
+// ============================================================
+// CASE SUMMARY — replace oversized dark hero with compact
+// report-style white card, same language as My Assisted Cases
+// ============================================================
+
+.details-summary-card {
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid #d6e5db;
+  border-radius: 17px;
+  background: #fff;
+  color: #193d2c;
+  box-shadow: var(--case-shadow);
+}
+
+.details-compact-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.details-summary-heading {
+  gap: 11px;
+  flex: 1 1 215px;
+}
+
+.details-summary-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e9f5ec;
+  color: #18703f;
+}
+
+.details-summary-title h2 {
+  color: #183d2a;
+  font-size: clamp(18px, 4.8vw, 23px);
+}
+
+.details-case-number {
+  color: #7c8a81;
+  font-size: 11px;
+}
+
+.details-report-reference {
+  color: #65766b;
+  font-size: 11px;
+}
+
+.details-summary-meta {
+  align-self: flex-start;
+}
+
+.details-status-badge {
+  min-height: 28px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 0;
+  background: #fff1d7;
+  color: #99601a;
+  font-size: 11px;
+  font-weight: 750;
+
+  &.status-rescued {
+    background: #dff5e7;
+    color: #166d3e;
+  }
+}
+
+// ============================================================
+// LIGHTER SECTION CARDS AND A MORE READABLE INFORMATION GRID
+// ============================================================
+
+.details-section,
+.details-compact-section {
+  margin-bottom: 12px;
+  padding: 15px;
+  border: 1px solid #d9e7dd;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: var(--case-shadow);
+}
+
+.details-section-heading {
+  gap: 9px;
+  margin-bottom: 13px;
+}
+
+.details-heading-icon {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #e9f5ee;
+}
+
+.details-section-heading h2 {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.28;
+  letter-spacing: -0.018em;
+}
+
+.details-animal-overview {
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.details-animal-thumbnail-link,
+.details-animal-thumbnail-placeholder {
+  width: 90px;
+  height: 104px;
+  border-radius: 12px;
+}
+
+.details-animal-thumbnail {
+  object-fit: cover;
+}
+
+.details-animal-name {
+  font-size: 13px;
+}
+
+.details-animal-description,
+.details-animal-assistance-reason {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.details-compact-info-list {
+  margin-top: 11px;
+}
+
+.details-info-row {
+  padding-block: 8px;
+}
+
+.details-info-row dt {
+  color: #748279;
+  font-size: 11px;
+}
+
+.details-info-row dd {
+  font-size: 12px;
+}
+
+// ============================================================
+// COMPACT REPORTED LOCATION — "VIEW LOCATION" REVEALS DETAILS
+//
+// The existing locationMapOpen state already controls the Leaflet
+// panel and the button's aria-expanded attribute. We use those
+// existing attributes; no TypeScript or HTML edits are necessary.
+//
+// When closed: section title + View Location on Map button.
+// When opened: location address, GPS, Leaflet map, Hide Map button.
+// Without GPS: show explanatory text; never hide the location.
+// ============================================================
+
+section.details-section:has(#detailsLocationTitle) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 10px;
+  padding: 13px 14px;
+}
+
+section.details-section:has(#detailsLocationTitle) > .details-section-heading {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+section.details-section:has(#detailsLocationTitle) .details-heading-icon {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+}
+
+section.details-section:has(#detailsLocationTitle) .details-section-heading h2 {
+  font-size: 14px;
+}
+
+// Override the original *inline* border:0/background:none on the
+// existing button so it reads as a touch target.
+section.details-section:has(#detailsLocationTitle) > .details-location-map-link {
+  grid-column: 2;
+  grid-row: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-height: 39px;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #b5d9c2 !important;
+  border-radius: 10px;
+  color: #176b3f;
+  background: #f0f8f2 !important;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+section.details-section:has(#detailsLocationTitle) > .details-location-map-link ion-icon {
+  font-size: 15px;
+}
+
+section.details-section:has(#detailsLocationTitle) > .details-location-map-link[aria-expanded="true"] {
+  background: #e3f2e8 !important;
+}
+
+// Keep the address and coordinates out of the way until tapped.
+// The body of the Leaflet map remains hidden by Angular's *ngIf.
+section.details-section:has(> .details-location-map-link) > .details-location-address,
+section.details-section:has(> .details-location-map-link) > .details-coordinates {
+  display: none;
+  grid-column: 1 / -1;
+}
+
+section.details-section:has(> .details-location-map-link[aria-expanded="true"]) > .details-location-address {
+  display: block;
+  grid-row: 2;
+  margin: 13px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #e6efe8;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 650;
+}
+
+section.details-section:has(> .details-location-map-link[aria-expanded="true"]) > .details-coordinates {
+  display: block;
+  grid-row: 3;
+  margin-top: 4px;
+  color: #7b897f;
+  font-size: 11px;
+}
+
+// No GPS available: preserve the message instead of showing
+// a nonworking map button.
+section.details-section:has(#detailsLocationTitle) > .details-inline-note {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  font-size: 11px;
+}
+
+section.details-section:has(#detailsLocationTitle) > .details-location-map-panel {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 12px !important;
+}
+
+section.details-section:has(#detailsLocationTitle) > .details-update-feedback {
+  grid-column: 1 / -1;
+}
+
+section.details-section:has(#detailsLocationTitle) .details-leaflet-map {
+  height: 232px !important;
+  min-height: 232px !important;
+}
+
+section.details-section:has(#detailsLocationTitle) .details-location-map-caption {
+  padding: 8px 10px;
+  font-size: 10px;
+}
+
+// ============================================================
+// RESCUE DOCUMENTATION / MANAGEMENT: retain all action fields
+// ============================================================
+
+.details-management-section {
+  border-color: #cfe5d6;
+}
+
+.details-rescue-record {
+  border-color: #cfe6d7;
+}
+
+.details-save-button {
+  border-radius: 11px;
+}
+
+// ============================================================
+// MOBILE ADJUSTMENTS
+// ============================================================
+
+@media (max-width: 370px) {
+  .staff-details-shell {
+    padding-inline: 11px;
+  }
+
+  .details-topbar {
+    width: calc(100% + 22px);
+    margin-inline: -11px;
+    padding-inline: 11px;
+  }
+
+  .details-summary-card,
+  .details-compact-section {
+    padding: 12px;
+  }
+
+  .details-animal-overview {
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .details-animal-thumbnail-link,
+  .details-animal-thumbnail-placeholder {
+    width: 80px;
+    height: 91px;
+  }
+
+  section.details-section:has(#detailsLocationTitle) {
+    gap: 7px;
+    padding: 12px 10px;
+  }
+
+  section.details-section:has(#detailsLocationTitle) .details-section-heading h2 {
+    font-size: 13px;
+  }
+
+  section.details-section:has(#detailsLocationTitle) > .details-location-map-link {
+    padding-inline: 7px;
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 768px) {
+  .staff-details-shell {
+    padding-inline: 20px;
+  }
+
+  .details-topbar {
+    width: calc(100% + 40px);
+    margin-inline: -20px;
+    padding-inline: 20px;
+  }
+
+  .details-compact-section {
+    padding: 18px;
+  }
+
+  section.details-section:has(#detailsLocationTitle) .details-leaflet-map {
+    height: 285px !important;
+    min-height: 285px !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .details-topbar {
+    background: #f5f9f5;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }

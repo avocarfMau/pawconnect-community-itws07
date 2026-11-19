@@ -1,0 +1,180 @@
+<!-- ============================================================
+  PAWCONNECT — MVO STAFF | MY ASSISTED CASES
+  UI redesign only. Keeps the existing working TypeScript methods,
+  pagination, automatic fetching, and staff bottom navigation.
+============================================================ -->
+<ion-content [fullscreen]="true" class="staff-assisted-content">
+  <main class="staff-assisted-shell">
+
+    <div class="staff-assisted-brand-row">
+      <div class="staff-assisted-brand">
+        <span class="staff-assisted-brand-mark" aria-hidden="true">
+          <ion-icon name="paw-outline"></ion-icon>
+        </span>
+        <span class="staff-assisted-brand-name">PawConnect</span>
+      </div>
+      <span class="staff-assisted-role-tag">Staff Portal</span>
+    </div>
+
+    <header class="staff-assisted-header">
+      <button type="button" class="staff-assisted-back-button" (click)="goHome()"
+              aria-label="Back to staff dashboard">
+        <!-- Inline SVG prevents any TypeScript ionicon registration change. -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5M12 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <div class="staff-assisted-header-copy">
+        <h1>My Assisted Cases</h1>
+        <p>Your completed rescues and their documentation.</p>
+      </div>
+    </header>
+
+    <!-- Lightweight summary, not a tall hero banner. -->
+    <section class="staff-assisted-overview" aria-label="Your rescue summary">
+      <span class="staff-assisted-total-icon" aria-hidden="true">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+      </span>
+      <div class="staff-assisted-total-copy">
+        <span class="staff-assisted-total-label">Cases Rescued by You</span>
+        <strong class="staff-assisted-total-value">{{ hasLoaded ? totalCases : '—' }}</strong>
+      </div>
+      <span class="staff-assisted-overview-decoration" aria-hidden="true">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+      </span>
+    </section>
+
+    <section class="staff-assisted-cases-section" aria-labelledby="assisted-cases-heading">
+      <div class="staff-assisted-section-heading">
+        <h2 id="assisted-cases-heading">Completed Rescues</h2>
+        <p>Rescued animals and recorded assistance</p>
+      </div>
+
+      <section *ngIf="errorMessage" class="staff-assisted-error" role="alert">
+        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <div class="staff-assisted-error-copy">
+          <strong>Unable to load your assisted cases</strong>
+          <p>{{ errorMessage }}</p>
+          <button type="button" class="staff-assisted-retry" (click)="refreshCases()"
+                  [disabled]="loading || loadingMore">Try Again</button>
+        </div>
+      </section>
+
+      <div *ngIf="loading && cases.length === 0" class="staff-assisted-loading"
+           role="status" aria-live="polite">
+        <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+        Loading your assisted cases...
+      </div>
+
+      <div *ngIf="hasLoaded && !loading && !errorMessage && cases.length === 0"
+           class="staff-assisted-empty" aria-live="polite">
+        <span class="staff-assisted-empty-icon" aria-hidden="true">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </span>
+        <h3>No assisted cases yet</h3>
+        <p>Cases you rescue will appear here after you save the required proof photo and rescue note.</p>
+      </div>
+
+      <div class="staff-assisted-list" *ngIf="cases.length > 0">
+        <button type="button" class="staff-assisted-case-card"
+                *ngFor="let item of cases; trackBy: trackCase"
+                (click)="openCase(item.id)"
+                [attr.aria-label]="'View rescued case ' + item.id + ', ' + getAnimalName(item)">
+
+          <span class="staff-assisted-card-body">
+            <span class="staff-assisted-card-photo" aria-hidden="true">
+              <ion-icon class="staff-assisted-photo-fallback" name="paw-outline"></ion-icon>
+              <ng-container *ngIf="getCasePhotoUrl(item) as imageUrl">
+                <img [src]="imageUrl" alt=""
+                     loading="lazy" decoding="async"
+                     (error)="onCasePhotoError(item)" />
+              </ng-container>
+            </span>
+
+            <span class="staff-assisted-card-main">
+              <span class="staff-assisted-card-title-line">
+                <strong class="staff-assisted-card-name">{{ getAnimalName(item) }}</strong>
+                <span class="staff-assisted-rescued-badge">Rescued</span>
+              </span>
+
+              <span class="staff-assisted-reference">Case #{{ item.id }} · Found Pet Report #{{ item.found_report_id }}</span>
+
+              <span class="staff-assisted-card-meta">
+                <span class="staff-assisted-type-chip">Found Pet</span>
+                <span class="staff-assisted-animal-type">
+                  <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                  {{ item.animal_type | titlecase }}
+                </span>
+              </span>
+
+              <span class="staff-assisted-card-info">
+                <strong>Assistance:</strong> {{ getReasonLabel(item.assistance_reason) }}
+              </span>
+              <span class="staff-assisted-card-location" *ngIf="item.location_address || (item.latitude != null && item.longitude != null)">
+                <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+                <span *ngIf="item.location_address">{{ item.location_address }}</span>
+                <span *ngIf="!item.location_address">GPS: {{ item.latitude }}, {{ item.longitude }}</span>
+              </span>
+              <span class="staff-assisted-card-note" *ngIf="item.rescue_note">
+                <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+                <span><strong>Rescue Note:</strong> {{ item.rescue_note }}</span>
+              </span>
+            </span>
+          </span>
+
+          <span class="staff-assisted-card-footer">
+            <span class="staff-assisted-rescued-date">
+              <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+              <span>{{ item.rescued_at ? ('Rescued ' + (item.rescued_at | date:'MMM d, y')) : 'Rescue date unavailable' }}</span>
+            </span>
+            <span class="staff-assisted-view-details">
+              View Details
+              <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+            </span>
+          </span>
+        </button>
+      </div>
+
+      <div class="staff-assisted-pagination" *ngIf="cases.length > 0">
+        <p class="staff-assisted-count-label">Showing {{ cases.length }} of {{ totalCases }} assisted cases</p>
+        <button *ngIf="hasMore" type="button" class="staff-assisted-load-more"
+                (click)="loadMore()" [disabled]="loading || loadingMore">
+          <ion-spinner *ngIf="loadingMore" name="crescent" aria-hidden="true"></ion-spinner>
+          {{ loadingMore ? 'Loading...' : 'Load More Cases' }}
+        </button>
+      </div>
+    </section>
+
+    <p class="staff-assisted-last-updated" *ngIf="lastUpdated && !loading">
+      Updated {{ lastUpdated | date:'MMM d, y, h:mm a' }}
+    </p>
+  </main>
+
+  <!-- Preserve the SAME three staff navigation destinations and methods. -->
+  <nav class="bottom-nav staff-bottom-nav" aria-label="Staff main navigation">
+    <div class="bottom-nav-inner">
+      <button type="button" class="nav-item" (click)="goHome()"
+              aria-label="Home, Staff Dashboard">
+        <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+        <span>Home</span>
+      </button>
+      <button type="button" class="nav-item active" aria-current="page"
+              aria-label="My Assisted Cases, current page">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <span>My Assisted Cases</span>
+      </button>
+      <button type="button" class="nav-item" (click)="goAccount()"
+              aria-label="My Account, Staff Profile">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="9" r="3"></circle>
+          <path d="M5.5 19a7 7 0 0 1 13 0"></path>
+        </svg>
+        <span>My Account</span>
+      </button>
+    </div>
+  </nav>
+</ion-content>

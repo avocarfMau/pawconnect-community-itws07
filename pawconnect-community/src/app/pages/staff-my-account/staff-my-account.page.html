@@ -1,0 +1,386 @@
+<!-- ===========================================================
+  PAWCONNECT — MUNICIPAL VETERINARY OFFICE — STAFF MY ACCOUNT
+
+  Based on the resident My Account layout:
+    - back/title header (NO Refresh button)
+    - green staff identity card
+    - personal information with Edit Profile form
+    - account information notice and secure logout
+    - staff-only three-tab bottom navigation
+
+  Profile auto-loads in staff-my-account.page.ts when this page opens.
+  Save as: src/app/pages/staff-my-account/staff-my-account.page.html
+  =========================================================== -->
+
+<ion-content [fullscreen]="true" class="staff-account-content">
+  <main class="staff-account-shell">
+
+    <!-- PAGE HEADER — NO MANUAL REFRESH BUTTON -->
+    <header class="staff-account-page-header">
+      <button
+        type="button"
+        class="staff-account-back-button"
+        (click)="goHome()"
+        [disabled]="loggingOut || savingProfile"
+        aria-label="Back to Staff Dashboard">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+
+      <div class="staff-account-heading">
+        <h1>My Account</h1>
+        <p>View and manage your PawConnect staff profile</p>
+      </div>
+    </header>
+
+    <!-- INITIAL LOADING — AUTOMATIC, NO CLICK REQUIRED -->
+    <section
+      *ngIf="loading && !profile"
+      class="staff-account-loading"
+      aria-live="polite"
+      role="status">
+      <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+      <p>Loading your account information...</p>
+    </section>
+
+    <!-- PROFILE LOAD ERROR; 'TRY AGAIN' ONLY IF AUTOMATIC LOAD FAILS -->
+    <section *ngIf="errorMessage" class="staff-account-error" role="alert">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <div class="staff-account-error-copy">
+        <strong>Unable to load staff information</strong>
+        <p>{{ errorMessage }}</p>
+        <button
+          type="button"
+          class="staff-account-retry"
+          (click)="refreshProfile()"
+          [disabled]="loading || loggingOut || savingProfile">
+          Try Again
+        </button>
+      </div>
+    </section>
+
+    <!-- EMPTY / EXPIRED PROFILE -->
+    <section
+      *ngIf="!loading && !profile && !errorMessage"
+      class="staff-account-unavailable"
+      aria-live="polite">
+      <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+      <h2>Profile not available</h2>
+      <p>We couldn't display your staff information. Please reopen My Account or sign in again.</p>
+    </section>
+
+    <!-- AUTHENTICATED STAFF PROFILE -->
+    <ng-container *ngIf="profile as staff">
+
+      <!-- GREEN PROFILE SUMMARY — ADAPTED FROM RESIDENT MY ACCOUNT -->
+      <section class="staff-account-profile-card" aria-label="Staff profile summary">
+        <div class="staff-account-avatar" aria-hidden="true">
+          {{ initials }}
+        </div>
+        <div class="staff-account-identity">
+          <p class="staff-account-identity-role">Municipal Veterinary Office Staff</p>
+          <h2>{{ displayName }}</h2>
+          <p class="staff-account-identity-email">{{ staff.email }}</p>
+        </div>
+      </section>
+
+      <!-- PERSONAL INFORMATION / EDIT PROFILE -->
+      <section
+        class="staff-account-details-card"
+        aria-labelledby="staff-account-details-title">
+        <div class="staff-account-details-heading">
+          <div class="staff-account-details-intro">
+            <h2 id="staff-account-details-title">
+              {{ editingProfile ? 'Edit Profile' : 'Personal Information' }}
+            </h2>
+            <p>
+              {{ editingProfile
+                ? 'Update your Municipal Veterinary Office staff account details.'
+                : 'Information associated with your staff account.' }}
+            </p>
+          </div>
+
+          <button
+            *ngIf="!editingProfile"
+            type="button"
+            class="staff-account-edit-button"
+            (click)="openEditProfile()"
+            [disabled]="loading || savingProfile || loggingOut">
+            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+            <span>Edit Profile</span>
+          </button>
+        </div>
+
+        <!-- SAVE RESULT AFTER EDITING -->
+        <div
+          *ngIf="editSuccess && !editingProfile"
+          class="staff-account-edit-success"
+          aria-live="polite"
+          role="status">
+          <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ editSuccess }}</span>
+        </div>
+
+        <div
+          *ngIf="editError && !editingProfile"
+          class="staff-account-edit-error"
+          role="alert">
+          {{ editError }}
+        </div>
+
+        <!-- READ-ONLY PROFILE DETAILS -->
+        <dl *ngIf="!editingProfile" class="staff-account-details">
+          <div class="staff-account-detail-item">
+            <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <dt>Full Name</dt>
+              <dd>{{ staff.full_name }}</dd>
+            </div>
+          </div>
+
+          <div class="staff-account-detail-item">
+            <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <dt>Email Address</dt>
+              <dd>{{ staff.email }}</dd>
+            </div>
+          </div>
+
+          <div class="staff-account-detail-item">
+            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <dt>Username</dt>
+              <dd>{{ staff.username || 'Not provided' }}</dd>
+            </div>
+          </div>
+
+          <div class="staff-account-detail-item">
+            <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <dt>Contact Number</dt>
+              <dd>{{ staff.contact_number || 'Not provided' }}</dd>
+            </div>
+          </div>
+
+          <div class="staff-account-detail-item">
+            <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <dt>Account Role</dt>
+              <dd>Municipal Veterinary Office Staff</dd>
+            </div>
+          </div>
+        </dl>
+
+        <!-- EDIT FORM — SAME FIELDS AS RESIDENT, STAFF-ONLY BACKEND -->
+        <form
+          *ngIf="editingProfile"
+          class="staff-account-edit-form"
+          (ngSubmit)="saveProfile()"
+          #staffProfileForm="ngForm"
+          autocomplete="on"
+          novalidate>
+
+          <p class="staff-account-required-note">
+            Fields marked <strong>*</strong> are required.
+          </p>
+
+          <div class="staff-account-edit-field">
+            <label for="staff-first-name">
+              First Name <span class="required">*</span>
+            </label>
+            <input
+              id="staff-first-name"
+              name="first_name"
+              type="text"
+              [(ngModel)]="editForm.first_name"
+              required
+              maxlength="100"
+              autocomplete="given-name"
+              [disabled]="savingProfile"
+              placeholder="Enter your first name" />
+          </div>
+
+          <div class="staff-account-edit-field">
+            <label for="staff-middle-name">
+              Middle Name <span class="optional">(optional)</span>
+            </label>
+            <input
+              id="staff-middle-name"
+              name="middle_name"
+              type="text"
+              [(ngModel)]="editForm.middle_name"
+              maxlength="100"
+              autocomplete="additional-name"
+              [disabled]="savingProfile"
+              placeholder="Enter your middle name" />
+          </div>
+
+          <div class="staff-account-edit-field">
+            <label for="staff-last-name">
+              Last Name <span class="required">*</span>
+            </label>
+            <input
+              id="staff-last-name"
+              name="last_name"
+              type="text"
+              [(ngModel)]="editForm.last_name"
+              required
+              maxlength="100"
+              autocomplete="family-name"
+              [disabled]="savingProfile"
+              placeholder="Enter your last name" />
+          </div>
+
+          <div class="staff-account-edit-field">
+            <label for="staff-username">
+              Username <span class="required">*</span>
+            </label>
+            <input
+              id="staff-username"
+              name="username"
+              type="text"
+              [(ngModel)]="editForm.username"
+              required
+              minlength="3"
+              maxlength="50"
+              pattern="[a-zA-Z0-9_]{3,50}"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              [disabled]="savingProfile"
+              placeholder="Enter your username" />
+            <small>3–50 characters; letters, numbers, or underscores only.</small>
+          </div>
+
+          <div class="staff-account-edit-field">
+            <label for="staff-contact-number">
+              Contact Number <span class="required">*</span>
+            </label>
+            <input
+              id="staff-contact-number"
+              name="contact_number"
+              type="tel"
+              [(ngModel)]="editForm.contact_number"
+              required
+              maxlength="16"
+              pattern="\+?[0-9]{10,15}"
+              autocomplete="tel"
+              inputmode="tel"
+              [disabled]="savingProfile"
+              placeholder="e.g., 09123456789" />
+            <small>10–15 digits; an optional leading + is allowed.</small>
+          </div>
+
+          <div class="staff-account-edit-field">
+            <label for="staff-email-readonly">
+              Email Address <span class="optional">(read-only)</span>
+            </label>
+            <input
+              id="staff-email-readonly"
+              type="email"
+              [value]="staff.email"
+              readonly
+              aria-describedby="staff-email-note" />
+            <small id="staff-email-note">
+              Changing your email requires a separate verification process.
+            </small>
+          </div>
+
+          <!-- FORM ERRORS -->
+          <div *ngIf="editError" class="staff-account-edit-error" role="alert">
+            {{ editError }}
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="staff-account-edit-actions">
+            <button
+              type="button"
+              class="staff-account-cancel-button"
+              (click)="cancelEditProfile()"
+              [disabled]="savingProfile">
+              <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="staff-account-save-button"
+              [disabled]="savingProfile || staffProfileForm.invalid">
+              <ion-spinner *ngIf="savingProfile" name="crescent" aria-hidden="true"></ion-spinner>
+              <ion-icon *ngIf="!savingProfile" name="checkmark-outline" aria-hidden="true"></ion-icon>
+              {{ savingProfile ? 'Saving Changes...' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- AUTOMATICALLY LOADED/UPDATED INFO -->
+      <p *ngIf="lastUpdated && !loading" class="staff-account-updated">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        Account information updated {{ lastUpdated | date:'MMM d, y, h:mm a' }}
+      </p>
+
+      <!-- INFORMATION NOTE, LIKE RESIDENT MY ACCOUNT -->
+      <aside class="staff-account-privacy-note">
+        <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+        <div>
+          <h3>Your Account Information</h3>
+          <p>
+            Your details are loaded automatically from your signed-in staff account.
+            Profile changes are saved only after confirmation from PawConnect.
+          </p>
+        </div>
+      </aside>
+
+      <!-- LOG OUT -->
+      <section class="staff-account-session" aria-label="Account actions">
+        <div *ngIf="logoutError" class="staff-account-edit-error" role="alert">
+          {{ logoutError }}
+        </div>
+
+        <button
+          type="button"
+          class="staff-account-logout"
+          (click)="logout()"
+          [disabled]="loggingOut || savingProfile">
+          <ion-spinner *ngIf="loggingOut" name="crescent" aria-hidden="true"></ion-spinner>
+          <ion-icon *ngIf="!loggingOut" name="log-out-outline" aria-hidden="true"></ion-icon>
+          {{ loggingOut ? 'Logging out...' : 'Log Out' }}
+        </button>
+      </section>
+    </ng-container>
+  </main>
+
+  <!-- STAFF-ONLY THREE-TAB BOTTOM NAVIGATION -->
+  <nav class="bottom-nav staff-bottom-nav" aria-label="Staff main navigation">
+    <div class="bottom-nav-inner">
+      <button
+        type="button"
+        class="nav-item"
+        (click)="goHome()"
+        [disabled]="loggingOut || savingProfile"
+        aria-label="Go to Staff Dashboard">
+        <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+        <span>Home</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-item"
+        (click)="goMyAssistedCases()"
+        [disabled]="loggingOut || savingProfile"
+        aria-label="Go to My Assisted Cases">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <span>My Assisted Cases</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-item active"
+        aria-current="page"
+        aria-label="My Account, current page">
+        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+        <span>My Account</span>
+      </button>
+    </div>
+  </nav>
+</ion-content>

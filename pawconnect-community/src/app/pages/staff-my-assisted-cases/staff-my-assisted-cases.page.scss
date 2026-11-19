@@ -1,0 +1,961 @@
+/* ============================================================
+   PAWCONNECT | My Assisted Cases — UI-only redesign
+   Companion: staff-my-assisted-cases.page.html
+   Data fetching, route navigation and staff authorization unchanged.
+   ============================================================ */
+
+:host {
+  display: block;
+  color-scheme: light;
+  --ma-dark: #163f2c;
+  --ma-green: #176b3a;
+  --ma-green-deep: #0f5c32;
+  --ma-soft: #e8f5ec;
+  --ma-bg: #f5f9f5;
+  --ma-muted: #65766a;
+  --ma-border: #dbe7dd;
+}
+
+ion-content.staff-assisted-content { --background: var(--ma-bg); --color: var(--ma-dark); }
+
+.staff-assisted-shell,
+.staff-assisted-shell *,
+.staff-assisted-shell *::before,
+.staff-assisted-shell *::after { box-sizing: border-box; }
+
+.staff-assisted-shell {
+  width: 100%;
+  max-width: 920px;
+  min-width: 0;
+  margin-inline: auto;
+  padding: calc(17px + var(--ion-safe-area-top, 0px)) 14px
+    calc(112px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Brand & page heading */
+.staff-assisted-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 22px;
+}
+.staff-assisted-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.staff-assisted-brand-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--ma-green);
+  ion-icon { font-size: 28px; }
+}
+.staff-assisted-brand-name {
+  color: var(--ma-dark);
+  font-size: 19px;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+.staff-assisted-role-tag {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border-radius: 999px;
+  color: #126234;
+  background: #e1f3e6;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.staff-assisted-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  margin-bottom: 20px;
+}
+.staff-assisted-back-button {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #14834a;
+  background: #e1f3e9;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  svg { width: 27px; height: 27px; }
+  &:active { background: #cfe8d8; }
+  &:focus-visible { outline: 3px solid #91cda9; outline-offset: 3px; }
+}
+.staff-assisted-header-copy { min-width: 0; }
+.staff-assisted-header-copy h1 {
+  margin: 0 0 5px;
+  color: var(--ma-dark);
+  font-size: clamp(21px, 5.6vw, 30px);
+  font-weight: 850;
+  line-height: 1.17;
+  letter-spacing: -0.04em;
+}
+.staff-assisted-header-copy p {
+  margin: 0;
+  color: var(--ma-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Small statistic strip rather than a large welcome banner. */
+.staff-assisted-overview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  margin-bottom: 23px;
+  padding: 15px 18px;
+  border: 1px solid #b2d9c1;
+  border-radius: 18px;
+  background: #ebf7ef;
+}
+.staff-assisted-total-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: var(--ma-green);
+  background: #d8efe0;
+  ion-icon { font-size: 28px; }
+}
+.staff-assisted-total-divider {
+  flex: 0 0 1px;
+  align-self: stretch;
+  width: 1px;
+  min-height: 48px;
+  background: #9bcfb0;
+}
+.staff-assisted-total-copy { min-width: 0; }
+.staff-assisted-total-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #54715e;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.staff-assisted-total-value {
+  display: block;
+  color: #164c30;
+  font-size: 31px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+
+/* List heading */
+.staff-assisted-cases-section { min-width: 0; }
+.staff-assisted-section-heading { margin-bottom: 14px; }
+.staff-assisted-section-heading h2 {
+  margin: 0 0 4px;
+  color: var(--ma-dark);
+  font-size: 19px;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+.staff-assisted-section-heading p {
+  margin: 0;
+  color: var(--ma-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+.staff-assisted-list { display: grid; gap: 13px; }
+
+/* Rescue cards */
+.staff-assisted-case-card {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #d5e4d9;
+  border-radius: 19px;
+  color: #22392b;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 2px 2px rgba(15, 56, 31, .025);
+  -webkit-tap-highlight-color: transparent;
+  &:active { background: #f8fcf9; }
+  &:focus-visible { outline: 3px solid #95cbab; outline-offset: 2px; }
+}
+.staff-assisted-card-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.staff-assisted-card-photo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 99px;
+  width: 99px;
+  height: 114px;
+  border-radius: 13px;
+  background: #eaf3ed;
+  overflow: hidden;
+}
+.staff-assisted-photo-fallback { color: #4f9b70; font-size: 37px; }
+.staff-assisted-card-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.staff-assisted-card-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+.staff-assisted-card-title-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 7px;
+  width: 100%;
+  min-width: 0;
+}
+.staff-assisted-card-name {
+  min-width: 0;
+  color: var(--ma-dark);
+  font-size: 17px;
+  font-weight: 850;
+  line-height: 1.24;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+.staff-assisted-rescued-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #11643a;
+  background: #dff5e8;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.staff-assisted-card-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.staff-assisted-type-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #176e3e;
+  background: #dff5e7;
+  font-size: 10px;
+  font-weight: 800;
+}
+.staff-assisted-animal-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #59665b;
+  font-size: 11px;
+  font-weight: 650;
+  ion-icon { color: #308552; font-size: 14px; }
+}
+.staff-assisted-card-info, .staff-assisted-card-note {
+  display: block;
+  width: 100%;
+  color: #4e5c51;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  strong { color: #2d4c38; font-weight: 800; }
+}
+.staff-assisted-card-note {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.staff-assisted-card-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  color: #65746a;
+  font-size: 10.5px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  ion-icon { flex: 0 0 14px; font-size: 14px; color: #268048; margin-top: 1px; }
+}
+.staff-assisted-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid #e6ede8;
+}
+.staff-assisted-rescued-date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: #65746a;
+  font-size: 10.5px;
+  line-height: 1.35;
+  ion-icon { flex: 0 0 15px; font-size: 15px; color: #25854b; }
+}
+.staff-assisted-view-details {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 5px;
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1.5px solid var(--ma-green);
+  border-radius: 11px;
+  color: #125f34;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  ion-icon { font-size: 15px; }
+}
+
+/* Error/empty/initial-load states */
+.staff-assisted-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 0 14px;
+  padding: 15px;
+  border: 1px solid #f0c8c1;
+  border-radius: 14px;
+  color: #92382e;
+  background: #fff4f2;
+  > ion-icon { flex: 0 0 20px; font-size: 20px; }
+}
+.staff-assisted-error-copy {
+  min-width: 0;
+  strong { display: block; font-size: 13px; }
+  p { margin: 5px 0 11px; font-size: 12px; line-height: 1.5; }
+}
+.staff-assisted-retry, .staff-assisted-load-more {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 9px 15px;
+  border: 1px solid #a9d2b6;
+  border-radius: 11px;
+  color: var(--ma-green);
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  &:disabled { opacity: .55; cursor: default; }
+  ion-spinner { width: 17px; height: 17px; color: currentColor; }
+}
+.staff-assisted-loading, .staff-assisted-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 155px;
+  padding: 23px 18px;
+  border: 1px solid var(--ma-border);
+  border-radius: 17px;
+  color: var(--ma-muted);
+  background: #fff;
+  text-align: center;
+}
+.staff-assisted-loading {
+  flex-direction: row;
+  gap: 10px;
+  font-size: 12px;
+  ion-spinner { width: 24px; height: 24px; color: var(--ma-green); }
+}
+.staff-assisted-empty {
+  gap: 8px;
+  h3 { margin: 0; color: var(--ma-dark); font-size: 17px; }
+  p { max-width: 360px; margin: 0; font-size: 12px; line-height: 1.6; }
+}
+.staff-assisted-empty-icon {
+  color: #69ad83;
+  ion-icon { font-size: 33px; }
+}
+.staff-assisted-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding-top: 18px;
+}
+.staff-assisted-count-label, .staff-assisted-last-updated {
+  margin: 0;
+  color: var(--ma-muted);
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+.staff-assisted-last-updated { margin-top: 16px; }
+
+/* Same three-option Staff Portal bottom menu, never resident routes. */
+.bottom-nav.staff-bottom-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 100;
+  width: 100%;
+  margin: 0;
+  padding: 7px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #dbe7dd;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 -4px 16px rgba(18,61,41,.055);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-sizing: border-box;
+}
+.staff-bottom-nav .bottom-nav-inner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 5px;
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+}
+.staff-bottom-nav .nav-item {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 59px;
+  padding: 6px 3px;
+  border: 0;
+  border-radius: 15px;
+  color: #67776d;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 650;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  ion-icon, svg { display: block; flex: 0 0 22px; width: 22px; height: 22px; font-size: 22px; }
+  span { overflow-wrap: anywhere; }
+  &.active, &[aria-current='page'] { color: #125f34; background: #e3f3e8; font-weight: 800; }
+  &:active:not(.active) { background: #eaf6ed; }
+  &:focus-visible { outline: 3px solid #91cda9; outline-offset: -2px; }
+}
+
+@media (max-width: 370px) {
+  .staff-assisted-shell { padding-inline: 11px; }
+  .staff-assisted-brand-name { font-size: 17px; }
+  .staff-assisted-role-tag { font-size: 10px; padding: 6px 8px; }
+  .staff-assisted-header { gap: 10px; }
+  .staff-assisted-header-copy h1 { font-size: 21px; }
+  .staff-assisted-card-photo { flex-basis: 84px; width: 84px; height: 105px; }
+  .staff-assisted-card-body { gap: 10px; }
+  .staff-assisted-card-name { font-size: 15px; }
+  .staff-assisted-card-main { gap: 5px; }
+  .staff-assisted-case-card { padding: 12px; }
+  .staff-assisted-view-details { padding-inline: 8px; }
+  .staff-bottom-nav .nav-item { font-size: 9px; }
+}
+@media (min-width: 720px) {
+  .staff-assisted-shell { padding-inline: 25px; padding-top: 28px; }
+  .staff-assisted-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .staff-assisted-case-card { height: 100%; }
+  .staff-assisted-card-photo { flex-basis: 110px; width: 110px; height: 125px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .staff-bottom-nav .nav-item { transition: none; }
+}
+
+/* ============================================================
+   POLISH 2 — COMPACT REPORT-STYLE CARD AND IMAGE-FIRST LAYOUT
+   Matches PawConnect's resident My Reports cards.
+   ============================================================ */
+
+.staff-assisted-shell {
+  max-width: 720px;
+  padding-top: calc(13px + var(--ion-safe-area-top, 0px));
+}
+.staff-assisted-brand-row {
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-inline: 1px;
+}
+.staff-assisted-brand-name { font-size: 18px; }
+.staff-assisted-brand-mark { flex-basis: 30px; width: 30px; height: 30px; }
+.staff-assisted-brand-mark ion-icon { font-size: 27px; }
+.staff-assisted-header { align-items: flex-start; margin-bottom: 19px; gap: 12px; }
+.staff-assisted-back-button {
+  flex: 0 0 45px;
+  width: 45px;
+  height: 45px;
+  margin-top: 1px;
+  border: 1px solid #d1e6d7;
+  background: #e8f5ec;
+}
+.staff-assisted-back-button svg { width: 24px; height: 24px; }
+.staff-assisted-header-copy h1 { margin-bottom: 5px; font-size: clamp(21px, 5vw, 27px); }
+.staff-assisted-header-copy p { font-size: 12px; line-height: 1.45; max-width: 360px; }
+
+/* One compact metric card, rather than a second oversized hero. */
+.staff-assisted-overview {
+  position: relative;
+  gap: 12px;
+  min-height: 84px;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(120deg, #f0f9f2 0%, #e7f4eb 100%);
+  box-shadow: 0 2px 6px rgba(21, 78, 46, 0.035);
+}
+.staff-assisted-total-icon {
+  flex: 0 0 49px;
+  width: 49px;
+  height: 49px;
+  border-radius: 13px;
+  background: #d4eddd;
+}
+.staff-assisted-total-divider { display: none; }
+.staff-assisted-total-copy { position: relative; z-index: 1; }
+.staff-assisted-total-label { margin-bottom: 2px; color: #456c52; font-size: 12px; }
+.staff-assisted-total-value { font-size: 31px; letter-spacing: -0.035em; }
+.staff-assisted-overview-decoration {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  color: rgba(27, 110, 57, 0.09);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.staff-assisted-overview-decoration ion-icon { font-size: 68px; }
+
+.staff-assisted-section-heading { margin-bottom: 12px; }
+.staff-assisted-section-heading h2 { font-size: 19px; }
+.staff-assisted-section-heading p { color: #6c7e71; font-size: 11px; }
+.staff-assisted-list { gap: 12px; }
+.staff-assisted-case-card {
+  padding: 13px;
+  border: 1px solid #d9e6dc;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 3px 9px rgba(20, 62, 36, 0.035);
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+.staff-assisted-case-card:active {
+  border-color: #8fc8a5;
+  box-shadow: 0 2px 7px rgba(20, 62, 36, .05);
+}
+.staff-assisted-card-body { gap: 12px; }
+.staff-assisted-card-photo {
+  flex: 0 0 108px;
+  width: 108px;
+  height: 130px;
+  border-radius: 12px;
+  background: #e9f2e9;
+  border: 1px solid #e2ebe4;
+}
+.staff-assisted-card-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.staff-assisted-photo-fallback { font-size: 35px; }
+.staff-assisted-card-main { gap: 5px; }
+.staff-assisted-card-title-line { align-items: center; flex-wrap: nowrap; gap: 7px; }
+.staff-assisted-card-name {
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.22;
+  font-weight: 850;
+}
+.staff-assisted-rescued-badge {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  font-size: 10px;
+  border-radius: 999px;
+}
+.staff-assisted-reference {
+  display: block;
+  color: #879389;
+  font-size: 10px;
+  font-weight: 550;
+  line-height: 1.35;
+}
+.staff-assisted-card-meta { gap: 6px; }
+.staff-assisted-type-chip { padding: 2px 8px; min-height: 22px; }
+.staff-assisted-card-info { margin-top: 2px; }
+.staff-assisted-card-location { font-size: 10.5px; }
+.staff-assisted-card-location > span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.staff-assisted-card-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  color: #4f6355;
+  margin-top: 1px;
+}
+.staff-assisted-card-note ion-icon {
+  flex: 0 0 14px;
+  margin-top: 1px;
+  font-size: 14px;
+  color: #23814e;
+}
+.staff-assisted-card-note > span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.staff-assisted-card-footer { margin-top: 12px; padding-top: 11px; }
+.staff-assisted-rescued-date { font-size: 10.5px; }
+.staff-assisted-view-details { min-height: 37px; padding: 8px 12px; border-radius: 10px; }
+.staff-assisted-pagination { padding-top: 14px; }
+.staff-assisted-last-updated { margin-top: 14px; color: #96a29a; }
+
+@media (max-width: 380px) {
+  .staff-assisted-shell { padding-inline: 11px; }
+  .staff-assisted-card-photo { flex-basis: 92px; width: 92px; height: 115px; }
+  .staff-assisted-case-card { padding: 11px; }
+  .staff-assisted-card-body { gap: 10px; }
+  .staff-assisted-card-name { font-size: 15px; }
+  .staff-assisted-rescued-badge { font-size: 9px; padding: 4px 7px; }
+  .staff-assisted-reference { font-size: 9px; }
+  .staff-assisted-view-details { font-size: 10px; padding-inline: 8px; }
+  .staff-assisted-card-footer { gap: 5px; }
+  .staff-assisted-rescued-date { font-size: 9.5px; }
+}
+@media (min-width: 720px) {
+  .staff-assisted-shell { max-width: 900px; }
+  .staff-assisted-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .staff-assisted-card-photo { flex-basis: 105px; width: 105px; height: 132px; }
+  .staff-assisted-card-name { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .staff-assisted-case-card { transition: none; }
+}
+
+
+/* ============================================================
+   POLISH 3 — COMPACT STICKY TITLE HEADER (NO BRAND ROW)
+   ----------------------------------------------------------------
+   HTML/TypeScript unchanged:
+   - Keep My Assisted Cases fetching, photo URL resolver,
+     case navigation, pagination, and staff bottom tabs.
+   - The former PawConnect + Staff Portal brand row is hidden.
+   - The page title stays at the top while the case list scrolls.
+   ============================================================ */
+
+/* Remove the redundant second brand/header line from THIS PAGE. */
+.staff-assisted-brand-row {
+  display: none;
+}
+
+/* The Ionic content remains the only scrolling surface.
+   Never put overflow:auto/hidden on the main shell: that would
+   prevent the title's position:sticky from following Ionic scroll. */
+.staff-assisted-shell {
+  max-width: 720px;
+  padding-top: 0;
+  padding-bottom: calc(114px + env(safe-area-inset-bottom, 0px));
+}
+
+/* One compact app-bar remains visible during scrolling. */
+.staff-assisted-header {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: calc(100% + 28px);
+  min-height: 77px;
+  margin: 0 -14px 17px;
+  padding: calc(11px + var(--ion-safe-area-top, 0px)) 14px 11px;
+  border-bottom: 1px solid rgba(185, 214, 193, .85);
+  background: rgba(245, 249, 245, .98);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 3px 10px rgba(22, 69, 39, .035);
+  isolation: isolate;
+}
+
+.staff-assisted-back-button {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  border: 1px solid #cfe4d5;
+  border-radius: 13px;
+  color: #176b3a;
+  background: #e6f4eb;
+  box-shadow: none;
+}
+.staff-assisted-back-button svg {
+  width: 22px;
+  height: 22px;
+}
+.staff-assisted-back-button:active {
+  background: #d3eadd;
+}
+.staff-assisted-header-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.staff-assisted-header-copy h1 {
+  margin: 0 0 3px;
+  color: #143d29;
+  font-size: clamp(20px, 4.85vw, 25px);
+  font-weight: 850;
+  line-height: 1.16;
+  letter-spacing: -.035em;
+}
+.staff-assisted-header-copy p {
+  max-width: none;
+  margin: 0;
+  color: #687a6e;
+  font-size: 11px;
+  line-height: 1.38;
+}
+
+/* Smaller, calmer rescue-count card — no oversized watermark. */
+.staff-assisted-overview {
+  gap: 12px;
+  min-height: 76px;
+  margin: 0 0 19px;
+  padding: 12px 14px;
+  border: 1px solid #bddfc9;
+  border-radius: 15px;
+  background: #ecf7f0;
+  box-shadow: none;
+}
+.staff-assisted-total-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #d9f0e2;
+}
+.staff-assisted-total-icon ion-icon {
+  font-size: 26px;
+}
+.staff-assisted-total-label {
+  margin-bottom: 2px;
+  color: #547260;
+  font-size: 12px;
+}
+.staff-assisted-total-value {
+  color: #165337;
+  font-size: 28px;
+  line-height: 1.05;
+}
+.staff-assisted-overview-decoration {
+  display: none;
+}
+
+.staff-assisted-section-heading {
+  margin-bottom: 12px;
+}
+.staff-assisted-section-heading h2 {
+  margin-bottom: 3px;
+  font-size: 19px;
+  line-height: 1.25;
+}
+.staff-assisted-section-heading p {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* Cards: compact, consistent with resident My Reports. */
+.staff-assisted-list {
+  gap: 12px;
+}
+.staff-assisted-case-card {
+  padding: 13px;
+  border: 1px solid #dae7dd;
+  border-radius: 16px;
+  box-shadow: 0 3px 10px rgba(17, 60, 36, .035);
+}
+.staff-assisted-case-card:active {
+  background: #f7fcf8;
+}
+.staff-assisted-card-body {
+  display: grid;
+  grid-template-columns: 98px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+.staff-assisted-card-photo {
+  display: grid;
+  width: 98px;
+  height: 114px;
+  border: 1px solid #e0ebe3;
+  border-radius: 12px;
+  background: #ebf4ed;
+}
+.staff-assisted-card-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.staff-assisted-card-main {
+  gap: 5px;
+  min-width: 0;
+}
+.staff-assisted-card-title-line {
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.staff-assisted-card-name {
+  font-size: 16px;
+  line-height: 1.24;
+}
+.staff-assisted-rescued-badge {
+  padding: 4px 8px;
+  font-size: 10px;
+}
+.staff-assisted-reference {
+  font-size: 10px;
+  color: #7a8b80;
+}
+.staff-assisted-card-info,
+.staff-assisted-card-note {
+  font-size: 11px;
+  line-height: 1.45;
+}
+.staff-assisted-card-location {
+  font-size: 10.5px;
+}
+.staff-assisted-card-note > span {
+  -webkit-line-clamp: 2;
+}
+.staff-assisted-card-footer {
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 11px;
+}
+.staff-assisted-view-details {
+  min-height: 38px;
+  padding: 8px 12px;
+}
+.staff-assisted-last-updated {
+  margin-top: 10px;
+  color: #819085;
+}
+
+/* Keep bottom nav fixed, independently of the title header. */
+.bottom-nav.staff-bottom-nav {
+  z-index: 100;
+}
+
+@media (max-width: 380px) {
+  .staff-assisted-shell {
+    padding-inline: 11px;
+  }
+  .staff-assisted-header {
+    width: calc(100% + 22px);
+    margin-inline: -11px;
+    padding-inline: 11px;
+    min-height: 72px;
+  }
+  .staff-assisted-header-copy h1 {
+    font-size: 19px;
+  }
+  .staff-assisted-header-copy p {
+    font-size: 10px;
+  }
+  .staff-assisted-card-body {
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 10px;
+  }
+  .staff-assisted-card-photo {
+    width: 86px;
+    height: 105px;
+  }
+  .staff-assisted-case-card {
+    padding: 11px;
+  }
+  .staff-assisted-card-name {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 720px) {
+  .staff-assisted-shell {
+    max-width: 900px;
+    padding-top: 0;
+  }
+  .staff-assisted-header {
+    width: calc(100% + 50px);
+    margin-inline: -25px;
+    padding-inline: 25px;
+  }
+  .staff-assisted-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .staff-assisted-card-body {
+    grid-template-columns: 105px minmax(0, 1fr);
+  }
+  .staff-assisted-card-photo {
+    width: 105px;
+    height: 125px;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .staff-assisted-header {
+    background: #f5f9f5;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

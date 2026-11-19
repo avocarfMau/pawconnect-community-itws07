@@ -104,7 +104,7 @@ export const routes: Routes = [
   },
 
   // =====================================
-  // MY ACCOUNT
+  // MY ACCOUNT — RESIDENT ONLY
   // =====================================
   {
     path: 'my-account',
@@ -117,8 +117,7 @@ export const routes: Routes = [
   // =====================================
   {
     path: 'staff-dashboard',
-    loadComponent: () =>
-      import('./pages/staff-dashboard/staff-dashboard.page').then((m) => m.StaffDashboardPage),
+    loadComponent: () => import('./pages/staff-dashboard/staff-dashboard.page').then((m) => m.StaffDashboardPage),
     canActivate: [staffGuard],
   },
 
@@ -128,8 +127,7 @@ export const routes: Routes = [
   {
     path: 'staff-animal-assistance',
     loadComponent: () =>
-      import('./pages/staff-animal-assistance/staff-animal-assistance.page')
-        .then((m) => m.StaffAnimalAssistancePage),
+      import('./pages/staff-animal-assistance/staff-animal-assistance.page').then((m) => m.StaffAnimalAssistancePage),
     canActivate: [staffGuard],
   },
 
@@ -139,8 +137,31 @@ export const routes: Routes = [
   {
     path: 'staff-animal-assistance/:id',
     loadComponent: () =>
-      import('./pages/staff-assistance-details/staff-assistance-details.page')
-        .then((m) => m.StaffAssistanceDetailsPage),
+      import('./pages/staff-assistance-details/staff-assistance-details.page').then(
+        (m) => m.StaffAssistanceDetailsPage,
+      ),
+    canActivate: [staffGuard],
+  },
+
+  // =====================================
+  // MY ASSISTED CASES — STAFF ONLY
+  // =====================================
+  {
+    path: 'staff-my-assisted-cases',
+    loadComponent: () =>
+      import('./pages/staff-my-assisted-cases/staff-my-assisted-cases.page')
+        .then((m) => m.StaffMyAssistedCasesPage),
+    canActivate: [staffGuard],
+  },
+
+  // =====================================
+  // MY ACCOUNT — STAFF ONLY
+  // =====================================
+  {
+    path: 'staff-my-account',
+    loadComponent: () =>
+      import('./pages/staff-my-account/staff-my-account.page')
+        .then((m) => m.StaffMyAccountPage),
     canActivate: [staffGuard],
   },
 

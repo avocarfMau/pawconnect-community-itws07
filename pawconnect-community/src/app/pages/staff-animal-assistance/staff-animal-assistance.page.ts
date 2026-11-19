@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { IonContent, IonIcon, IonSpinner, IonHeader, IonToolbar } from '@ionic/angular';
+import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
   pawOutline,
-  refreshOutline,
   chevronForwardOutline,
   locationOutline,
   alertCircleOutline,
@@ -26,17 +25,17 @@ import { AuthService } from '../../services/auth';
 // independent of this staff-only case management workflow.
 //
 // PHP endpoint: /animal_assistance/get_cases.php
-// Route to add later: /staff-animal-assistance (staffGuard)
-// Companion files to add next:
-//   staff-animal-assistance.page.html
-//   staff-animal-assistance.page.scss
+// Route: /staff-animal-assistance (staffGuard)
+// Loads All automatically; each status tab loads in one tap.
+// The existing get_cases.php endpoint is unchanged.
 // ============================================================
 
 export type AssistanceStatus =
   | 'pending'
   | 'under_review'
   | 'in_progress'
-  | 'resolved';
+  | 'resolved'
+  | 'rescued';
 
 export type AssistanceFilter = AssistanceStatus | 'all';
 
@@ -49,6 +48,11 @@ export interface StaffAssistanceCase {
   staff_notes: string | null;
   reviewed_at: string | null;
   resolved_at: string | null;
+  // Rescue documentation is returned by the updated staff-only get_cases.php.
+  rescue_proof_path: string | null;
+  rescue_note: string | null;
+  rescued_at: string | null;
+  rescued_by_user_id: number | null;
   created_at: string;
   updated_at: string;
 
@@ -86,23 +90,25 @@ interface GetCasesResponse {
   standalone: true,
   imports: [ CommonModule, IonContent, IonIcon, IonSpinner]
 })
-export class StaffAnimalAssistancePage implements OnDestroy {
+export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly zone = inject(NgZone);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   private readonly endpoint = `${getApiBaseUrl()}/animal_assistance/get_cases.php`;
   private readonly pageSize = 20; // The PHP API accepts 1-50 per request.
 
   private requestSubscription?: Subscription;
   private requestVersion = 0;
+  private destroyed = false;
+  private firstEntry = true;
 
   readonly filters: { value: AssistanceFilter; label: string }[] = [
     { value: 'all', label: 'All Cases' },
     { value: 'pending', label: 'Pending' },
-    { value: 'under_review', label: 'Under Review' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'resolved', label: 'Resolved' }
+    { value: 'rescued', label: 'Rescued' }
   ];
 
   selectedFilter: AssistanceFilter = 'all';
@@ -119,34 +125,76 @@ export class StaffAnimalAssistancePage implements OnDestroy {
     addIcons({
       arrowBackOutline,
       pawOutline,
-      refreshOutline,
-      chevronForwardOutline,
+          chevronForwardOutline,
       locationOutline,
       alertCircleOutline,
       documentTextOutline
     });
   }
 
-  // Ionic may keep pages alive; always refresh after returning from
-  // a case details page, since a staff member may have updated it.
-  ionViewWillEnter(): void {
+  // Angular creates this page before Ionic fires its enter event.
+  // Fetch on the FIRST visit even if the Ionic enter hook doesn't fire.
+  ngOnInit(): void {
     this.refreshCases();
   }
 
-  setFilter(filter: AssistanceFilter): void {
-    if (this.selectedFilter === filter) {
+  // Ionic caches pages when navigating to Case Details. Revalidate on return.
+  // Avoid firing a duplicate GET during the first ngOnInit/enter pair.
+  ionViewWillEnter(): void {
+    if (this.firstEntry) {
+      this.firstEntry = false;
       return;
     }
-    this.selectedFilter = filter;
-    // Do not display cases from the previous filter while this one loads.
-    this.cases = [];
-    this.totalCases = 0;
-    this.hasMore = false;
-    this.hasLoaded = false;
+    this.refreshCases();
+  }
+
+  ionViewWillLeave(): void {
+    // Responses from the list must not update an inactive page.
+    this.cancelPendingRequest();
+  }
+
+  private updateView(update: () => void): void {
+    if (this.destroyed) return;
+    this.zone.run(() => {
+      if (this.destroyed) return;
+      update();
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
+    });
+  }
+
+  private cancelPendingRequest(): void {
+    ++this.requestVersion;
+    this.requestSubscription?.unsubscribe();
+    this.requestSubscription = undefined;
+    this.loading = false;
+    this.loadingMore = false;
+  }
+
+  setFilter(filter: AssistanceFilter): void {
+    if (this.destroyed) return;
+
+    // Selecting All/Pending/Rescued should require only ONE tap.
+    // A repeated tap on the active filter can retry a failed or empty load.
+    if (this.selectedFilter === filter && this.hasLoaded && !this.errorMessage) {
+      return;
+    }
+
+    this.cancelPendingRequest();
+    this.updateView(() => {
+      this.selectedFilter = filter;
+      this.cases = [];
+      this.totalCases = 0;
+      this.hasMore = false;
+      this.hasLoaded = false;
+      this.errorMessage = '';
+      this.lastUpdated = null;
+    });
     this.refreshCases();
   }
 
   refreshCases(): void {
+    if (this.destroyed) return;
     this.fetchCases(false);
   }
 
@@ -158,6 +206,7 @@ export class StaffAnimalAssistancePage implements OnDestroy {
   }
 
   private fetchCases(append: boolean): void {
+    if (this.destroyed) return;
     const token = this.authService.getToken();
     if (!token) {
       void this.router.navigateByUrl('/login', { replaceUrl: true });
@@ -171,9 +220,11 @@ export class StaffAnimalAssistancePage implements OnDestroy {
     const offset = append ? this.cases.length : 0;
     const requestedFilter = this.selectedFilter;
 
-    this.errorMessage = '';
-    this.loading = !append;
-    this.loadingMore = append;
+    this.updateView(() => {
+      this.errorMessage = '';
+      this.loading = !append;
+      this.loadingMore = append;
+    });
 
     const params = new HttpParams()
       .set('status', requestedFilter)
@@ -186,64 +237,91 @@ export class StaffAnimalAssistancePage implements OnDestroy {
       params
     }).subscribe({
       next: (response) => {
-        if (currentVersion !== this.requestVersion ||
-            requestedFilter !== this.selectedFilter) {
+        if (this.destroyed || currentVersion !== this.requestVersion ||
+            requestedFilter !== this.selectedFilter ||
+            this.authService.getToken() !== token) {
           return;
         }
 
-        this.loading = false;
-        this.loadingMore = false;
+        // An Angular view update is required on some Ionic/WebView
+        // configurations; otherwise the list may appear only AFTER a tap.
+        this.updateView(() => {
+          this.loading = false;
+          this.loadingMore = false;
 
-        if (!response.success || !Array.isArray(response.cases)) {
-          this.errorMessage = response.message || 'Unable to load assistance cases.';
-          return;
-        }
+          if (!response?.success || !Array.isArray(response.cases)) {
+            this.errorMessage = response?.message || 'Unable to load assistance cases.';
+            this.hasLoaded = false;
+            return;
+          }
 
-        // A fresh filter/refresh replaces the list. Load More appends
-        // only IDs not already shown, avoiding duplicate cards.
-        const incoming = response.cases;
-        if (append) {
-          const existingIds = new Set(this.cases.map(item => item.id));
-          this.cases = [
-            ...this.cases,
-            ...incoming.filter(item => !existingIds.has(item.id))
-          ];
-        } else {
-          this.cases = incoming;
-        }
+          // Each API item includes the numeric case ID used by View Details.
+          const incoming = response.cases;
+          if (append) {
+            const existingIds = new Set(this.cases.map(item => item.id));
+            this.cases = [
+              ...this.cases,
+              ...incoming.filter(item => !existingIds.has(item.id))
+            ];
+          } else {
+            this.cases = incoming;
+          }
 
-        this.totalCases = response.total;
-        this.hasMore = response.has_more;
-        this.lastUpdated = new Date();
-        this.hasLoaded = true;
+          this.totalCases = response.total;
+          this.hasMore = response.has_more;
+          this.lastUpdated = new Date();
+          this.hasLoaded = true;
+          this.errorMessage = '';
+        });
       },
       error: (error: HttpErrorResponse) => {
-        if (currentVersion !== this.requestVersion) {
-          return;
-        }
-        this.loading = false;
-        this.loadingMore = false;
-        this.hasLoaded = true;
+        if (this.destroyed || currentVersion !== this.requestVersion) return;
+
+        this.updateView(() => {
+          this.loading = false;
+          this.loadingMore = false;
+          this.hasLoaded = true;
+          this.errorMessage = error.status === 0
+            ? 'Cannot connect to the server. Check your connection and try again.'
+            : error.status === 401 || error.status === 403
+              ? 'Your staff session was rejected. Sign in again.'
+              : 'Unable to retrieve assistance cases. Please try again.';
+        });
 
         if (error.status === 401 || error.status === 403) {
-          // Server-side permission checks remain authoritative.
           void this.router.navigateByUrl('/login', { replaceUrl: true });
-          return;
         }
-
-        this.errorMessage = error.status === 0
-          ? 'Cannot connect to the server. Check your connection and try again.'
-          : 'Unable to retrieve assistance cases. Please try again.';
       }
     });
   }
 
   openCase(caseId: number): void {
-    if (!Number.isInteger(caseId) || caseId <= 0) {
-      return;
-    }
-    // The staff case details page will be implemented after the list.
-    void this.router.navigate(['/staff-animal-assistance', caseId]);
+    const numericId = Number(caseId);
+    if (!Number.isSafeInteger(numericId) || numericId <= 0) return;
+
+    this.cancelPendingRequest();
+    // Matches app.routes.ts: staff-animal-assistance/:id.
+    // Awaiting navigation lets us surface a navigation failure rather than
+    // leaving a seemingly unresponsive View Details button.
+    void this.zone.run(async () => {
+      try {
+        const navigated = await this.router.navigateByUrl(
+          `/staff-animal-assistance/${numericId}`
+        );
+        if (!navigated && !this.destroyed &&
+            this.router.url.startsWith('/staff-animal-assistance') &&
+            this.router.url === '/staff-animal-assistance') {
+          this.updateView(() => {
+            this.errorMessage = 'Unable to open Case Details. Please try again.';
+          });
+        }
+      } catch (error) {
+        console.error('[PawConnect] Case Details navigation failed.', error);
+        this.updateView(() => {
+          this.errorMessage = 'Could not open Case Details. Please try again.';
+        });
+      }
+    });
   }
 
   backToDashboard(): void {
@@ -263,7 +341,8 @@ export class StaffAnimalAssistancePage implements OnDestroy {
       pending: 'Pending',
       under_review: 'Under Review',
       in_progress: 'In Progress',
-      resolved: 'Resolved'
+      resolved: 'Resolved',
+      rescued: 'Rescued'
     };
     return labels[status] || 'Unknown';
   }
@@ -286,7 +365,7 @@ export class StaffAnimalAssistancePage implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.requestVersion++;
-    this.requestSubscription?.unsubscribe();
+    this.destroyed = true;
+    this.cancelPendingRequest();
   }
 }
