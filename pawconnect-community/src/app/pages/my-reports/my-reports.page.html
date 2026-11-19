@@ -1,28 +1,25 @@
-<ion-content [fullscreen]="true" class="pawrescue-my-reports">
-  <main class="page-container">
-
-    <!-- PAGE HEADER -->
-    <header class="page-header">
-      <button
-        type="button"
-        class="back-button"
-        aria-label="Go back"
-        (click)="goBack()">
+<!-- FIXED IONIC HEADER -->
+<ion-header class="my-reports-ion-header">
+  <ion-toolbar class="my-reports-ion-toolbar">
+    <div class="page-header">
+      <button type="button" class="back-button" aria-label="Go back" (click)="goBack()">
         <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
       </button>
       <div class="page-heading-copy">
         <h1>My Reports</h1>
         <p>Your lost and found pet reports</p>
       </div>
-      <button
-        type="button"
-        class="refresh-button"
-        (click)="refreshReports()"
-        [disabled]="loading || refreshing || resolvingReportId !== null"
+      <button type="button" class="refresh-button" (click)="refreshReports()"
+        [disabled]="loading || refreshing || resolvingReportId !== null || deletingReportId !== null"
         aria-label="Refresh my pet reports">
         <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
       </button>
-    </header>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="false" class="pawrescue-my-reports">
+  <main class="page-container">
 
     <!-- COMPACT STATUS DROPDOWN + LOST/FOUND FILTERS -->
     <section class="my-reports-overview-header" aria-label="Report filters">
@@ -33,7 +30,7 @@
             id="myReportStatus"
             class="report-status-select"
             [value]="selectedStatusFilter"
-            [disabled]="resolvingReportId !== null"
+            [disabled]="resolvingReportId !== null || deletingReportId !== null"
             (change)="changeStatusFilter($any($event.target).value)">
             <option value="unresolved">Not Resolved</option>
             <option value="pending">Pending</option>
@@ -54,7 +51,7 @@
               id="myReportType"
               class="report-filter-select"
               [value]="selectedFilter"
-              [disabled]="resolvingReportId !== null"
+              [disabled]="resolvingReportId !== null || deletingReportId !== null"
               (change)="changeFilter($any($event.target).value)">
               <option value="all">All Reports</option>
               <option value="lost">Lost Pets</option>
@@ -69,7 +66,7 @@
               id="myReportAnimal"
               class="report-filter-select"
               [value]="selectedAnimalFilter"
-              [disabled]="resolvingReportId !== null"
+              [disabled]="resolvingReportId !== null || deletingReportId !== null"
               (change)="changeAnimalFilter($any($event.target).value)">
               <option value="all">All Paw</option>
               <option value="cat">Cat</option>
@@ -89,7 +86,7 @@
     <div class="error-state" *ngIf="errorMessage" role="alert">
       <p>{{ errorMessage }}</p>
       <ion-button fill="outline" size="small" (click)="refreshReports()"
-        [disabled]="loading || refreshing || resolvingReportId !== null">Try Again</ion-button>
+        [disabled]="loading || refreshing || resolvingReportId !== null || deletingReportId !== null">Try Again</ion-button>
     </div>
 
     <!-- EMPTY STATE -->
@@ -322,9 +319,21 @@
           type="button"
           class="edit-button report-edit-only"
           (click)="editReport(report)"
-          [disabled]="loading || resolvingReportId !== null">
+          [disabled]="loading || resolvingReportId !== null || deletingReportId !== null">
           <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
           Edit Report
+        </button>
+        <!-- Deletion is confirmed in TypeScript and authorized by the PHP API. -->
+        <button
+          *ngIf="report.status === 'pending' || report.status === 'under_review' || report.status === 'in_progress'"
+          type="button"
+          class="delete-button report-delete-only"
+          (click)="deleteReport(report)"
+          [disabled]="loading || refreshing || resolvingReportId !== null || deletingReportId !== null"
+          [attr.aria-label]="'Delete report ' + report.id">
+          <ion-spinner *ngIf="deletingReportId === report.id" name="crescent" aria-hidden="true"></ion-spinner>
+          <ion-icon *ngIf="deletingReportId !== report.id" name="trash-outline" aria-hidden="true"></ion-icon>
+          {{ deletingReportId === report.id ? 'Deleting Report...' : 'Delete Report' }}
         </button>
         <div class="resolved-info" *ngIf="report.status === 'resolved'">
           <ion-icon name="checkmark-circle-outline"></ion-icon><span>Resolved</span>
@@ -338,6 +347,39 @@
           </span>
         </div>
         </article>
+      </div>
+    </section>
+  </div>
+
+  <!-- DELETE REPORT CONFIRMATION MODAL -->
+  <div
+    *ngIf="pendingDeleteReport as pendingReport"
+    class="delete-confirm-overlay"
+    role="presentation"
+    (click)="cancelDeleteReport()">
+    <section
+      class="delete-confirm-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="deleteConfirmTitle"
+      aria-describedby="deleteConfirmDescription"
+      (click)="$event.stopPropagation()">
+      <div class="delete-confirm-icon" aria-hidden="true">
+        <ion-icon name="trash-outline"></ion-icon>
+      </div>
+      <h2 id="deleteConfirmTitle">Delete Report?</h2>
+      <p id="deleteConfirmDescription">
+        Are you sure you want to permanently delete report #{{ pendingReport.id }}?
+        This action cannot be undone.
+      </p>
+      <div class="delete-confirm-actions">
+        <button type="button" class="delete-confirm-cancel" (click)="cancelDeleteReport()">
+          Cancel
+        </button>
+        <button type="button" class="delete-confirm-submit" (click)="confirmDeleteReport()">
+          <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+          Delete Report
+        </button>
       </div>
     </section>
   </div>
@@ -430,13 +472,11 @@
   <div
     class="report-map-overlay"
     *ngIf="showLocationMap && selectedReport"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="reportMapTitle">
-    <div class="report-map-modal">
+    role="presentation">
+    <section class="report-map-modal" role="dialog" aria-modal="true" aria-labelledby="reportMapTitle">
 
       <!-- MAP MODAL HEADER -->
-      <div class="report-map-modal-header">
+      <header class="report-map-modal-header">
         <div>
           <h2 id="reportMapTitle">
             {{ selectedReport.pet_name || 'Pet' }} Location
@@ -452,15 +492,16 @@
           aria-label="Close location map">
           <ion-icon name="close-outline"></ion-icon>
         </button>
-      </div>
+      </header>
 
+      <div class="report-map-modal-content">
       <!-- PET LOCATION DETAILS -->
-      <div class="report-map-location-details">
+      <p class="report-map-location-details">
         <ion-icon name="location-outline"></ion-icon>
         <span>
           {{ selectedReport.location_address }}
         </span>
-      </div>
+      </p>
 
       <!-- INTERACTIVE MAP -->
       <div class="report-map-container">
@@ -488,13 +529,20 @@
         </div>
       </div>
 
+      </div>
+
       <!-- CLOSE BUTTON -->
+      <footer class="report-map-modal-footer">
       <ion-button
         expand="block"
         class="close-map-action"
         (click)="closeLocationMap()">
         Close Map
       </ion-button>
-    </div>
+      </footer>
+    </section>
   </div>
+
+
 </ion-content>
+

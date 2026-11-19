@@ -14,7 +14,9 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonSpinner
+  IonSpinner,
+  IonHeader,
+  IonToolbar
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -31,11 +33,13 @@ import {
   chevronBackOutline,
   chevronForwardOutline,
   expandOutline,
-  shieldCheckmarkOutline
+  shieldCheckmarkOutline,
+  trashOutline
 } from 'ionicons/icons';
 import { Subscription, finalize, timeout } from 'rxjs';
 import * as L from 'leaflet';
 import { PetReportsService, PetReport } from '../../services/pet-reports';
+import { HapticsService } from '../../services/haptics.service';
 
 type ReportFilter = 'all' | 'lost' | 'found';
 type AnimalFilter = 'all' | 'dog' | 'cat';
@@ -50,13 +54,16 @@ type ReportStatusFilter = 'unresolved' | 'pending' | 'under_review' | 'in_progre
     IonContent,
     IonButton,
     IonIcon,
-    IonSpinner
+    IonSpinner,
+    IonHeader,
+    IonToolbar
   ]
 })
 export class MyReportsPage implements OnInit, OnDestroy {
   private reportsService = inject(PetReportsService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private haptics = inject(HapticsService);
   // =====================================
   // REPORT INFORMATION
   // =====================================
@@ -76,6 +83,9 @@ export class MyReportsPage implements OnInit, OnDestroy {
   errorMessage = '';
   private reportsRequest?: Subscription;
   private resolveRequest?: Subscription;
+  private deleteRequest?: Subscription;
+  deletingReportId: number | null = null;
+  pendingDeleteReport: PetReport | null = null;
   resolvingReportId: number | null = null;
   resolveMessage = '';
   private destroyed = false;
@@ -145,7 +155,8 @@ export class MyReportsPage implements OnInit, OnDestroy {
       chevronBackOutline,
       chevronForwardOutline,
       expandOutline,
-      shieldCheckmarkOutline
+      shieldCheckmarkOutline,
+      trashOutline
     });
   }
   // =====================================
@@ -172,11 +183,13 @@ export class MyReportsPage implements OnInit, OnDestroy {
     ++this.requestId;
     this.reportsRequest?.unsubscribe();
     this.resolveRequest?.unsubscribe();
+    this.deleteRequest?.unsubscribe();
+    this.deletingReportId = null;
     this.availabilityRequest?.unsubscribe();
     this.restrictedFoundReportIds.clear();
     this.resolvingReportId = null;
-    this.closePhotoViewer();
-    this.closeLocationMap();
+    this.closePhotoViewer(false);
+    this.closeLocationMap(false);
     this.detailReport = null;
     this.loading = false;
     this.refreshing = false;
@@ -321,6 +334,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     if (
       this.destroyed ||
       this.resolvingReportId !== null ||
+      this.deletingReportId !== null ||
       !allowedStatuses.includes(status as ReportStatusFilter) ||
       this.selectedStatusFilter === status
     ) {
@@ -328,6 +342,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     }
 
     this.closeReportDetails();
+    void this.haptics.selection();
     this.selectedStatusFilter = status as ReportStatusFilter;
     this.errorMessage = '';
     this.resolveMessage = '';
@@ -346,6 +361,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     }
     console.log('[MY REPORTS] Filter changed:', filter);
     this.closeReportDetails();
+    void this.haptics.selection();
     this.selectedFilter = filter;
     this.allReports = [];
     this.updateVisibleReports();
@@ -359,12 +375,14 @@ export class MyReportsPage implements OnInit, OnDestroy {
     if (
       this.destroyed ||
       this.resolvingReportId !== null ||
+      this.deletingReportId !== null ||
       !['all', 'dog', 'cat'].includes(animal) ||
       this.selectedAnimalFilter === animal
     ) {
       return;
     }
     this.closeReportDetails();
+    void this.haptics.selection();
     this.selectedAnimalFilter = animal as AnimalFilter;
     this.updateVisibleReports();
     this.loadFoundPetAvailability();
@@ -378,6 +396,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     if (this.destroyed) {
       return;
     }
+    void this.haptics.light();
     console.log('[MY REPORTS] Refresh requested');
     this.refreshing = true;
     this.loadReports();
@@ -390,11 +409,13 @@ export class MyReportsPage implements OnInit, OnDestroy {
     if (
       this.destroyed ||
       this.resolvingReportId !== null ||
+      this.deletingReportId !== null ||
       !['pending', 'under_review', 'in_progress'].includes(report.status)
     ) {
       return;
     }
     if (report.report_type === 'found' && this.hasActiveOwnershipClaim(report.id)) {
+      void this.haptics.warning();
       this.errorMessage = 'This Found Pet report has an active ownership claim. Complete or resolve the claim first.';
       this.cdr.detectChanges();
       return;
@@ -413,6 +434,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     }
     this.errorMessage = '';
     this.resolveMessage = '';
+    void this.haptics.medium();
     this.resolvingReportId = report.id;
     this.cdr.detectChanges();
     this.resolveRequest = this.reportsService
@@ -433,6 +455,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
             return;
           }
           if (response.success) {
+            void this.haptics.success();
             // Move the report into Resolved immediately after server success.
             this.allReports = this.allReports.map(item =>
               item.id === report.id
@@ -448,6 +471,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
           } else {
             this.errorMessage =
               response.message || 'Unable to resolve this report.';
+            void this.haptics.error();
             this.cdr.detectChanges();
           }
         },
@@ -456,6 +480,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
             return;
           }
           console.error('[MY REPORTS] Resolve error:', error);
+          void this.haptics.error();
           if (error.status === 409) {
             this.errorMessage =
               error.error?.message ||
@@ -545,6 +570,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
       this.destroyed ||
       this.loading ||
       this.resolvingReportId !== null ||
+      this.deletingReportId !== null ||
       !['pending', 'under_review', 'in_progress'].includes(report.status)
     ) {
       return;
@@ -552,6 +578,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     this.closePhotoViewer();
     this.closeLocationMap();
     this.detailReport = null;
+    void this.haptics.light();
     this.router.navigate(
       ['/edit-report', report.id],
       {
@@ -560,19 +587,110 @@ export class MyReportsPage implements OnInit, OnDestroy {
     );
   }
   // =====================================
+  // DELETE MY REPORT (SERVER VALIDATES OWNERSHIP AND LINKS)
+  // =====================================
+  deleteReport(report: PetReport): void {
+    if (
+      this.destroyed ||
+      this.loading || this.refreshing ||
+      this.deletingReportId !== null ||
+      this.resolvingReportId !== null ||
+      this.pendingDeleteReport !== null ||
+      !['pending', 'under_review', 'in_progress'].includes(report.status) ||
+      !['lost', 'found'].includes(report.report_type)
+    ) return;
+
+    // Open the custom confirmation modal rendered in the HTML template.
+    void this.haptics.light();
+    this.pendingDeleteReport = report;
+    this.cdr.detectChanges();
+  }
+
+  cancelDeleteReport(): void {
+    if (!this.pendingDeleteReport || this.deletingReportId !== null) return;
+    void this.haptics.selection();
+    this.pendingDeleteReport = null;
+    this.cdr.detectChanges();
+  }
+
+  confirmDeleteReport(): void {
+    const report = this.pendingDeleteReport;
+    if (!report || this.destroyed || this.deletingReportId !== null ||
+        this.resolvingReportId !== null) return;
+
+    this.pendingDeleteReport = null;
+    void this.haptics.warning();
+    this.errorMessage = '';
+    this.resolveMessage = '';
+    this.deletingReportId = report.id;
+    this.cdr.detectChanges();
+
+    this.deleteRequest = this.reportsService.deleteReport(report.id)
+      .pipe(
+        timeout(15000),
+        finalize(() => {
+          if (this.destroyed) return;
+          this.deletingReportId = null;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: response => {
+          if (this.destroyed) return;
+          if (response?.success) {
+            void this.haptics.success();
+            this.allReports = this.allReports.filter(item => item.id !== report.id);
+            this.photoIndexes.delete(report.id);
+            if (this.detailReport?.id === report.id) this.closeReportDetails();
+            if (this.photoViewerReport?.id === report.id) this.closePhotoViewer(false);
+            if (this.selectedReport?.id === report.id) this.closeLocationMap(false);
+            this.updateVisibleReports();
+            this.resolveMessage = response.message || 'Report deleted successfully.';
+            this.cdr.detectChanges();
+            this.loadReports();
+          } else {
+            void this.haptics.error();
+            this.errorMessage = response?.message || 'Unable to delete this report.';
+            this.cdr.detectChanges();
+          }
+        },
+        error: error => {
+          if (this.destroyed) return;
+          void this.haptics.error();
+          if (error.status === 409) {
+            this.errorMessage = error.error?.message ||
+              'This report cannot be deleted because it has linked records or its status changed.';
+          } else if (error.status === 401) {
+            this.errorMessage = 'Your session has expired. Please log in again.';
+          } else if (error.status === 403 || error.status === 404) {
+            this.errorMessage = error.error?.message || 'Report not found or access denied.';
+          } else if (error.name === 'TimeoutError' || error.status === 0) {
+            this.errorMessage =
+              'Unable to confirm deletion. Refresh your reports before trying again.';
+          } else {
+            this.errorMessage = error.error?.message || 'Unable to delete this report.';
+          }
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  // =====================================
   // REPORT DETAILS VIEW
   // =====================================
   openReportDetails(report: PetReport): void {
     if (this.destroyed) return;
     this.closePhotoViewer();
     this.closeLocationMap();
+    void this.haptics.light();
     this.detailReport = report;
     this.cdr.detectChanges();
   }
 
   closeReportDetails(): void {
-    this.closePhotoViewer();
-    this.closeLocationMap();
+    if (this.detailReport) void this.haptics.light();
+    this.closePhotoViewer(false);
+    this.closeLocationMap(false);
     this.detailReport = null;
     if (!this.destroyed) this.cdr.detectChanges();
   }
@@ -610,6 +728,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     }
     const index = this.getCurrentPhotoIndex(report);
     const next = (index + direction + count) % count;
+    void this.haptics.selection();
     this.photoIndexes.set(report.id, next);
     this.cdr.detectChanges();
   }
@@ -618,6 +737,7 @@ export class MyReportsPage implements OnInit, OnDestroy {
     if (!Number.isInteger(index) || index < 0 || index >= count) {
       return;
     }
+    void this.haptics.selection();
     this.photoIndexes.set(report.id, index);
     this.cdr.detectChanges();
   }
@@ -633,10 +753,12 @@ export class MyReportsPage implements OnInit, OnDestroy {
       return;
     }
     this.closeLocationMap();
+    void this.haptics.light();
     this.photoViewerReport = report;
     this.cdr.detectChanges();
   }
-  closePhotoViewer(): void {
+  closePhotoViewer(withHaptics = true): void {
+    if (withHaptics && this.photoViewerReport) void this.haptics.light();
     this.photoViewerReport = null;
     this.resetPhotoTouch();
     if (!this.destroyed) {
@@ -816,8 +938,9 @@ export class MyReportsPage implements OnInit, OnDestroy {
     if (!this.hasLocation(report) || this.destroyed) {
       return;
     }
-    this.closePhotoViewer();
+    this.closePhotoViewer(false);
     this.destroyReportMap();
+    void this.haptics.light();
     this.selectedReport = report;
     this.showLocationMap = true;
     this.cdr.detectChanges();
@@ -895,7 +1018,8 @@ export class MyReportsPage implements OnInit, OnDestroy {
   // =====================================
   // CLOSE REPORT LOCATION MAP
   // =====================================
-  closeLocationMap(): void {
+  closeLocationMap(withHaptics = true): void {
+    if (withHaptics && this.showLocationMap) void this.haptics.light();
     this.showLocationMap = false;
     this.selectedReport = null;
     this.destroyReportMap();
@@ -932,8 +1056,9 @@ export class MyReportsPage implements OnInit, OnDestroy {
       this.closeReportDetails();
       return;
     }
-    this.closePhotoViewer();
-    this.closeLocationMap();
+    void this.haptics.light();
+    this.closePhotoViewer(false);
+    this.closeLocationMap(false);
     this.router.navigateByUrl('/home');
   }
   // =====================================
@@ -944,8 +1069,10 @@ export class MyReportsPage implements OnInit, OnDestroy {
     ++this.requestId;
     this.reportsRequest?.unsubscribe();
     this.resolveRequest?.unsubscribe();
+    this.deleteRequest?.unsubscribe();
     this.availabilityRequest?.unsubscribe();
     this.restrictedFoundReportIds.clear();
+    this.pendingDeleteReport = null;
     this.photoViewerReport = null;
     this.detailReport = null;
     this.resetPhotoTouch();
