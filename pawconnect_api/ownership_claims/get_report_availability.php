@@ -35,7 +35,7 @@ try {
         throw new RuntimeException('Invalid authenticated session.');
     }
 
-    // Only active Found Pet reports appear here. The status is
+    // Only active, non-archived Found Pet reports appear here. The status is
     // derived from claim records, never a client-supplied value.
     // No private evidence, applicant identity or pickup data is read.
     //
@@ -59,6 +59,7 @@ FROM pet_reports AS p
 INNER JOIN pet_ownership_claims AS c
     ON c.found_report_id = p.id
 WHERE p.report_type = 'found'
+  AND p.deleted_at IS NULL
   AND p.status IN ('pending', 'under_review', 'in_progress')
   AND c.status IN (
       'approved',
@@ -90,7 +91,7 @@ SQL;
     ]);
 } catch (Throwable $e) {
     error_log(
-        '[PawRescue Found Pet Claim Availability] ' . $e->getMessage()
+        '[PawConnect Found Pet Claim Availability] ' . $e->getMessage()
     );
 
     sendClaimAvailabilityResponse(500, [

@@ -309,7 +309,7 @@ try {
     $conn->beginTransaction();
 
     $reportQuery = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports WHERE id = :report_id LIMIT 1 FOR UPDATE'
     );
     $reportQuery->execute([':report_id' => $lostReportId]);
@@ -376,6 +376,14 @@ try {
                 'finder_handover_confirmed_at' => $recovery['finder_handover_confirmed_at'],
                 'completed_at' => $recovery['completed_at']
             ]);
+        }
+
+        // Preserve completed recovery history, but block new handover actions
+        // after the parent Lost Pet report has been archived.
+        if ($report['deleted_at'] !== null) {
+            failRecoveryReschedule($conn, 409,
+                'This Lost Pet report has been archived. Handover confirmation is no longer available.'
+            );
         }
 
         if (!in_array(
@@ -514,6 +522,7 @@ try {
             "UPDATE pet_reports
              SET status = 'resolved', updated_at = NOW()
              WHERE id = :report_id AND report_type = 'lost'
+               AND deleted_at IS NULL
                AND status IN ('pending', 'under_review', 'in_progress')"
         );
         $resolveLost->execute([':report_id' => $lostReportId]);
@@ -560,6 +569,13 @@ try {
             'finder_handover_confirmed_at' => $finished['finder_handover_confirmed_at'],
             'completed_at' => $finished['completed_at']
         ]);
+    }
+
+    // Archived Lost Pet reports are read-only: no pickup changes.
+    if ($report['deleted_at'] !== null) {
+        failRecoveryReschedule($conn, 409,
+            'This Lost Pet report has been archived. Pickup rescheduling is no longer available.'
+        );
     }
 
     if (!in_array((string) $report['status'], ['pending', 'under_review', 'in_progress'], true)) {

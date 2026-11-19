@@ -1,20 +1,22 @@
-<ion-content [fullscreen]="true">
-  <div class="page-container">
-
-    <!-- PAGE HEADER -->
-    <div class="page-header">
-      <button
-        type="button"
-        class="back-button"
-        (click)="goBack()"
-        [disabled]="saving || uploadingPhoto || deletingPhotoId !== null">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-      </button>
-      <div>
-        <h1>Edit Report</h1>
-        <p>Update your submitted pet report information</p>
-      </div>
+<ion-header class="lost-found-fixed-header">
+  <div class="page-header">
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()"
+      [disabled]="saving || uploadingPhoto || deletingPhotoId !== null"
+      aria-label="Back to My Reports">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+    <div>
+      <h1>Edit Report</h1>
+      <p>Update your lost or found pet report</p>
     </div>
+  </div>
+</ion-header>
+
+<ion-content [fullscreen]="false" class="pawconnect-edit-report">
+  <div class="page-container">
 
     <!-- LOADING STATE -->
     <div class="loading-state" *ngIf="loading">
@@ -41,11 +43,12 @@
 
     <!-- EDIT REPORT FORM -->
     <div *ngIf="!loading && originalReport && !saved">
-      <div class="info-card">
-        <ion-icon name="paw-outline"></ion-icon>
+      <div class="info-card edit-intro-card">
+        <div class="edit-intro-icon"><ion-icon name="paw-outline" aria-hidden="true"></ion-icon></div>
         <div>
+          <span class="edit-eyebrow">REPORT MANAGEMENT</span>
           <h2>Update Pet Information</h2>
-          <p>Review and correct the information in your existing lost or found pet report.</p>
+          <p>Review the details below and make any necessary changes to your report.</p>
         </div>
       </div>
 
@@ -57,7 +60,13 @@
         </div>
       </div>
 
-      <form (ngSubmit)="saveChanges()" #editForm="ngForm">
+      <form class="edit-report-form" (ngSubmit)="saveChanges()" #editForm="ngForm">
+        <section class="edit-form-section" aria-labelledby="editPetInfoHeading">
+          <div class="edit-section-heading">
+            <span class="edit-section-number">01</span>
+            <div><h2 id="editPetInfoHeading">Pet Information</h2><p>Basic details about the lost or found pet</p></div>
+          </div>
+          <div class="edit-form-field-grid">
         <!-- REPORT TYPE -->
         <div class="form-group">
           <label for="reportType">Report Type <span>*</span></label>
@@ -80,6 +89,7 @@
           </select>
         </div>
 
+          </div>
         <!-- PET NAME -->
         <div class="form-group">
           <label for="petName">Pet Name (Optional)</label>
@@ -108,6 +118,15 @@
                  [disabled]="saving || uploadingPhoto || deletingPhotoId !== null" required>
         </div>
 
+        </section>
+
+        <details class="edit-form-section edit-collapsible-section" aria-labelledby="editLocationHeading">
+          <summary class="edit-section-heading edit-collapsible-heading">
+            <span class="edit-section-number">02</span>
+            <div><h2 id="editLocationHeading">Location Information</h2><p>Where the pet was last seen or found</p></div>
+            <span class="edit-disclosure-icon" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="edit-collapsible-body">
         <!-- LOCATION DETAILS -->
         <div class="location-details-card">
           <div class="location-details-heading">
@@ -205,6 +224,16 @@
           <small>GPS coordinates are optional. Check that the pin matches the real incident location.</small>
         </div>
 
+          </div>
+        </details>
+
+        <details class="edit-form-section edit-collapsible-section" aria-labelledby="editPhotosHeading">
+          <summary class="edit-section-heading edit-collapsible-heading">
+            <span class="edit-section-number">03</span>
+            <div><h2 id="editPhotosHeading">Report Photos</h2><p>Review saved photos or add more images</p></div>
+            <span class="edit-disclosure-icon" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="edit-collapsible-body">
         <!-- MULTIPLE PET PHOTO MANAGEMENT -->
         <div class="photo-management-section">
           <div class="photo-management-heading">
@@ -306,15 +335,18 @@
           </div>
         </div>
 
+          </div>
+        </details>
+
         <!-- REPORT VALIDATION ERROR -->
         <p class="error-message" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
         <!-- FORM ACTIONS -->
-        <div class="edit-actions">
-          <ion-button expand="block" fill="outline" type="button"
+        <div class="edit-actions edit-form-actions">
+          <ion-button class="cancel-report-button" expand="block" fill="outline" type="button"
                       [disabled]="saving || uploadingPhoto || deletingPhotoId !== null"
                       (click)="goBack()">Cancel</ion-button>
-          <ion-button expand="block" type="submit"
+          <ion-button class="save-report-button" expand="block" type="submit"
                       [disabled]="saving || uploadingPhoto || deletingPhotoId !== null || photoUploadUncertain || editForm.invalid">
             <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
             <span *ngIf="!saving">Save Changes</span>

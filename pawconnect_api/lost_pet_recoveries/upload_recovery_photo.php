@@ -166,7 +166,7 @@ try {
     }
 
     $reportStmt = $conn->prepare(
-        'SELECT id, report_type, status
+        'SELECT id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :lost_report_id
          LIMIT 1 FOR UPDATE'
@@ -189,6 +189,12 @@ try {
         (int) $recovery['finder_user_id'] !== $finderId
     ) {
         rejectRecoveryPhoto($conn, 404, 'Recovery report not found or access denied.');
+    }
+
+    // Archived reports remain available for historical evidence viewing,
+    // but must never accept new recovery evidence uploads.
+    if ($report['deleted_at'] !== null) {
+        rejectRecoveryPhoto($conn, 409, 'This Lost Pet report is archived. New recovery photos cannot be uploaded.');
     }
 
     if (

@@ -132,7 +132,7 @@ try {
     // Locking the report serializes competing state changes
     // with other endpoints that also lock this same row.
     $foundStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :report_id
          LIMIT 1 FOR UPDATE'
@@ -157,7 +157,7 @@ try {
     }
 
     // Only currently active community reports accept claims.
-    if (!in_array(
+    if ($foundReport['deleted_at'] !== null || !in_array(
         (string) $foundReport['status'],
         ['pending', 'under_review', 'in_progress'],
         true
@@ -178,6 +178,8 @@ try {
              WHERE id = :lost_report_id
                AND user_id = :claimant_id
                AND report_type = 'lost'
+               AND deleted_at IS NULL
+               AND status IN ('pending', 'under_review', 'in_progress')
              LIMIT 1"
         );
         $lostStmt->execute([
@@ -189,7 +191,7 @@ try {
             $conn->rollBack();
             sendOwnershipClaimResponse(422, [
                 'success' => false,
-                'message' => 'Linked Lost Pet report must belong to your account.'
+                'message' => 'Linked Lost Pet report must belong to your account and be active and unarchived.'
             ]);
         }
     }

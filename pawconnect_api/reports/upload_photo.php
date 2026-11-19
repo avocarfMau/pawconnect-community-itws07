@@ -213,7 +213,7 @@ try {
     $conn->beginTransaction();
 
     $stmt = $conn->prepare(
-        "SELECT id, photo_path, status
+        "SELECT id, photo_path, status, deleted_at
          FROM pet_reports
          WHERE id = :report_id
            AND user_id = :user_id
@@ -232,6 +232,13 @@ try {
     if (!$report) {
         $conn->rollBack();
         reply(404, false, "Report not found or access denied.");
+    }
+
+    // Archived reports remain in the database for historical records,
+    // but residents must not add new photos to them.
+    if ($report["deleted_at"] !== null) {
+        $conn->rollBack();
+        reply(409, false, "Photos cannot be added to archived reports.");
     }
 
     if (!in_array($report["status"], ["pending", "under_review", "in_progress"], true)) {
@@ -288,7 +295,8 @@ try {
         $update = $conn->prepare(
             "UPDATE pet_reports
              SET photo_path = :photo_path
-             WHERE id = :report_id AND user_id = :user_id"
+             WHERE id = :report_id AND user_id = :user_id
+                AND deleted_at IS NULL"
         );
 
         $update->execute([

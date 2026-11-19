@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 import * as L from 'leaflet';
-import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
+import { IonContent, IonIcon, IonSpinner, IonHeader } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
@@ -36,6 +36,8 @@ import {
   OwnershipClaimDecisionRequest,
   RequestOwnershipRescheduleRequest
 } from '../../services/pet-reports';
+import { HapticsService } from '../../services/haptics.service';
+
 
 /**
  * Dedicated private ownership-claims screen.
@@ -51,10 +53,11 @@ import {
   templateUrl: './my-claims.page.html',
   styleUrls: ['./my-claims.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonContent, IonIcon, IonSpinner]
+  imports: [IonHeader, CommonModule, FormsModule, IonContent, IonIcon, IonSpinner, IonHeader]
 })
 export class MyClaimsPage implements OnInit, OnDestroy {
   private reportsService = inject(PetReportsService);
+  private haptics = inject(HapticsService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
@@ -85,7 +88,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     'finder-reschedule-response' | null = null;
 
   openClaimActionModal(action: NonNullable<MyClaimsPage['claimActionModal']>): void {
-    if (!this.isClaimDetailsOpen || this.isClaimActionBusy) return;
+    if (!this.isClaimDetailsOpen || this.isClaimActionBusy || this.claimActionModal) return;
     const received = !!this.selectedOwnershipClaim;
     if (action === 'approve' && received) {
       this.startClaimApproval();
@@ -105,6 +108,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     }
     if (action.startsWith('sent-') && !this.selectedSentClaim) return;
     if (action.startsWith('finder-') && !received) return;
+    void this.haptics.light();
     this.claimActionModal = action;
     this.cdr.detectChanges();
   }
@@ -117,6 +121,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
   closeClaimActionModal(): void {
     if (this.isClaimActionBusy) return;
+    void this.haptics.light();
     this.claimActionModal = null;
     this.claimDecisionMode = null;
     this.claimDecisionError = '';
@@ -135,6 +140,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
       this.closeClaimActionModal();
       return;
     }
+    if (this.selectedOwnershipClaim || this.selectedSentClaim) void this.haptics.light();
     if (this.selectedOwnershipClaim) this.closeClaimReview();
     else if (this.selectedSentClaim) this.closeSentClaimDetails();
   }
@@ -255,6 +261,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     // Save the pin at the time of tapping; do not request device GPS.
     const latitude = Number(pickup.latitude);
     const longitude = Number(pickup.longitude);
+    void this.haptics.light();
     this.destroyPickupLeafletMap();
     this.pickupMapLocation = pickup.location || '';
     this.pickupMapOpen = true;
@@ -331,6 +338,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   closePickupLeafletMap(): void {
+    void this.haptics.light();
     this.destroyPickupLeafletMap();
     this.pickupMapOpen = false;
     this.pickupMapLocation = '';
@@ -424,7 +432,23 @@ export class MyClaimsPage implements OnInit, OnDestroy {
             const refreshed = this.receivedClaims.find(
               claim => claim.id === this.selectedOwnershipClaim?.id
             );
-            if (refreshed) this.selectedOwnershipClaim = refreshed;
+            if (refreshed) {
+              this.selectedOwnershipClaim = refreshed;
+            } else if (!loadMore && !this.isClaimActionBusy) {
+              // The claim is no longer in the refreshed accessible list
+              // (for example, its Found Pet report was archived).
+              // Close private details and release temporary evidence URLs.
+              this.destroyPickupLeafletMap();
+              this.pickupMapOpen = false;
+              this.pickupMapLocation = '';
+              this.clearClaimEvidence();
+              this.selectedOwnershipClaim = null;
+              this.claimActionModal = null;
+              this.claimDecisionMode = null;
+              this.finderRescheduleMode = false;
+              this.claimDecisionError = '';
+              this.finderActionError = '';
+            }
           }
         });
       },
@@ -474,6 +498,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         this.finderActionClaimId !== null || this.sentActionClaimId !== null) return;
     this.closeSentClaimDetails();
     this.closeClaimReview();
+    void this.haptics.light();
 
     this.updateClaimUI(() => {
       this.selectedOwnershipClaim = claim;
@@ -706,12 +731,16 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   retryClaimEvidence(): void {
-    if (this.selectedOwnershipClaim) this.loadClaimEvidence(this.selectedOwnershipClaim);
+    if (this.selectedOwnershipClaim) {
+      void this.haptics.light();
+      this.loadClaimEvidence(this.selectedOwnershipClaim);
+    }
   }
 
   startClaimApproval(): void {
     if (this.selectedOwnershipClaim?.status !== 'pending' || this.respondingClaimId !== null ||
         this.finderActionClaimId !== null) return;
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.claimDecisionMode = 'approve';
       this.claimActionModal = 'approve';
@@ -723,6 +752,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   startClaimRejection(): void {
     if (this.selectedOwnershipClaim?.status !== 'pending' || this.respondingClaimId !== null ||
         this.finderActionClaimId !== null) return;
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.claimDecisionMode = 'reject';
       this.claimActionModal = 'reject';
@@ -733,6 +763,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
   cancelClaimDecision(): void {
     if (this.respondingClaimId !== null) return;
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.claimDecisionMode = null;
       this.claimActionModal = null;
@@ -756,11 +787,13 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
     if (!Capacitor.isNativePlatform() && !window.isSecureContext) {
       this.updateClaimUI(() => {
+        void this.haptics.error();
         this.pickupLocationError = 'GPS requires HTTPS or localhost. Enter the pickup location manually.';
       });
       return;
     }
 
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.pickupLocationLoading = true;
       this.pickupLocationError = '';
@@ -793,6 +826,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     } catch (error: any) {
       if (!this.destroyed && this.selectedOwnershipClaim?.id === currentClaimId) {
         this.updateClaimUI(() => {
+          void this.haptics.error();
           this.pickupLocationError = error?.message || 'Unable to read current GPS location.';
         });
       }
@@ -818,17 +852,20 @@ export class MyClaimsPage implements OnInit, OnDestroy {
       const date = this.pickupDate.trim();
       const time = this.pickupTime.trim();
       if (!location || location.length > 255) {
+        void this.haptics.error();
         this.claimDecisionError = 'Enter a pickup location (up to 255 characters).';
         this.cdr.detectChanges();
         return;
       }
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date) ||
           !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+        void this.haptics.error();
         this.claimDecisionError = 'Choose a valid pickup date and time.';
         this.cdr.detectChanges();
         return;
       }
       if (date < this.minimumPickupDate) {
+        void this.haptics.error();
         this.claimDecisionError = 'Pickup date must not be in the past.';
         this.cdr.detectChanges();
         return;
@@ -843,16 +880,14 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     } else {
       data.rejection_reason = this.rejectionReason.trim() || null;
       if ((data.rejection_reason || '').length > 1000) {
+        void this.haptics.error();
         this.claimDecisionError = 'Rejection reason must not exceed 1000 characters.';
         this.cdr.detectChanges();
         return;
       }
     }
 
-    const actionLabel = mode === 'approve'
-      ? 'Approve this ownership claim and share the private pickup arrangement with the claimant?'
-      : 'Reject this ownership claim?';
-    if (!window.confirm(actionLabel)) return;
+    void this.haptics.medium();
 
     this.updateClaimUI(() => {
       this.respondingClaimId = claim.id;
@@ -871,10 +906,12 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         if (this.destroyed || this.selectedOwnershipClaim?.id !== claim.id) return;
         if (!response.success) {
           this.updateClaimUI(() => {
+            void this.haptics.error();
             this.claimDecisionError = response.message || 'Unable to process claim.';
           });
           return;
         }
+        void this.haptics.success();
         this.updateClaimUI(() => {
           const updated: OwnershipClaim = {
             ...claim,
@@ -998,6 +1035,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   startFinderReschedule(claim: OwnershipClaim): void {
     if (this.destroyed || this.selectedOwnershipClaim?.id !== claim.id ||
         !this.canRequestFinderReschedule(claim)) return;
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.resetFinderRescheduleForm(claim);
       this.finderActionError = '';
@@ -1009,8 +1047,10 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
   cancelFinderReschedule(): void {
     if (this.finderActionClaimId !== null) return;
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.finderRescheduleMode = false;
+      this.claimActionModal = null;
       this.finderActionError = '';
     });
   }
@@ -1029,12 +1069,14 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time) ||
         reason.length > 1000) {
       this.updateClaimUI(() => {
+        void this.haptics.error();
         this.finderActionError = 'Enter a pickup location (5–255 characters), valid date and time, and an optional reason (up to 1000 characters).';
       });
       return;
     }
     if (date < this.minimumPickupDate) {
       this.updateClaimUI(() => {
+        void this.haptics.error();
         this.finderActionError = 'The proposed pickup date must not be in the past.';
       });
       return;
@@ -1045,6 +1087,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     const changedTime = time !== (claim.pickup?.time || '').slice(0, 5);
     if (!changedLocation && !changedDate && !changedTime) {
       this.updateClaimUI(() => {
+        void this.haptics.error();
         this.finderActionError = 'Change at least one pickup detail before submitting.';
       });
       return;
@@ -1061,9 +1104,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     if (changedDate) payload.pickup_date = date;
     if (changedTime) payload.pickup_time = time;
 
-    if (!window.confirm(
-      'Send this proposed pickup change to the claimant? The original schedule stays in effect until they respond.'
-    )) return;
+    void this.haptics.medium();
 
     this.updateClaimUI(() => {
       this.finderActionClaimId = claim.id;
@@ -1080,9 +1121,11 @@ export class MyClaimsPage implements OnInit, OnDestroy {
           if (this.destroyed || version !== this.finderActionVersion) return;
           this.updateClaimUI(() => {
             if (!response.success) {
+              void this.haptics.error();
               this.finderActionError = response.message || 'Unable to request rescheduling.';
               return;
             }
+            void this.haptics.success();
             this.patchReceivedClaim(claim.id, { status: 'reschedule_requested' });
             this.finderRescheduleMode = false;
             this.claimActionModal = null;
@@ -1094,6 +1137,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         error: error => {
           if (this.destroyed || version !== this.finderActionVersion) return;
           this.updateClaimUI(() => {
+            void this.haptics.error();
             this.finderActionError = this.finderActionErrorText(error);
           });
         }
@@ -1104,10 +1148,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     const proposal = claim.latest_reschedule;
     if (this.destroyed || this.selectedOwnershipClaim?.id !== claim.id ||
         !proposal || !this.canRespondToFinderReschedule(claim)) return;
-    const prompt = action === 'accept'
-      ? 'Accept the claimant’s proposed pickup change? The claimant must confirm the updated schedule afterward.'
-      : 'Reject the requested change and keep the original pickup arrangement?';
-    if (!window.confirm(prompt)) return;
+    void this.haptics.medium();
 
     this.updateClaimUI(() => {
       this.finderActionClaimId = claim.id;
@@ -1127,9 +1168,11 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         if (this.destroyed || version !== this.finderActionVersion) return;
         this.updateClaimUI(() => {
           if (!response.success) {
+            void this.haptics.error();
             this.finderActionError = response.message || 'Unable to respond to the reschedule.';
             return;
           }
+          void this.haptics.success();
           this.patchReceivedClaim(claim.id, {
             status: response.status,
             pickup: {
@@ -1139,7 +1182,8 @@ export class MyClaimsPage implements OnInit, OnDestroy {
             },
             latest_reschedule: { ...proposal, status: response.reschedule_status }
           });
-          this.finderActionMessage = response.message || 'Reschedule response saved.';
+          this.claimActionModal = null;
+            this.finderActionMessage = response.message || 'Reschedule response saved.';
           this.claimsMessage = this.finderActionMessage;
         });
         if (response.success) this.loadReceivedClaims();
@@ -1147,6 +1191,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
       error: error => {
         if (this.destroyed || version !== this.finderActionVersion) return;
         this.updateClaimUI(() => {
+          void this.haptics.error();
           this.finderActionError = this.finderActionErrorText(error);
         });
       }
@@ -1156,10 +1201,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   confirmFinderHandover(claim: OwnershipClaim): void {
     if (this.destroyed || this.selectedOwnershipClaim?.id !== claim.id ||
         !this.canConfirmFinderHandover(claim)) return;
-    if (!window.confirm(
-      'Have you PHYSICALLY HANDED OVER this pet to the claimant? ' +
-      'Confirm only after the pet has actually been returned. This cannot be undone.'
-    )) return;
+    void this.haptics.medium();
 
     this.updateClaimUI(() => {
       this.finderActionClaimId = claim.id;
@@ -1176,9 +1218,11 @@ export class MyClaimsPage implements OnInit, OnDestroy {
           if (this.destroyed || version !== this.finderActionVersion) return;
           this.updateClaimUI(() => {
             if (!response.success) {
+              void this.haptics.error();
               this.finderActionError = response.message || 'Unable to confirm the handover.';
               return;
             }
+            void this.haptics.success();
             this.patchReceivedClaim(claim.id, {
               status: response.status,
               found_report_status: response.found_report_status,
@@ -1186,6 +1230,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
               claimant_handover_confirmed_at: response.claimant_handover_confirmed_at,
               completed_at: response.completed_at
             });
+            this.claimActionModal = null;
             this.finderActionMessage = response.message ||
               'Your handover confirmation was saved. Waiting for the claimant if needed.';
             this.claimsMessage = this.finderActionMessage;
@@ -1197,6 +1242,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         error: error => {
           if (this.destroyed || version !== this.finderActionVersion) return;
           this.updateClaimUI(() => {
+            void this.haptics.error();
             this.finderActionError = this.finderActionErrorText(error);
           });
         }
@@ -1288,6 +1334,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     if (this.destroyed || this.sentActionClaimId !== null ||
         this.finderActionClaimId !== null || this.respondingClaimId !== null) return;
     this.closeClaimReview();
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.selectedSentClaim = claim;
       this.claimActionModal = null;
@@ -1386,13 +1433,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   confirmSentPickup(claim: OwnershipClaim): void {
     if (this.destroyed || !this.canConfirmSentPickup(claim) ||
         this.selectedSentClaim?.id !== claim.id) return;
-    const approved = window.confirm(
-      `Confirm the private pickup arrangement?\n\n` +
-      `${claim.pickup.location}\n${claim.pickup.date} at ${claim.pickup.time?.slice(0, 5)} ` +
-      `(Asia/Manila)\n\n` +
-      'This confirms your agreement to the schedule, NOT that the pet was returned.'
-    );
-    if (!approved) return;
+    void this.haptics.medium();
 
     this.updateClaimUI(() => {
       this.sentActionClaimId = claim.id;
@@ -1409,13 +1450,16 @@ export class MyClaimsPage implements OnInit, OnDestroy {
           if (this.destroyed || version !== this.sentActionVersion) return;
           this.updateClaimUI(() => {
             if (!response.success) {
+              void this.haptics.error();
               this.sentClaimActionError = response.message || 'Could not confirm pickup.';
               return;
             }
+            void this.haptics.success();
             this.patchSentClaim(claim.id, {
               status: response.status,
               pickup: response.pickup
             });
+            this.claimActionModal = null;
             this.sentClaimActionMessage = response.message || 'Pickup arrangement confirmed.';
             this.sentClaimsMessage = this.sentClaimActionMessage;
           });
@@ -1436,6 +1480,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
   startSentReschedule(claim: OwnershipClaim): void {
     if (!this.canRequestSentReschedule(claim) || this.selectedSentClaim?.id !== claim.id) return;
+    void this.haptics.light();
     this.updateClaimUI(() => {
       this.resetSentRescheduleForm(claim);
       this.sentClaimActionError = '';
@@ -1446,6 +1491,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
   cancelSentReschedule(): void {
     if (this.sentActionClaimId !== null) return;
+    void this.haptics.light();
     this.updateClaimUI(() => { this.sentRescheduleMode = false; this.claimActionModal = null; this.sentClaimActionError = ''; });
   }
 
@@ -1462,6 +1508,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
         !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time) || reason.length > 1000) {
       this.updateClaimUI(() => {
+        void this.haptics.error();
         this.sentClaimActionError = 'Enter a valid pickup location (5–255 characters), date, time, and optional reason (up to 1000 characters).';
       });
       return;
@@ -1485,7 +1532,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     if (changedDate) payload.pickup_date = date;
     if (changedTime) payload.pickup_time = time;
 
-    if (!window.confirm('Send your proposed pickup changes to the finder for approval?')) return;
+    void this.haptics.medium();
     this.updateClaimUI(() => {
       this.sentActionClaimId = claim.id;
       this.sentClaimActionError = '';
@@ -1501,9 +1548,11 @@ export class MyClaimsPage implements OnInit, OnDestroy {
           if (this.destroyed || version !== this.sentActionVersion) return;
           this.updateClaimUI(() => {
             if (!response.success) {
+              void this.haptics.error();
               this.sentClaimActionError = response.message || 'Unable to request rescheduling.';
               return;
             }
+            void this.haptics.success();
             this.patchSentClaim(claim.id, { status: 'reschedule_requested' });
             this.sentRescheduleMode = false;
             this.claimActionModal = null;
@@ -1523,10 +1572,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     const pending = claim.latest_reschedule;
     if (this.destroyed || !pending || !this.canRespondToSentReschedule(claim) ||
         this.selectedSentClaim?.id !== claim.id) return;
-    const question = action === 'accept'
-      ? 'Accept the new pickup arrangement proposed by the finder? You must confirm the new schedule afterward.'
-      : 'Reject this proposal and keep the previously agreed pickup schedule?';
-    if (!window.confirm(question)) return;
+    void this.haptics.medium();
 
     this.updateClaimUI(() => {
       this.sentActionClaimId = claim.id;
@@ -1546,9 +1592,11 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         if (this.destroyed || version !== this.sentActionVersion) return;
         this.updateClaimUI(() => {
           if (!response.success) {
+            void this.haptics.error();
             this.sentClaimActionError = response.message || 'Unable to respond to reschedule.';
             return;
           }
+          void this.haptics.success();
           this.patchSentClaim(claim.id, {
             status: response.status,
             pickup: response.pickup,
@@ -1557,7 +1605,8 @@ export class MyClaimsPage implements OnInit, OnDestroy {
               status: response.reschedule_status
             }
           });
-          this.sentClaimActionMessage = response.message || 'Reschedule response saved.';
+          this.claimActionModal = null;
+            this.sentClaimActionMessage = response.message || 'Reschedule response saved.';
           this.sentClaimsMessage = this.sentClaimActionMessage;
         });
         this.loadSentClaims();
@@ -1573,10 +1622,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
     if (this.destroyed || !this.canConfirmSentHandover(claim) ||
         this.selectedSentClaim?.id !== claim.id) return;
     // Never make this action automatic on scheduled date or approval.
-    if (!window.confirm(
-      'Have you PHYSICALLY RECEIVED the pet from the finder? ' +
-      'Only confirm after the actual handover. This cannot be undone.'
-    )) return;
+    void this.haptics.medium();
 
     this.updateClaimUI(() => {
       this.sentActionClaimId = claim.id;
@@ -1593,9 +1639,11 @@ export class MyClaimsPage implements OnInit, OnDestroy {
           if (this.destroyed || version !== this.sentActionVersion) return;
           this.updateClaimUI(() => {
             if (!response.success) {
+              void this.haptics.error();
               this.sentClaimActionError = response.message || 'Unable to confirm handover.';
               return;
             }
+            void this.haptics.success();
             this.patchSentClaim(claim.id, {
               status: response.status,
               found_report_status: response.found_report_status,
@@ -1603,6 +1651,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
               claimant_handover_confirmed_at: response.claimant_handover_confirmed_at,
               completed_at: response.completed_at
             });
+            this.claimActionModal = null;
             this.sentClaimActionMessage = response.message || 'Handover confirmation saved.';
             this.sentClaimsMessage = this.sentClaimActionMessage;
           });
@@ -1626,6 +1675,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
         this.sentActionClaimId !== null) return;
     this.closeClaimReview();
     this.closeSentClaimDetails();
+    void this.haptics.light();
     this.activeClaimsTab = tab;
     if (tab === 'sent' && !this.sentClaimsLoaded && !this.sentClaimsLoading) {
       this.loadSentClaims();
@@ -1638,12 +1688,14 @@ export class MyClaimsPage implements OnInit, OnDestroy {
 
   refreshClaims(): void {
     if (this.destroyed) return;
+    void this.haptics.light();
     if (this.activeClaimsTab === 'sent') this.loadSentClaims();
     else this.loadReceivedClaims();
   }
 
   goBack(): void {
     if (this.isClaimActionBusy) return;
+    if (!this.isClaimDetailsOpen) void this.haptics.light();
     if (this.isClaimDetailsOpen) {
       this.backFromClaimDetails();
       return;

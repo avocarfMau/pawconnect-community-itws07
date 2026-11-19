@@ -1558,8 +1558,9 @@ ion-button[disabled] {
   }
 
   &:focus-within {
-    outline: 2px solid rgba(45, 128, 56, .45);
-    outline-offset: 2px;
+    border-color: #2d8038;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(45, 128, 56, 0.12);
   }
 
   &:has(input:disabled) {
@@ -1587,6 +1588,14 @@ ion-button[disabled] {
   .form-group textarea {
     border-color: #bcdcc5;
     background: #ffffff;
+  }
+
+  // Match the focus state of the standard Report a Pet input fields.
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: #2d8038;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(45, 128, 56, 0.12);
   }
 
 }
@@ -1635,5 +1644,121 @@ ion-button[disabled] {
 @media (prefers-reduced-motion: reduce) {
   .assistance-choice {
     transition: none;
+  }
+}
+
+/* ==========================================================
+   FIXED REPORT A PET HEADER — matches PawConnect page headers
+   Works with report-pet.page.fixed-header.html.txt
+   ========================================================== */
+ion-header.report-pet-fixed-header {
+  display: block;
+  position: relative;
+  z-index: 20;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  background: #f5f9f6;
+  border-bottom: 1px solid #e1ebe5;
+  box-shadow: 0 2px 9px rgba(19, 55, 33, 0.04);
+
+  &::after { display: none; }
+
+  .report-pet-fixed-header-inner {
+    width: 100%;
+    max-width: 650px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 10px 16px 14px;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin: 0;
+    min-width: 0;
+
+    .header-text { min-width: 0; flex: 1; }
+    h1 {
+      margin: 0 0 5px;
+      color: #1f4230;
+      font-size: 23px;
+      font-weight: 750;
+      line-height: 1.2;
+    }
+    p {
+      margin: 0;
+      color: #829087;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  }
+
+  .back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 43px;
+    width: 43px;
+    height: 43px;
+    border: 0;
+    border-radius: 50%;
+    background: #e5f4ea;
+    color: #2d8038;
+    cursor: pointer;
+    ion-icon { font-size: 23px; }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+}
+
+ion-content.report-pet-content {
+  --background: #f5f9f6;
+  --color: #1f4230;
+
+  .page-container {
+    padding-top: 20px;
+    padding-bottom: max(100px, calc(env(safe-area-inset-bottom, 0px) + 80px));
+  }
+}
+
+@media (max-width: 360px) {
+  ion-header.report-pet-fixed-header {
+    .report-pet-fixed-header-inner { padding-left: 14px; padding-right: 14px; }
+    .page-header { gap: 10px; }
+    .page-header h1 { font-size: 21px; }
+    .page-header p { font-size: 11px; }
+  }
+}
+
+/* ==========================================================
+   FOUND PET ASSISTANCE — BOTTOM SCROLL VISIBILITY FIX
+   Keep the final fields and Next button clear of bottom tabs.
+   ========================================================== */
+ion-content.report-pet-content {
+  --overflow: auto;
+  --padding-bottom: 0px;
+  scroll-padding-bottom: 180px;
+
+  .page-container {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    padding-bottom: max(220px, calc(env(safe-area-inset-bottom, 0px) + 190px));
+  }
+
+  .assistance-section,
+  .assistance-followup,
+  .wizard-panel,
+  .wizard-actions {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .wizard-actions {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 12px;
   }
 }

@@ -1,37 +1,37 @@
+<ion-header class="account-fixed-header">
+  <div class="account-page-header">
+    <button
+      type="button"
+      class="account-back-button"
+      (click)="goBack()"
+      [disabled]="loggingOut || savingProfile"
+      aria-label="Back to Home">
+      <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+    </button>
+
+    <div class="account-heading">
+      <h1>My Account</h1>
+      <p>PawConnect</p>
+    </div>
+
+    <button
+      type="button"
+      class="account-refresh-button"
+      (click)="loadProfile()"
+      [disabled]="loading || loggingOut || savingProfile || editingProfile"
+      aria-label="Refresh profile"
+      title="Refresh profile">
+      <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
+    </button>
+  </div>
+</ion-header>
+
 <!-- ===================================== -->
 <!-- PAWCONNECT - MY ACCOUNT PAGE -->
 <!-- Profile loading, editing, refresh, and logout use MyAccountPage state. -->
 <!-- ===================================== -->
-<ion-content [fullscreen]="true" class="my-account-content" style="--background: #f5f8f5;">
-  <main class="my-account-container" style="max-width: 720px; margin: 0 auto; padding: 18px 16px 36px;">
-    <!-- PAGE HEADER -->
-    <header class="account-page-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 22px;">
-      <button
-        type="button"
-        class="account-back-button"
-        (click)="goBack()"
-        [disabled]="loggingOut || savingProfile"
-        aria-label="Back to Home"
-        style="display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border: 1px solid #d9e6db; border-radius: 12px; background: #ffffff; color: #23583a; font-size: 22px;"
-      >
-        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
-      </button>
-      <div class="account-heading" style="flex: 1; min-width: 0;">
-        <h1 style="margin: 0; color: #173d28; font-size: 23px; font-weight: 800;">My Account</h1>
-        <p style="margin: 3px 0 0; color: #687b6e; font-size: 12px;">View your PawConnect profile</p>
-      </div>
-      <button
-        type="button"
-        class="account-refresh-button"
-        (click)="loadProfile()"
-        [disabled]="loading || loggingOut || savingProfile || editingProfile"
-        aria-label="Refresh profile"
-        title="Refresh profile"
-        style="display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border: 1px solid #d9e6db; border-radius: 12px; background: #ffffff; color: #23583a; font-size: 20px;"
-      >
-        <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
-      </button>
-    </header>
+<ion-content [fullscreen]="false" class="my-account-content">
+  <main class="my-account-container">
     <!-- LOADING STATE -->
     <section
       class="account-loading"
@@ -300,9 +300,9 @@
               Cancel
             </ion-button>
             <ion-button
-              type="submit" color="success"
+              type="submit" class="account-save-button"
               [disabled]="savingProfile"
-              style="flex: 1 1 145px; margin: 0; min-height: 46px; --border-radius: 11px; font-weight: 700; text-transform: none;"
+              style="flex: 1 1 145px; margin: 0; min-height: 46px; --border-radius: 11px; --background: #2e7d32; --background-hover: #276b2b; --background-activated: #245f27; --background-focused: #276b2b; --color: #ffffff; --color-hover: #ffffff; font-weight: 700; text-transform: none;"
             >
               <ion-spinner *ngIf="savingProfile" name="crescent" slot="start"></ion-spinner>
               <ion-icon *ngIf="!savingProfile" name="checkmark-outline" slot="start"></ion-icon>
@@ -325,7 +325,7 @@
         </div>
       </aside>
       <!-- LOGOUT -->
-      <section class="account-session-actions" aria-label="Account actions">
+      <section *ngIf="!editingProfile && !savingProfile" class="account-session-actions" aria-label="Account actions">
         <div
           class="account-logout-error"
           *ngIf="logoutError"
@@ -351,3 +351,46 @@
     </ng-container>
   </main>
 </ion-content>
+
+<!-- PAWCONNECT CUSTOM LOGOUT CONFIRMATION MODAL -->
+<div
+  *ngIf="showLogoutModal"
+  class="account-logout-modal-backdrop"
+  (click)="cancelLogout()"
+  role="presentation"
+>
+  <section
+    class="account-logout-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="account-logout-modal-title"
+    aria-describedby="account-logout-modal-description"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="account-logout-modal-icon" aria-hidden="true">
+      <ion-icon name="log-out-outline"></ion-icon>
+    </div>
+    <h2 id="account-logout-modal-title">Log out of PawConnect?</h2>
+    <p id="account-logout-modal-description">
+      Are you sure you want to log out of your account? You will need to sign in again to continue.
+    </p>
+    <div class="account-logout-modal-actions">
+      <button
+        type="button"
+        class="account-logout-modal-cancel"
+        (click)="cancelLogout()"
+        [disabled]="loggingOut"
+      >Cancel</button>
+      <button
+        type="button"
+        class="account-logout-modal-confirm"
+        (click)="confirmLogout()"
+        [disabled]="loggingOut"
+      >
+        <ion-spinner *ngIf="loggingOut" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!loggingOut" name="log-out-outline" aria-hidden="true"></ion-icon>
+        {{ loggingOut ? 'Logging out...' : 'Log Out' }}
+      </button>
+    </div>
+  </section>
+</div>

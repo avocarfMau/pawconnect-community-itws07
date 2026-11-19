@@ -12,12 +12,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
+import { HapticsService } from '../../services/haptics.service';
 import { Geolocation } from '@capacitor/geolocation';
 import {
   IonContent,
   IonIcon,
   IonSpinner,
-  IonButton
+  IonButton, IonHeader,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -49,19 +50,20 @@ import {
   FoundPetClaimAvailabilityStatus,
   SubmitLostPetRecoveryRequest
 } from '../../services/pet-reports';
+
 type ReportFilter = 'all' | 'lost' | 'found';
 @Component({
   selector: 'app-lost-found',
   templateUrl: './lost-found.page.html',
   styleUrls: ['./lost-found.page.scss'],
   standalone: true,
-  imports: [
+  imports: [IonHeader, 
     CommonModule,
     FormsModule,
     IonContent,
     IonIcon,
     IonSpinner,
-    IonButton
+    IonButton, IonHeader
   ]
 })
 export class LostFoundPage implements OnDestroy {
@@ -69,6 +71,7 @@ export class LostFoundPage implements OnDestroy {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
+  private haptics = inject(HapticsService);
 
   @ViewChild(IonContent) private pageContent?: IonContent;
 
@@ -232,7 +235,6 @@ export class LostFoundPage implements OnDestroy {
   // =====================================
   // REPORT CACHE
   // =====================================
-  private cache = new Map<ReportFilter, PetReport[]>();
   private request?: Subscription;
   private destroyed = false;
   // =====================================
@@ -301,6 +303,8 @@ export class LostFoundPage implements OnDestroy {
     void this.loadSubmittedStatus();
   }
   ionViewDidLeave() {
+    this.request?.unsubscribe();
+    this.reports = [];
     ++this.submittedStatusVersion;
     this.submittedStatusReady = false;
     this.submittedStatusLoading = true;
@@ -349,16 +353,11 @@ export class LostFoundPage implements OnDestroy {
     // filter changes; previous responses must not authorize a claim.
     this.loadFoundPetAvailability();
     const filter = this.selectedFilter;
-    const cachedReports = this.cache.get(filter);
-    // Show cached data while refreshing.
-    if (cachedReports !== undefined) {
-      this.reports = cachedReports;
-    } else {
-      this.reports = [];
-    }
-    const hasCache = cachedReports !== undefined;
-    this.loading = !hasCache;
-    this.refreshing = hasCache;
+    // Do not display cached reports: another resident may have archived
+    // a report since the last visit. Wait for a fresh server response.
+    this.reports = [];
+    this.loading = !forceRefresh;
+    this.refreshing = forceRefresh;
     this.errorMessage = '';
     const startTime = performance.now();
     this.request = this.reportsService
@@ -377,21 +376,46 @@ export class LostFoundPage implements OnDestroy {
           this.updateUI(() => {
             if (response.success) {
               const updatedReports = response.reports ?? [];
-              // Update cached reports.
-              this.cache.set(filter, updatedReports);
               // A previously broken image may become available
               // after the resident updates the report.
               this.brokenPhotoUrls.clear();
-              // Keep the photo viewer in sync with refreshed data.
-              if (this.photoViewerReport && this.selectedFilter === filter) {
-                this.photoViewerReport =
-                  updatedReports.find(
-                    report => report.id === this.photoViewerReport?.id
-                  ) ?? null;
-              }
-              // Display matching filter only.
+              // Apply the refreshed list only to the filter that requested it.
               if (this.selectedFilter === filter) {
                 this.reports = updatedReports;
+                const stillVisible = (id: number) =>
+                  updatedReports.some(report => report.id === id);
+
+                // An archived/closed report must not remain visible in an
+                // already-open photo viewer or location map.
+                if (this.photoViewerReport) {
+                  this.photoViewerReport = updatedReports.find(
+                    report => report.id === this.photoViewerReport?.id
+                  ) ?? null;
+                  if (!this.photoViewerReport) this.resetPhotoTouch();
+                }
+                if (this.selectedReport) {
+                  const latest = updatedReports.find(
+                    report => report.id === this.selectedReport?.id
+                  );
+                  if (latest) {
+                    this.selectedReport = latest;
+                  } else {
+                    this.showLocationMap = false;
+                    this.selectedReport = null;
+                    this.destroyReportMap();
+                  }
+                }
+                // Dismiss forms for reports removed from the public feed,
+                // except during a submission/upload that must finish safely.
+                if (this.claimReport && !stillVisible(this.claimReport.id) &&
+                    !this.claimSubmitting && !this.claimPhotoUploading) {
+                  this.closeOwnershipClaim();
+                }
+                if (this.recoveryReport && !stillVisible(this.recoveryReport.id) &&
+                    !this.recoverySubmitting && !this.recoveryPhotoUploading &&
+                    this.savedRecoveryId === null) {
+                  this.closeLostPetRecovery();
+                }
               }
               console.log(
                 'Pet reports loaded in',
@@ -432,9 +456,11 @@ export class LostFoundPage implements OnDestroy {
     if (this.selectedFilter === filter) {
       return;
     }
+    void this.haptics.selection();
     this.closePhotoViewer();
+    this.closeLocationMap();
     this.selectedFilter = filter;
-    this.reports = this.cache.get(filter) ?? [];
+    this.reports = [];
     this.loadReports();
   }
   // =====================================
@@ -540,9 +566,11 @@ export class LostFoundPage implements OnDestroy {
       this.nearbyError = '';
     });
 
+    void this.haptics.medium();
     try {
       const { latitude, longitude } = await this.getDeviceCoordinates(20000);
       if (this.destroyed || requestVersion !== this.nearbyRequestVersion) return;
+      void this.haptics.success();
       this.updateUI(() => {
         this.nearbyLoading = false;
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
@@ -556,6 +584,7 @@ export class LostFoundPage implements OnDestroy {
       });
     } catch (error) {
       if (this.destroyed || requestVersion !== this.nearbyRequestVersion) return;
+      void this.haptics.error();
       this.updateUI(() => {
         this.nearbyLoading = false;
         this.nearbyError = this.gpsErrorMessage(error);
@@ -586,6 +615,7 @@ export class LostFoundPage implements OnDestroy {
   // REFRESH REPORTS
   // =====================================
   refreshReports() {
+    void this.haptics.light();
     this.loadReports(true);
     this.loadOwnershipEligibility();
     void this.loadSubmittedStatus();
@@ -636,6 +666,7 @@ export class LostFoundPage implements OnDestroy {
     // Wrap around when reaching the first/last photo.
     const nextIndex =
       (currentIndex + direction + photos.length) % photos.length;
+    void this.haptics.selection();
     this.photoIndexes.set(report.id, nextIndex);
     this.cdr.detectChanges();
   }
@@ -647,6 +678,7 @@ export class LostFoundPage implements OnDestroy {
     if (!Number.isInteger(index) || index < 0 || index >= photos.length) {
       return;
     }
+    void this.haptics.selection();
     this.photoIndexes.set(report.id, index);
     this.cdr.detectChanges();
   }
@@ -662,6 +694,7 @@ export class LostFoundPage implements OnDestroy {
     ) {
       return;
     }
+    void this.haptics.light();
     this.photoViewerReport = report;
     this.cdr.detectChanges();
   }
@@ -822,6 +855,7 @@ export class LostFoundPage implements OnDestroy {
     if (!this.hasLocation(report) || this.destroyed) {
       return;
     }
+    void this.haptics.light();
     // Remove previous map first.
     this.destroyReportMap();
     this.updateUI(() => {
@@ -1213,6 +1247,7 @@ export class LostFoundPage implements OnDestroy {
         this.savedRecoveryId !== null || !this.canClaimOwnership(report)) {
       return;
     }
+    void this.haptics.medium();
     this.closeLocationMap();
     this.closePhotoViewer();
     this.updateUI(() => {
@@ -1259,6 +1294,7 @@ export class LostFoundPage implements OnDestroy {
 
     const combined = [...this.claimEvidenceFiles, ...selected];
     if (combined.length > 5) {
+      void this.haptics.error();
       this.updateUI(() => {
         this.claimErrorMessage = 'You can attach a maximum of 5 ownership evidence photos.';
       });
@@ -1269,11 +1305,13 @@ export class LostFoundPage implements OnDestroy {
       !allowed.includes(file.type) || file.size === 0 || file.size > 5 * 1024 * 1024
     );
     if (invalid) {
+      void this.haptics.error();
       this.updateUI(() => {
         this.claimErrorMessage = 'Each photo must be JPG, PNG, or WebP and 5 MB or smaller.';
       });
       return;
     }
+    void this.haptics.selection();
     this.updateUI(() => {
       this.claimEvidenceFiles = combined;
       this.claimErrorMessage = '';
@@ -1299,6 +1337,7 @@ export class LostFoundPage implements OnDestroy {
             ? 'This pet is currently reserved, disputed, or already returned. New claims are not being accepted.'
             : 'This Found Pet report is not available for your claim.';
       });
+      void this.haptics.error();
       return;
     }
 
@@ -1307,6 +1346,7 @@ export class LostFoundPage implements OnDestroy {
       this.updateUI(() => {
         this.claimErrorMessage = 'Write 10 to 3000 characters describing your ownership evidence.';
       });
+      void this.haptics.error();
       return;
     }
     const selectedLostReport = this.claimLinkedLostReportId;
@@ -1320,6 +1360,7 @@ export class LostFoundPage implements OnDestroy {
       this.updateUI(() => {
         this.claimErrorMessage = 'Select a valid Lost Pet report from your account.';
       });
+      void this.haptics.error();
       return;
     }
 
@@ -1332,6 +1373,7 @@ export class LostFoundPage implements OnDestroy {
       this.claimPhotoUploadProgress = '';
     });
 
+    void this.haptics.medium();
     try {
       const response = await firstValueFrom(
         this.reportsService.submitOwnershipClaim({
@@ -1346,6 +1388,7 @@ export class LostFoundPage implements OnDestroy {
         throw new Error(response.message || 'The server did not confirm your claim.');
       }
 
+      void this.haptics.success();
       this.updateUI(() => {
         this.locallySubmittedClaimReportIds.add(report.id);
         this.savedClaimId = response.claim_id;
@@ -1360,6 +1403,7 @@ export class LostFoundPage implements OnDestroy {
       }
     } catch (error: any) {
       if (this.destroyed || formVersion !== this.claimFormVersion) return;
+      void this.haptics.error();
       this.updateUI(() => {
         this.claimSubmitting = false;
         this.claimErrorMessage = error?.status === 409
@@ -1406,6 +1450,7 @@ export class LostFoundPage implements OnDestroy {
       this.finishOwnershipClaim();
     } catch (error: any) {
       if (this.destroyed || formVersion !== this.claimFormVersion) return;
+      void this.haptics.warning();
       this.updateUI(() => {
         this.claimPhotoWarning =
           'Your ownership claim was saved, but not all evidence photos were confirmed uploaded. ' +
@@ -1463,6 +1508,7 @@ export class LostFoundPage implements OnDestroy {
         this.recoverySubmitting || this.recoveryPhotoUploading ||
         this.savedRecoveryId !== null || !this.canReportFoundLostPet(report)) return;
 
+    void this.haptics.medium();
     this.closeLocationMap();
     this.closePhotoViewer();
     this.updateUI(() => {
@@ -1523,10 +1569,12 @@ export class LostFoundPage implements OnDestroy {
       this.recoveryErrorMessage = '';
     });
 
+    void this.haptics.medium();
     try {
       const { latitude, longitude } = await this.getDeviceCoordinates(20000);
       if (this.destroyed || formVersion !== this.recoveryFormVersion ||
           !this.recoveryReport) return;
+      void this.haptics.success();
       this.updateUI(() => {
         this.recoveryLocationLoading = false;
         this.recoveryFoundLatitude = latitude;
@@ -1535,6 +1583,7 @@ export class LostFoundPage implements OnDestroy {
     } catch (error) {
       if (this.destroyed || formVersion !== this.recoveryFormVersion ||
           !this.recoveryReport) return;
+      void this.haptics.error();
       this.updateUI(() => {
         this.recoveryLocationLoading = false;
         this.recoveryErrorMessage =
@@ -1562,6 +1611,7 @@ export class LostFoundPage implements OnDestroy {
 
     const combined = [...this.recoveryEvidenceFiles, ...selected];
     if (combined.length > 5) {
+      void this.haptics.error();
       this.updateUI(() => {
         this.recoveryErrorMessage = 'You can attach a maximum of 5 recovery evidence photos.';
       });
@@ -1571,11 +1621,13 @@ export class LostFoundPage implements OnDestroy {
     if (combined.some(file =>
       !allowed.includes(file.type) || file.size === 0 || file.size > 5 * 1024 * 1024
     )) {
+      void this.haptics.error();
       this.updateUI(() => {
         this.recoveryErrorMessage = 'Each photo must be JPG, PNG, or WebP and no larger than 5 MB.';
       });
       return;
     }
+    void this.haptics.selection();
     this.updateUI(() => {
       this.recoveryEvidenceFiles = combined;
       this.recoveryErrorMessage = '';
@@ -1600,6 +1652,7 @@ export class LostFoundPage implements OnDestroy {
         this.recoveryErrorMessage =
           'This Lost Pet report is not eligible for a new finding. Refresh the reports and try again.';
       });
+      void this.haptics.error();
       return;
     }
 
@@ -1609,12 +1662,14 @@ export class LostFoundPage implements OnDestroy {
       this.updateUI(() => {
         this.recoveryErrorMessage = 'Describe how and where you found the pet (10–3000 characters).';
       });
+      void this.haptics.error();
       return;
     }
     if (foundLocation.length < 5 || foundLocation.length > 255) {
       this.updateUI(() => {
         this.recoveryErrorMessage = 'Enter the found location (5–255 characters).';
       });
+      void this.haptics.error();
       return;
     }
 
@@ -1628,6 +1683,7 @@ export class LostFoundPage implements OnDestroy {
       this.updateUI(() => {
         this.recoveryErrorMessage = 'Select an active Found Pet report from your account.';
       });
+      void this.haptics.error();
       return;
     }
 
@@ -1636,6 +1692,7 @@ export class LostFoundPage implements OnDestroy {
       this.updateUI(() => {
         this.recoveryErrorMessage = 'Provide both GPS coordinates or neither.';
       });
+      void this.haptics.error();
       return;
     }
 
@@ -1646,6 +1703,7 @@ export class LostFoundPage implements OnDestroy {
       this.updateUI(() => {
         this.recoveryErrorMessage = 'Enter a valid date and time, or leave it empty.';
       });
+      void this.haptics.error();
       return;
     }
     if (foundAt) {
@@ -1677,6 +1735,7 @@ export class LostFoundPage implements OnDestroy {
       this.recoveryPhotoUploadProgress = '';
     });
 
+    void this.haptics.medium();
     try {
       const response = await firstValueFrom(
         this.reportsService.submitLostPetRecovery(request).pipe(timeout(15000))
@@ -1694,6 +1753,7 @@ export class LostFoundPage implements OnDestroy {
         response.recovery_id
       );
 
+      void this.haptics.success();
       this.updateUI(() => {
         this.locallySubmittedRecoveryReportIds.add(report.id);
         this.savedRecoveryId = response.recovery_id;
@@ -1725,6 +1785,7 @@ export class LostFoundPage implements OnDestroy {
       }
     } catch (error: any) {
       if (this.destroyed || formVersion !== this.recoveryFormVersion) return;
+      void this.haptics.error();
       this.updateUI(() => {
         this.recoverySubmitting = false;
         this.recoveryErrorMessage = error?.status === 409
@@ -1790,6 +1851,7 @@ export class LostFoundPage implements OnDestroy {
       this.finishLostPetRecovery();
     } catch (error: any) {
       if (this.destroyed || formVersion !== this.recoveryFormVersion) return;
+      void this.haptics.warning();
       this.updateUI(() => {
         this.recoveryPhotoUploadUncertain =
           error?.name === 'TimeoutError' ||
@@ -1848,11 +1910,13 @@ export class LostFoundPage implements OnDestroy {
   // NAVIGATION
   // =====================================
   goBack() {
+    void this.haptics.light();
     this.closePhotoViewer();
     this.closeLocationMap();
     this.router.navigateByUrl('/home');
   }
   reportPet() {
+    void this.haptics.light();
     this.closePhotoViewer();
     this.closeLocationMap();
     this.router.navigateByUrl('/report-pet');
@@ -1862,6 +1926,7 @@ export class LostFoundPage implements OnDestroy {
   // Claims and handover management live on this separate page.
   goToMyClaims(): void {
     if (this.destroyed) return;
+    void this.haptics.light();
     this.closePhotoViewer();
     this.closeLocationMap();
     this.router.navigateByUrl('/my-claims');
@@ -1871,6 +1936,7 @@ export class LostFoundPage implements OnDestroy {
   // Matches the existing My Claims navigation behavior.
   goToMyRecoveries(): void {
     if (this.destroyed) return;
+    void this.haptics.light();
     this.closePhotoViewer();
     this.closeLocationMap();
     this.router.navigateByUrl('/my-recoveries');

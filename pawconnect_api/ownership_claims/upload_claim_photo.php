@@ -161,7 +161,8 @@ try {
         'SELECT c.id,
                 c.status AS claim_status,
                 p.report_type,
-                p.status AS report_status
+                p.status AS report_status,
+                p.deleted_at AS report_deleted_at
          FROM pet_ownership_claims c
          INNER JOIN pet_reports p ON p.id = c.found_report_id
          WHERE c.id = :claim_id
@@ -181,6 +182,16 @@ try {
         sendClaimPhotoResponse(404, [
             'success' => false,
             'message' => 'Ownership claim not found or access denied.'
+        ]);
+    }
+
+    // Archived reports retain historical claim evidence, but no new
+    // evidence photos may be uploaded after archiving.
+    if ($claim['report_deleted_at'] !== null) {
+        $conn->rollBack();
+        sendClaimPhotoResponse(409, [
+            'success' => false,
+            'message' => 'Evidence photos cannot be added to an archived Found Pet report.'
         ]);
     }
 

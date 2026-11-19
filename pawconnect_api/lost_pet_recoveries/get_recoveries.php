@@ -144,7 +144,7 @@ try {
     // The owner/finder access rule applies to BOTH the count and
     // detail queries. A user cannot access another user's records
     // by changing recovery_id or lost_report_id.
-    $where = "p.report_type = 'lost'";
+    $where = "p.report_type = 'lost' AND p.deleted_at IS NULL";
     if ($scope === 'received') {
         $where .= ' AND p.user_id = :resident_id';
     } else {
@@ -220,6 +220,7 @@ try {
                 p.pet_name,
                 p.animal_type,
                 p.status AS lost_report_status,
+                p.deleted_at AS lost_report_deleted_at,
                 owner_user.full_name AS owner_name,
                 finder_user.full_name AS finder_name
             ' . $from . '
@@ -250,6 +251,7 @@ try {
             'id' => $id,
             'lost_report_id' => (int) $row['lost_report_id'],
             'lost_report_status' => (string) $row['lost_report_status'],
+            'is_archived' => $row['lost_report_deleted_at'] !== null,
             'pet_name' => $row['pet_name'],
             'animal_type' => (string) $row['animal_type'],
             'owner_user_id' => (int) $row['owner_user_id'],

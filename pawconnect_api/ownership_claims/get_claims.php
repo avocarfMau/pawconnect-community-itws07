@@ -115,7 +115,7 @@ try {
     // The same ownership rule is enforced in EVERY query below.
     // A claimant can see only their sent claims. A finder can see
     // only claims linked to Found Pet reports they posted.
-    $where = "p.report_type = 'found'";
+    $where = "p.report_type = 'found' AND p.deleted_at IS NULL";
     if ($scope === 'received') {
         $where .= ' AND p.user_id = :viewer_id';
     } else {

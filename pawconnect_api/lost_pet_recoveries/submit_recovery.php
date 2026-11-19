@@ -215,7 +215,7 @@ try {
     $conn->beginTransaction();
 
     $lostStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :report_id
          LIMIT 1 FOR UPDATE'
@@ -229,6 +229,10 @@ try {
     if ((int) $lostReport['user_id'] === $finderId) {
         rejectRecovery($conn, 403, 'You cannot submit a finding for your own Lost Pet report.');
     }
+    if ($lostReport['deleted_at'] !== null) {
+        rejectRecovery($conn, 409, 'This Lost Pet report has been archived and is no longer accepting recovery submissions.');
+    }
+
     if (!in_array(
         (string) $lostReport['status'],
         ['pending', 'under_review', 'in_progress'],
@@ -286,6 +290,7 @@ try {
              WHERE id = :found_report_id
                AND user_id = :finder_id
                AND report_type = 'found'
+               AND deleted_at IS NULL
                AND status IN ('pending', 'under_review', 'in_progress')
              LIMIT 1"
         );

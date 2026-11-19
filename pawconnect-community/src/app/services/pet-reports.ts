@@ -181,6 +181,12 @@ export interface DeletePhotoResponse {
 
 }
 
+export interface DeletePetReportResponse {
+  success: boolean;
+  message: string;
+  report_id?: number;
+}
+
 export interface ResolveReportResponse {
 
   success: boolean;
@@ -853,6 +859,16 @@ export class PetReportsService {
 
     );
 
+  }
+
+  // Requires a matching authenticated PHP endpoint with ownership and
+  // linked-claim/recovery validation before deletion is permitted.
+  deleteReport(reportId: number): Observable<DeletePetReportResponse> {
+    return this.http.post<DeletePetReportResponse>(
+      `${this.apiUrl}/delete_report.php`,
+      { report_id: reportId },
+      { headers: this.getHeaders() }
+    );
   }
 
   resolveReport(

@@ -1623,6 +1623,14 @@ ion-content { --background: #f5f9f6; }
 
   .lost-found-my-claims-action,
   .lost-found-my-recoveries-action {
+    /* Compact secondary actions; keep two-line labels readable. */
+    height: 50px;
+    min-height: 50px;
+    font-size: 12px;
+    line-height: 1.3;
+    white-space: normal;
+    --padding-start: 7px;
+    --padding-end: 7px;
     --background: #fff;
     --background-hover: #f7fcf8;
     --background-activated: var(--lf-green-soft);
@@ -1631,6 +1639,17 @@ ion-content { --background: #f5f9f6; }
     --border-width: 2px;
     --border-style: solid;
     --box-shadow: none;
+
+    &::part(native) {
+      white-space: normal;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    ion-icon {
+      font-size: 16px;
+      margin-inline-end: 3px;
+    }
   }
 
 }
@@ -2924,4 +2943,140 @@ ion-content { --background: #f5f9f6; }
   --border-style: solid;
   --border-width: 1px;
   --box-shadow: none;
+}
+
+/* ============================================================
+ * FIXED LOST & FOUND PAGE HEADER
+ * Works with <ion-header class="lost-found-fixed-header"> placed
+ * before <ion-content [fullscreen]="false">.
+ * ============================================================ */
+ion-header.lost-found-fixed-header {
+  display: block;
+  position: relative;
+  z-index: 20;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
+  background: #f5f9f6;
+  border-bottom: 1px solid #e1ebe5;
+  box-shadow: 0 2px 9px rgba(19, 55, 33, 0.04);
+
+  &::after {
+    display: none;
+  }
+
+  .page-header {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 10px 20px 14px;
+    gap: 13px;
+  }
+}
+
+/* The header is outside ion-content, so no top safe-area spacer is needed. */
+ion-content .page-container {
+  padding-top: 20px;
+}
+
+@media (max-width: 400px) {
+  ion-header.lost-found-fixed-header .page-header {
+    padding: 9px 14px 12px;
+    gap: 12px;
+  }
+
+  ion-content .page-container {
+    padding-top: 18px;
+  }
+}
+
+/* ============================================================
+ * BOTTOM SCROLL CLEARANCE — Lost & Found Pets
+ * Keep the final report card fully visible above the Android
+ * gesture/navigation area at the end of the Ionic scroll.
+ * This rule is intentionally last to override earlier padding.
+ * ============================================================ */
+ion-content .page-container {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+
+/* ============================================================
+ * PRIVATE FORM MODALS — MY CLAIMS-STYLE BLURRED BACKGROUND
+ * The header is outside ion-content, so blur and dim it separately
+ * while the existing modal backdrop blurs the content underneath.
+ * ============================================================ */
+:host:has(.lf-private-overlay.ownership-claim-overlay) ion-header.lost-found-fixed-header,
+:host:has(.lf-private-overlay.lost-recovery-overlay) ion-header.lost-found-fixed-header {
+  /* Match My Claims: keep header visible but blurred/dimmed. */
+  filter: blur(3px) brightness(0.58);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Keep both forms centered within the available Ionic content viewport. */
+.lf-private-overlay.ownership-claim-overlay,
+.lf-private-overlay.lost-recovery-overlay {
+  align-items: center;
+  justify-content: center;
+}
+
+.lf-private-modal.ownership-claim-modal,
+.lf-private-modal.lost-recovery-modal {
+  max-height: min(88dvh, 850px) !important;
+}
+
+@media (max-width: 420px) {
+  .lf-private-modal.ownership-claim-modal,
+  .lf-private-modal.lost-recovery-modal {
+    max-height: calc(100dvh - 80px - env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+
+/* Finding form: keep the title and actions reachable on smaller phones.
+   Only the I Found This Pet dialog is resized; Claim Ownership is unchanged. */
+.lf-private-modal.lost-recovery-modal {
+  max-height: min(76dvh, 680px) !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 420px) {
+  .lf-private-modal.lost-recovery-modal {
+    max-height: min(76dvh, calc(100dvh - 110px - env(safe-area-inset-bottom, 0px))) !important;
+  }
+}
+
+
+/* ============================================================
+ * PRIVATE MODALS — SUBTLE DIM, NO BLUR
+ * Keep background text readable under both finding/claim forms.
+ * Header lives outside ion-content and is dimmed separately.
+ * ============================================================ */
+.lf-private-overlay.ownership-claim-overlay,
+.lf-private-overlay.lost-recovery-overlay {
+  background: rgba(14, 36, 25, 0.38) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+:host:has(.lf-private-overlay.ownership-claim-overlay) ion-header.lost-found-fixed-header,
+:host:has(.lf-private-overlay.lost-recovery-overlay) ion-header.lost-found-fixed-header {
+  filter: brightness(0.75) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  pointer-events: none;
+}
+
+/* VIEW LOCATION — same subtle dimming as finding/claim dialogs */
+.report-map-overlay {
+  background: rgba(14, 36, 25, 0.38) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+:host:has(.report-map-overlay) ion-header.lost-found-fixed-header {
+  filter: brightness(0.75) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  pointer-events: none;
 }

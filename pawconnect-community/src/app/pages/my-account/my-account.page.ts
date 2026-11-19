@@ -6,7 +6,8 @@ import {
   IonContent,
   IonButton,
   IonIcon,
-  IonSpinner
+  IonSpinner,
+  IonHeader
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -25,6 +26,7 @@ import {
 } from 'ionicons/icons';
 import { firstValueFrom, isObservable, timeout } from 'rxjs';
 import { AuthService, UpdateProfileRequest } from '../../services/auth';
+import { HapticsService } from '../../services/haptics.service';
 
 // =====================================
 // PAWCONNECT - MY ACCOUNT
@@ -81,7 +83,7 @@ const PROFILE_REFRESH_INTERVAL_MS = 30_000;
   templateUrl: './my-account.page.html',
   styleUrls: ['./my-account.page.scss'],
   standalone: true,
-  imports: [
+  imports: [IonHeader, 
     CommonModule,
     FormsModule,
     IonContent,
@@ -96,6 +98,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
   loggingOut = false;
   errorMessage = '';
   logoutError = '';
+  showLogoutModal = false;
 
   // Edit Profile state. The HTML will bind these fields with ngModel.
   editingProfile = false;
@@ -125,7 +128,8 @@ export class MyAccountPage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly authService: AuthService,
     private readonly zone: NgZone,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly haptics: HapticsService
   ) {
     addIcons({
       arrowBackOutline,
@@ -160,8 +164,26 @@ export class MyAccountPage implements OnInit, OnDestroy {
 
     // Ionic lifecycle callbacks are not guaranteed to refresh the template
     // after asynchronous work on all supported WebView configurations.
-    this.applyViewUpdate(() => this.restoreProfileSnapshot());
+    this.applyViewUpdate(() => {
+      this.editingProfile = false;
+      this.showLogoutModal = false;
+      this.editError = '';
+      this.editSuccess = '';
+      this.restoreProfileSnapshot();
+    });
     void this.fetchProfile(false);
+  }
+
+  // Ionic can keep this page instance alive when navigating to Home.
+  // Always show the read-only account view on the next visit.
+  ionViewWillLeave(): void {
+    if (this.destroyed) return;
+    this.applyViewUpdate(() => {
+      this.editingProfile = false;
+      this.showLogoutModal = false;
+      this.editError = '';
+      this.editSuccess = '';
+    });
   }
 
   /**
@@ -242,6 +264,8 @@ export class MyAccountPage implements OnInit, OnDestroy {
   // Used by the existing HTML Refresh and Try Again buttons.
   // These explicitly request the latest profile from the server.
   async loadProfile(): Promise<void> {
+    if (this.destroyed || this.loggingOut || this.savingProfile || this.loading) return;
+    void this.haptics.light();
     await this.fetchProfile(true);
   }
 
@@ -389,6 +413,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
   // names may contain spaces and the backend now returns the saved parts.
   async openEditProfile(): Promise<void> {
     if (this.destroyed || this.loggingOut || this.savingProfile || !this.profile) return;
+    void this.haptics.light();
 
     // Old in-memory snapshots may predate the new me.php fields.
     if (!this.profile.first_name?.trim() || !this.profile.last_name?.trim()) {
@@ -400,6 +425,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
     if (!this.profile.first_name?.trim() || !this.profile.last_name?.trim()) {
       this.applyViewUpdate(() => {
         this.editError = 'Your name details are not available yet. Refresh your profile and try again.';
+        void this.haptics.error();
       });
       return;
     }
@@ -420,6 +446,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
 
   cancelEditProfile(): void {
     if (this.destroyed || this.savingProfile) return;
+    void this.haptics.light();
 
     this.applyViewUpdate(() => {
       this.editingProfile = false;
@@ -475,11 +502,13 @@ export class MyAccountPage implements OnInit, OnDestroy {
       !this.editingProfile || !this.profile
     ) return;
 
+    void this.haptics.medium();
     const token = this.getSessionToken();
     if (!token || this.profileToken !== token) {
       this.applyViewUpdate(() => {
         this.editError = 'Your session has expired. Please log in again.';
       });
+      void this.haptics.error();
       return;
     }
 
@@ -497,6 +526,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
       this.applyViewUpdate(() => {
         this.editError = validationError;
       });
+      void this.haptics.error();
       return;
     }
 
@@ -518,6 +548,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
         this.editError = '';
         this.editSuccess = 'No changes to save.';
       });
+      void this.haptics.light();
       return;
     }
 
@@ -591,6 +622,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
           this.editError = '';
           this.editSuccess = response.message || 'Profile updated successfully.';
         });
+        void this.haptics.success();
       }
 
       console.info(
@@ -635,6 +667,7 @@ export class MyAccountPage implements OnInit, OnDestroy {
         });
       }
 
+      void this.haptics.error();
       console.warn(
         '[PawConnect My Account] Profile save was not confirmed after',
         Math.round(performance.now() - startedAt),
@@ -660,16 +693,33 @@ export class MyAccountPage implements OnInit, OnDestroy {
   }
 
   goBack(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/home');
   }
 
   goToLogin(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 
   async logout(): Promise<void> {
     if (this.destroyed || this.loggingOut || this.savingProfile) return;
-    if (!window.confirm('Log out of PawConnect?')) return;
+    void this.haptics.light();
+    this.applyViewUpdate(() => {
+      this.logoutError = '';
+      this.showLogoutModal = true;
+    });
+  }
+
+  cancelLogout(): void {
+    if (this.destroyed || this.loggingOut) return;
+    void this.haptics.light();
+    this.applyViewUpdate(() => { this.showLogoutModal = false; });
+  }
+
+  async confirmLogout(): Promise<void> {
+    if (this.destroyed || this.loggingOut || this.savingProfile || !this.showLogoutModal) return;
+    void this.haptics.medium();
 
     this.applyViewUpdate(() => {
       this.loggingOut = true;
@@ -699,15 +749,19 @@ export class MyAccountPage implements OnInit, OnDestroy {
         this.profileToken = null;
         this.lastLoadedAt = 0;
         this.editingProfile = false;
+        this.showLogoutModal = false;
         this.editError = '';
         this.editSuccess = '';
       });
+      void this.haptics.success();
       await this.zone.run(() =>
         this.router.navigateByUrl('/login', { replaceUrl: true })
       );
     } catch (error: any) {
       if (this.destroyed) return;
+      void this.haptics.error();
       this.applyViewUpdate(() => {
+        this.showLogoutModal = false;
         this.logoutError = error?.name === 'TimeoutError'
           ? 'Logout took too long. Check your connection and try again.'
           : error?.message || 'Unable to log out. Please try again.';

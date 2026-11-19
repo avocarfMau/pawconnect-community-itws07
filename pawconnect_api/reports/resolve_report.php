@@ -85,7 +85,7 @@ try {
     $conn->beginTransaction();
 
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :report_id AND user_id = :resident_id
            AND report_type IN (\'lost\', \'found\')
@@ -99,6 +99,11 @@ try {
 
     if (!$report) {
         refuseResolve(404, 'Report not found or access denied.', $conn);
+    }
+
+    // Archived reports remain in the database for history but cannot be resolved.
+    if ($report['deleted_at'] !== null) {
+        refuseResolve(409, 'This report has been archived and cannot be resolved.', $conn);
     }
 
     // ========================================================
@@ -256,6 +261,7 @@ try {
          SET status = 'resolved', updated_at = NOW()
          WHERE id = :report_id
            AND user_id = :resident_id
+           AND deleted_at IS NULL
            AND status IN ('pending', 'under_review', 'in_progress')"
     );
     $update->execute([

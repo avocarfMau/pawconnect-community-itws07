@@ -317,7 +317,7 @@ try {
 
     // Serialize competing approvals against the same FOUND report.
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports WHERE id = :found_report_id
          LIMIT 1 FOR UPDATE'
     );
@@ -333,6 +333,15 @@ try {
         respondToClaim(404, [
             'success' => false,
             'message' => 'Ownership claim not found.'
+        ]);
+    }
+
+    // Archived reports are historical records; no new claim decisions.
+    if ($report['deleted_at'] !== null) {
+        $conn->rollBack();
+        respondToClaim(409, [
+            'success' => false,
+            'message' => 'Ownership claims on archived Found Pet reports cannot be approved or rejected.'
         ]);
     }
 

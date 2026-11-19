@@ -248,7 +248,7 @@ try {
     $conn->beginTransaction();
 
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :lost_report_id
          LIMIT 1 FOR UPDATE'
@@ -262,6 +262,13 @@ try {
         (int) $report['user_id'] !== $ownerId
     ) {
         rejectRecoveryDecision($conn, 404, 'Recovery submission not found.');
+    }
+
+    // Archived Lost Pet reports cannot accept new recovery decisions.
+    if ($report['deleted_at'] !== null) {
+        rejectRecoveryDecision($conn, 409,
+            'This Lost Pet report has been archived. Recovery decisions are no longer allowed.'
+        );
     }
 
     if (!in_array(

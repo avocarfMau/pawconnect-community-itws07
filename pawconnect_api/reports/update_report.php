@@ -2,7 +2,7 @@
 <?php
 
 // =====================================
-// PAWRESCUE COMMUNITY
+// PAWCONNECT
 // UPDATE LOST OR FOUND PET REPORT
 // =====================================
 
@@ -364,13 +364,16 @@ try {
 
     $databaseStart = microtime(true);
 
+    // Lock the report to serialize editing with archiving.
+    $conn->beginTransaction();
+
     $stmt = $conn->prepare(
-        "SELECT id, status
+        "SELECT id, status, deleted_at
         FROM pet_reports
         WHERE id = :report_id
           AND user_id = :user_id
           AND report_type IN ('lost', 'found')
-        LIMIT 1"
+        LIMIT 1 FOR UPDATE"
     );
 
     $stmt->execute([
@@ -384,6 +387,7 @@ try {
 
     if (!$report) {
 
+        $conn->rollBack();
         sendUpdateResponse(
             404,
             false,
@@ -391,11 +395,17 @@ try {
         );
     }
 
+    if ($report["deleted_at"] !== null) {
+        $conn->rollBack();
+        sendUpdateResponse(409, false, "Archived reports cannot be edited.");
+    }
+
     if (!in_array(
         $report["status"],
         ["pending", "under_review", "in_progress"],
         true
     )) {
+        $conn->rollBack();
         sendUpdateResponse(
             409,
             false,
@@ -421,7 +431,8 @@ try {
             updated_at = NOW()
         WHERE id = :report_id
           AND user_id = :user_id
-          AND status IN ('pending', 'under_review', 'in_progress')"
+          AND status IN ('pending', 'under_review', 'in_progress')
+          AND deleted_at IS NULL"
     );
 
     $update->execute([
@@ -439,12 +450,15 @@ try {
 
     if ($update->rowCount() !== 1) {
 
+        $conn->rollBack();
         sendUpdateResponse(
             409,
             false,
             "Report could not be updated. Please refresh and try again."
         );
     }
+
+    $conn->commit();
 
     logUpdatePerformance(
         "Database Update",
@@ -474,6 +488,10 @@ try {
     );
 
 } catch (Throwable $e) {
+
+    if (isset($conn) && $conn instanceof PDO && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
 
     error_log(
         "[PawRescue Update Report Error] " .
