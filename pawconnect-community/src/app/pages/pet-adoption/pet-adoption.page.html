@@ -4,18 +4,8 @@
      PET ADOPTION PAGE
 ===================================== -->
 
-<ion-content
-  [fullscreen]="true"
-  class="adoption-content"
->
-
-  <div class="adoption-container">
-
-    <!-- =====================================
-         HEADER
-    ===================================== -->
-
-    <header class="adoption-header">
+<ion-header class="adoption-fixed-header">
+    <div class="adoption-header">
 
       <button
         type="button"
@@ -36,7 +26,7 @@
       <button
         type="button"
         class="refresh-button"
-        (click)="loadPosts()"
+        (click)="refreshPosts()"
         [disabled]="loading"
         aria-label="Refresh adoption listings"
       >
@@ -45,7 +35,21 @@
         ></ion-icon>
       </button>
 
-    </header>
+    </div>
+</ion-header>
+
+<ion-content
+  [fullscreen]="false"
+  class="adoption-content"
+>
+
+  <div class="adoption-container">
+
+    <!-- =====================================
+         HEADER
+    ===================================== -->
+
+
 
     <!-- =====================================
          QUICK ACTIONS

@@ -865,3 +865,329 @@ button:focus-visible {
     padding: 0 12px 12px;
   }
 }
+
+/* ============================================================
+   MY ADOPTIONS — LOST & FOUND / MY CLAIMS DESIGN ALIGNMENT
+   Compatible with my-adoptions.page.fixed-header.html.txt
+   ============================================================ */
+
+:host {
+  --adoptions-green: #1b4332;
+  --adoptions-surface: #f5f9f6;
+}
+
+ion-header.my-adoptions-fixed-header {
+  display: block;
+  position: relative;
+  inset: auto;
+  z-index: 20;
+  box-sizing: border-box;
+  width: 100%;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
+  background: #f5f9f6;
+  border-bottom: 1px solid #e1ebe5;
+  box-shadow: 0 2px 9px rgba(19, 55, 33, 0.04);
+
+  &::after { display: none; }
+}
+
+ion-header.my-adoptions-fixed-header .my-adoptions-fixed-header-inner {
+  width: 100%;
+  max-width: 760px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 10px 20px 14px;
+}
+
+ion-header.my-adoptions-fixed-header .page-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0;
+  min-width: 0;
+}
+
+ion-header.my-adoptions-fixed-header .back-button,
+ion-header.my-adoptions-fixed-header .refresh-button {
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  background: #e6f4ea;
+  color: #1b4332;
+}
+
+ion-header.my-adoptions-fixed-header .header-text h1 {
+  margin: 0 0 5px;
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -0.35px;
+  color: #1b4332;
+}
+
+ion-header.my-adoptions-fixed-header .header-text p {
+  margin: 0;
+  color: #829087;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+ion-content.my-adoptions-content {
+  --background: #f5f9f6;
+}
+
+ion-content.my-adoptions-content .my-adoptions-container {
+  width: 100%;
+  max-width: 760px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 20px 20px max(190px, calc(env(safe-area-inset-bottom, 0px) + 160px));
+}
+
+ion-content.my-adoptions-content::part(scroll) {
+  scroll-padding-bottom: max(190px, calc(env(safe-area-inset-bottom, 0px) + 160px));
+}
+
+/* Compact, consistent button sizes. */
+.post-button {
+  height: 49px;
+  min-height: 49px;
+  --min-height: 49px;
+  --border-radius: 11px;
+  --background: #1b633d;
+  --color: #fff;
+}
+
+.card-actions ion-button,
+.request-actions ion-button {
+  height: 44px;
+  min-height: 44px;
+  --min-height: 44px;
+  --border-radius: 10px;
+  font-size: 12px;
+  text-transform: none;
+}
+
+/* Tab and section typography follows the claims/recoveries pages. */
+.adoption-tabs { margin-bottom: 23px; }
+.tab-button { min-height: 45px; }
+.section-heading h2 {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #1b4332;
+}
+.section-heading p { color: #829087; }
+
+/* Approval and rescheduling dialogs: dark translucent backdrop, no blur. */
+ion-content.my-adoptions-content div:has(> section[role="dialog"][aria-labelledby="pickup-dialog-title"]),
+ion-content.my-adoptions-content div:has(> section[role="dialog"][aria-labelledby="reschedule-dialog-title"]) {
+  background: rgba(14, 36, 25, 0.38) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  overscroll-behavior: contain;
+}
+
+ion-content.my-adoptions-content section[role="dialog"][aria-modal="true"] {
+  max-height: min(90dvh, 760px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  border-radius: 16px !important;
+}
+
+/* Preserve the header's place in layout while a dialog is open. */
+:host:has(section[aria-labelledby="pickup-dialog-title"]) ion-header.my-adoptions-fixed-header,
+:host:has(section[aria-labelledby="reschedule-dialog-title"]) ion-header.my-adoptions-fixed-header {
+  filter: brightness(0.75);
+  pointer-events: none;
+}
+
+:host:has(section[aria-labelledby="pickup-dialog-title"]) ion-content::part(scroll),
+:host:has(section[aria-labelledby="reschedule-dialog-title"]) ion-content::part(scroll) {
+  overflow-y: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+:host:has(section[aria-labelledby="pickup-dialog-title"]) .my-adoptions-container,
+:host:has(section[aria-labelledby="reschedule-dialog-title"]) .my-adoptions-container {
+  pointer-events: none;
+}
+
+/* Dialog overlays remain interactive despite locked page content. */
+ion-content.my-adoptions-content div:has(> section[role="dialog"][aria-modal="true"]) {
+  pointer-events: auto;
+}
+
+@media (max-width: 400px) {
+  ion-header.my-adoptions-fixed-header .my-adoptions-fixed-header-inner {
+    padding: 9px 14px 12px;
+  }
+  ion-header.my-adoptions-fixed-header .page-header { gap: 12px; }
+  ion-content.my-adoptions-content .my-adoptions-container {
+    padding: 18px 14px max(190px, calc(env(safe-area-inset-bottom, 0px) + 160px));
+  }
+}
+
+/* ============================================================
+   MY ADOPTIONS — REFINED CARD INFORMATION DESIGN
+   Applies to the updated My Adoptions HTML; preserves actions.
+   ============================================================ */
+
+/* Make longer, descriptive tab names legible on narrow phones. */
+.adoption-tabs {
+  gap: 7px;
+  padding: 5px;
+  background: #e9f1eb;
+  border: 1px solid #dfe9e2;
+}
+.tab-button {
+  min-height: 62px;
+  padding: 9px 4px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 5px;
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.tab-button.active { box-shadow: 0 2px 6px rgba(27,67,50,.12); }
+.tab-count { flex-shrink: 0; }
+
+.tab-content { gap: 13px; }
+.section-heading { margin-bottom: 3px; }
+.adoption-card, .request-card {
+  border: 1px solid #dde8e0;
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(22,60,36,.045);
+  background: #fff;
+}
+.card-header, .request-header {
+  gap: 11px;
+  padding: 15px 14px;
+  border-bottom: 1px solid #edf2ee;
+}
+.pet-avatar, .request-avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 12px;
+  background: #eaf5ed;
+  color: #246a3c;
+  font-size: 21px;
+}
+.card-heading h3, .request-heading h3 {
+  color: #193c29;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.35;
+  margin-bottom: 5px;
+}
+.card-heading p, .request-heading p {
+  color: #718276;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.card-heading p ion-icon, .request-date ion-icon { vertical-align: -2px; }
+.status-badge, .request-status {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  font-size: 10px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  line-height: 1.3;
+}
+.pet-info { padding: 13px 14px 14px; }
+.pet-tags { gap: 6px; margin-bottom: 10px; }
+.pet-tag {
+  border: 1px solid #dcebe0;
+  border-radius: 8px;
+  padding: 6px 9px;
+  background: #f3f8f4;
+  color: #376447;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.pet-description { font-size: 12px; line-height: 1.65; color: #465b4d; }
+.pet-location {
+  border-top: 1px solid #edf2ee;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.card-actions { padding: 12px 14px 14px; border-top: 1px solid #edf2ee; }
+.card-actions ion-button, .request-actions ion-button {
+  height: 44px;
+  min-height: 44px;
+  --min-height: 44px;
+  --border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.request-body { padding: 14px; }
+.request-label {
+  color: #315e3f;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .1px;
+  margin-bottom: 8px;
+}
+.request-message {
+  background: #f6f9f6;
+  color: #425a49;
+  border: 1px solid #e5eee7;
+  border-left: 3px solid #c7decf;
+  border-radius: 0 9px 9px 0;
+  padding: 11px 12px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.request-date { color: #7b8c80; font-size: 11px; line-height: 1.5; }
+.request-actions { padding: 0 14px 14px; gap: 9px; }
+.approved-note { font-size: 12px; line-height: 1.6; }
+
+@media (max-width: 400px) {
+  .adoption-tabs { gap: 4px; padding: 4px; }
+  .tab-button { min-height: 65px; padding: 8px 2px; font-size: 10px; }
+  .card-header, .request-header { gap: 8px; padding: 12px; }
+  .pet-avatar, .request-avatar { width: 36px; height: 36px; flex-basis: 36px; }
+  .card-heading h3, .request-heading h3 { font-size: 14px; }
+  .status-badge, .request-status { padding: 5px 7px; font-size: 9px; }
+  .pet-info, .request-body { padding: 12px; }
+  .card-actions { padding: 12px; }
+  .request-actions { padding: 0 12px 12px; }
+}
+
+/* =====================================
+   COMPACT NAVIGATION — COUNTS IN SECTION HEADINGS
+   Count badges are now rendered beside each section title in HTML.
+===================================== */
+.adoption-tabs {
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: 20px;
+}
+.adoption-tabs .tab-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 9px 6px;
+  gap: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: normal;
+}
+
+@media (max-width: 400px) {
+  .adoption-tabs { gap: 4px; padding: 4px; }
+  .adoption-tabs .tab-button {
+    min-height: 48px;
+    padding: 8px 3px;
+    font-size: 10px;
+  }
+}

@@ -865,3 +865,701 @@ button:focus-visible {
     padding: 24px;
   }
 }
+
+/* =====================================
+   PAWCONNECT — ADOPTION DETAILS REDESIGN
+   Works with adoption-details.page.redesigned.html.txt
+   Existing gallery, requests and viewer remain functional.
+===================================== */
+:host {
+  --paw-green: #0b3c26;
+  --paw-accent: #277746;
+  --paw-border: #dce9df;
+}
+
+.adoption-details-content {
+  --background: #f3f8f4;
+  --padding-bottom: 0px;
+}
+
+.details-container.redesigned-details {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 680px;
+  padding: 16px 14px calc(90px + env(safe-area-inset-bottom, 0px));
+}
+
+.details-page-header {
+  padding: 4px 0 2px;
+  margin-bottom: 17px;
+}
+.details-page-header .back-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #d9e9dd;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--paw-green);
+  box-shadow: 0 2px 8px rgba(11, 60, 38, .05);
+}
+.details-page-header .header-text h1 {
+  font-size: 21px;
+  letter-spacing: -.45px;
+  color: var(--paw-green);
+}
+.details-page-header .header-text p {
+  color: #718477;
+  font-size: 12px;
+}
+
+.pet-hero-card {
+  border: 1px solid var(--paw-border);
+  border-radius: 18px;
+  box-shadow: 0 5px 22px rgba(11, 60, 38, .055);
+  margin-bottom: 14px;
+}
+.pet-hero-gallery { background: #eaf2ec; }
+.pet-hero-gallery .gallery-photo {
+  aspect-ratio: 5 / 4;
+  max-height: 360px;
+  object-fit: cover;
+}
+.pet-hero-gallery .no-photo {
+  min-height: 230px;
+  background: linear-gradient(145deg, #edf6ef, #e1eee4);
+  color: #6c8974;
+}
+.pet-hero-gallery .photo-counter {
+  top: 12px;
+  right: 12px;
+  background: rgba(11, 40, 25, .75);
+  font-size: 11px;
+  border-radius: 999px;
+}
+.pet-hero-gallery .gallery-arrow {
+  background: rgba(11, 40, 25, .65);
+  width: 38px;
+  height: 38px;
+}
+.pet-hero-card .gallery-dots { padding: 10px 12px; }
+.pet-hero-card .gallery-dot.active { background: var(--paw-accent); }
+
+.pet-profile-summary { padding: 20px 18px 18px; }
+.pet-profile-summary .pet-title-row {
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+.pet-profile-summary .pet-title-row h2 {
+  min-width: 0;
+  font-size: 24px;
+  line-height: 1.25;
+  letter-spacing: -.5px;
+  color: var(--paw-green);
+}
+.pet-profile-summary .adoption-status {
+  padding: 7px 11px;
+  font-size: 11px;
+  border-radius: 999px;
+}
+.pet-profile-tags { gap: 7px; margin-bottom: 14px; }
+.pet-profile-tags .pet-tag {
+  padding: 7px 11px;
+  border: 1px solid #e0ece3;
+  border-radius: 999px;
+  background: #f2f8f3;
+  color: #316447;
+  font-size: 11px;
+}
+.pet-profile-summary .profile-meta-row {
+  display: grid;
+  grid-template-columns: minmax(92px, 38%) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf2ed;
+}
+.pet-profile-summary .profile-meta-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.pet-profile-summary .profile-meta-row strong {
+  min-width: 0;
+  color: #6e8274;
+  font-size: 12px;
+  font-weight: 600;
+}
+.pet-profile-summary .profile-meta-row span {
+  color: #203f2b;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.info-panel,
+.adoption-action-panel,
+.adoption-result-panel {
+  border: 1px solid var(--paw-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 3px 14px rgba(11, 60, 38, .035);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.details-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+.details-section-heading > ion-icon {
+  flex-shrink: 0;
+  font-size: 19px;
+  color: var(--paw-accent);
+}
+.info-panel .details-section-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--paw-green);
+}
+.info-panel .description-text {
+  color: #4f6355;
+  font-size: 13px;
+  line-height: 1.75;
+}
+.location-detail-card {
+  border-radius: 12px;
+  background: #f2f8f3;
+  border: 1px solid #e4eee6;
+  padding: 13px;
+  min-width: 0;
+}
+.location-detail-card > div { min-width: 0; }
+.location-detail-card strong { color: var(--paw-green); }
+.location-detail-card p { color: #62766a; }
+
+.adoption-action-panel {
+  border-color: #cce3d2;
+  padding: 19px 18px;
+}
+.adoption-request-heading { margin-bottom: 18px; }
+.adoption-request-heading > ion-icon {
+  color: var(--paw-accent);
+  background: #eaf5ed;
+  border-radius: 12px;
+  padding: 10px;
+  box-sizing: content-box;
+  font-size: 22px;
+  margin: 0;
+}
+.adoption-request-heading > div { min-width: 0; }
+.adoption-request-heading h2 {
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--paw-green);
+  margin: 0 0 6px;
+}
+.adoption-request-heading p { color: #617467; font-size: 12px; }
+.adoption-request-form .form-group label { color: var(--paw-green); }
+.adoption-request-form .form-group textarea {
+  min-height: 126px;
+  border: 1px solid #d5e5d9;
+  border-radius: 12px;
+  background: #fcfefd;
+  padding: 13px 14px;
+  font-size: 13px;
+}
+.adoption-request-form .form-group textarea:focus {
+  border-color: var(--paw-accent);
+  box-shadow: 0 0 0 3px rgba(39, 119, 70, .1);
+}
+.adoption-action-panel .adoption-reminder {
+  border: 1px solid #f0e4c5;
+  border-radius: 12px;
+  background: #fffaf0;
+  padding: 12px;
+}
+.adoption-action-panel .request-button,
+.adoption-result-panel .my-adoptions-button,
+.adoption-details-content .my-adoptions-button {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  --min-height: 48px;
+  --background: #0b3c26;
+  --background-hover: #165236;
+  --background-activated: #165236;
+  --color: #fff;
+  --border-radius: 12px;
+  --box-shadow: none;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+}
+.adoption-result-panel {
+  padding: 20px 18px;
+}
+.adoption-result-panel h2 { color: var(--paw-green); }
+.adoption-result-panel > ion-icon { color: var(--paw-accent); }
+.adoption-result-panel.submitted-section {
+  background: #f6fbf7;
+  text-align: center;
+}
+.adoption-result-panel.submitted-section p {
+  overflow-wrap: anywhere;
+  margin-bottom: 16px;
+}
+.adoption-result-panel.submitted-section .adoption-status {
+  display: inline-block;
+}
+.adoption-result-panel.owner-notice {
+  background: #f6fbf7;
+}
+.adoption-result-panel.unavailable-section {
+  background: #fffdf8;
+  border-color: #eee4cc;
+}
+
+/* Photo viewer stays above page content and respects device insets. */
+.photo-viewer { z-index: 9999; }
+.viewer-body { overflow: hidden; }
+.viewer-image { max-width: 100%; max-height: 100%; }
+
+@media (max-width: 400px) {
+  .details-container.redesigned-details {
+    padding: 12px 12px calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+  .details-page-header .header-text h1 { font-size: 19px; }
+  .pet-profile-summary { padding: 17px 14px; }
+  .pet-profile-summary .pet-title-row h2 { font-size: 21px; }
+  .info-panel,
+  .adoption-action-panel,
+  .adoption-result-panel { padding: 16px 14px; }
+  .pet-profile-summary .profile-meta-row {
+    grid-template-columns: minmax(80px, 38%) minmax(0, 1fr);
+  }
+  .adoption-request-heading { gap: 10px; }
+  .adoption-request-heading > ion-icon { padding: 8px; }
+}
+
+@media (min-width: 600px) {
+  .details-container.redesigned-details {
+    padding: 24px 22px calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+  .pet-profile-summary { padding: 24px; }
+  .info-panel,
+  .adoption-action-panel,
+  .adoption-result-panel { padding: 22px 24px; }
+}
+
+
+/* =====================================
+   NATIVE IONIC HEADER / TOOLBAR
+   For adoption-details.page.with-ion-header.html.txt
+===================================== */
+.adoption-details-ion-header {
+  position: relative;
+  z-index: 20;
+  box-shadow: none;
+  background: #f0f8f2;
+}
+
+.adoption-details-ion-header::after {
+  display: none;
+}
+
+.adoption-details-toolbar {
+  --background: #f0f8f2;
+  --color: #0b3c26;
+  --border-width: 0;
+  --min-height: 72px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.adoption-details-toolbar .page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 13px 16px;
+  min-height: 72px;
+  box-sizing: border-box;
+}
+
+.adoption-details-toolbar .back-button {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  flex-shrink: 0;
+  border: 1px solid #d4e9da;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0b3c26;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  font-size: 21px;
+}
+
+.adoption-details-toolbar .header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.adoption-details-toolbar .header-text h1 {
+  color: #0b3c26;
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.adoption-details-toolbar .header-text p {
+  color: #607b68;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 3px 0 0;
+}
+
+/* The toolbar HTML still contains the old in-content header.
+   Hide that duplicate until it is removed from the HTML. */
+.adoption-details-content .details-container > .page-header {
+  display: none !important;
+}
+
+.adoption-details-content .details-container.redesigned-details {
+  padding-top: 16px;
+}
+
+@media (max-width: 400px) {
+  .adoption-details-toolbar .page-header {
+    padding: 12px 14px;
+  }
+  .adoption-details-toolbar .header-text h1 {
+    font-size: 18px;
+  }
+}
+
+
+/* ==============================================
+   HEADER ALIGNMENT — MATCH MY ADOPTIONS SCREEN
+   Keep Ionic header/toolbar, unify background,
+   and use the same circular soft-green back button.
+============================================== */
+:host {
+  --adoption-page-bg: #f3faf4;
+}
+
+.adoption-details-content {
+  --background: var(--adoption-page-bg);
+}
+
+.adoption-details-ion-header {
+  background: var(--adoption-page-bg) !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.adoption-details-ion-header::after {
+  display: none !important;
+}
+
+.adoption-details-toolbar {
+  --background: var(--adoption-page-bg) !important;
+  --color: #0b3c26;
+  --border-width: 0 !important;
+  --min-height: 88px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  background: var(--adoption-page-bg) !important;
+  box-shadow: none !important;
+}
+
+.adoption-details-toolbar .page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 650px;
+  min-height: 88px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.adoption-details-toolbar .back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #e5f4e9 !important;
+  color: #0b3c26 !important;
+  box-shadow: none !important;
+  font-size: 23px;
+}
+
+.adoption-details-toolbar .back-button ion-icon {
+  font-size: 23px;
+  color: inherit;
+}
+
+.adoption-details-toolbar .header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.adoption-details-toolbar .header-text h1 {
+  margin: 0;
+  color: #0b3c26;
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.adoption-details-toolbar .header-text p {
+  margin: 5px 0 0;
+  color: #788b7d;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* Keep the duplicate in-content header hidden. */
+.adoption-details-content .details-container > .page-header {
+  display: none !important;
+}
+
+@media (max-width: 400px) {
+  .adoption-details-toolbar .page-header {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .adoption-details-toolbar .header-text h1 {
+    font-size: 21px;
+  }
+  .adoption-details-toolbar .header-text p {
+    font-size: 12px;
+  }
+}
+
+
+/* FINAL: SAME PALE-GREEN SURFACE AS PET ADOPTION HEADER
+   Screenshot sample: RGB (243,250,243) = #F3FAF3.
+   Apply consistently to Ionic host, toolbar and scrolling content. */
+:host {
+  --adoption-page-bg: #f3faf3;
+  background: #f3faf3 !important;
+}
+
+ion-header.adoption-details-ion-header,
+.adoption-details-ion-header,
+ion-toolbar.adoption-details-toolbar,
+.adoption-details-toolbar {
+  background: #f3faf3 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+ion-toolbar.adoption-details-toolbar {
+  --background: #f3faf3 !important;
+  --border-color: transparent !important;
+  --border-width: 0 !important;
+  --box-shadow: none !important;
+}
+
+ion-toolbar.adoption-details-toolbar::part(background) {
+  background: #f3faf3 !important;
+  border: none !important;
+}
+
+ion-content.adoption-details-content,
+.adoption-details-content {
+  --background: #f3faf3 !important;
+  background: #f3faf3 !important;
+}
+
+.adoption-details-content::part(background) {
+  background: #f3faf3 !important;
+}
+
+.adoption-details-content .details-container,
+.adoption-details-content .details-container.redesigned-details {
+  background: transparent !important;
+}
+
+.adoption-details-toolbar .page-header {
+  background: transparent !important;
+}
+
+.adoption-details-toolbar .back-button {
+  background: #e5f5e9 !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+}
+
+.adoption-details-ion-header::after {
+  display: none !important;
+  content: none !important;
+}
+
+
+/* ============================================================
+   PAWCONNECT — MATCH NEW ADOPTION LISTING HEADER EXACTLY
+   Reference: user-provided post-adoption header SCSS.
+   Overrides older Pet Details header colors without affecting
+   the gallery, information cards, or adoption request styling.
+   ============================================================ */
+:host {
+  --adoption-page-bg: #f5f9f6;
+  background: #f5f9f6 !important;
+}
+
+ion-header.adoption-details-ion-header {
+  background: #f5f9f6 !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e0eae2 !important;
+  box-shadow: 0 2px 8px rgba(20, 60, 35, 0.04) !important;
+}
+
+ion-header.adoption-details-ion-header::after {
+  display: none !important;
+  content: none !important;
+}
+
+ion-toolbar.adoption-details-toolbar {
+  --background: #f5f9f6 !important;
+  --color: #1f4230;
+  --border-width: 0 !important;
+  --border-color: transparent !important;
+  --padding-start: 0;
+  --padding-end: 0;
+  --min-height: 74px;
+  background: #f5f9f6 !important;
+  box-shadow: none !important;
+}
+
+ion-toolbar.adoption-details-toolbar::part(background) {
+  background: #f5f9f6 !important;
+  border: 0 !important;
+}
+
+.adoption-details-toolbar .page-header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 74px;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 16px;
+  background: transparent !important;
+}
+
+.adoption-details-toolbar .back-button {
+  display: flex;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50% !important;
+  background: #e5f4ea !important;
+  color: #2d8038;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.adoption-details-toolbar .back-button ion-icon {
+  font-size: 23px;
+  color: inherit;
+}
+
+.adoption-details-toolbar .header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.adoption-details-toolbar .header-text h1 {
+  margin: 0;
+  color: #1f4230;
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.adoption-details-toolbar .header-text p {
+  margin: 5px 0 0;
+  color: #829087;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+ion-content.adoption-details-content {
+  --background: #f5f9f6 !important;
+  background: #f5f9f6 !important;
+}
+
+ion-content.adoption-details-content::part(background) {
+  background: #f5f9f6 !important;
+}
+
+/* The current HTML contains a second, legacy header inside ion-content. */
+.adoption-details-content .details-container > .page-header {
+  display: none !important;
+}
+
+@media (max-width: 400px) {
+  .adoption-details-toolbar .page-header {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .adoption-details-toolbar .header-text h1 {
+    font-size: 21px;
+  }
+}
+
+/* ============================================================
+   ALWAYS-VISIBLE HEADER SEPARATOR — PET DETAILS
+   Show a clear dividing line even before the page is scrolled.
+   ============================================================ */
+ion-header.adoption-details-ion-header {
+  position: relative;
+  z-index: 20;
+  isolation: isolate;
+  overflow: visible;
+  border-bottom: 1px solid #d5e5d9 !important;
+  box-shadow: 0 3px 10px rgba(25, 70, 40, 0.075) !important;
+}
+
+/* A dedicated line does not depend on Ionic's scroll shadow. */
+ion-header.adoption-details-ion-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: #d5e5d9;
+  pointer-events: none;
+  z-index: 2;
+}
+
+ion-toolbar.adoption-details-toolbar {
+  box-shadow: none !important;
+}

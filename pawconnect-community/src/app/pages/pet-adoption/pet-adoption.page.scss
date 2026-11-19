@@ -607,3 +607,138 @@
     padding: 9px 14px;
   }
 }
+
+/* ================================================================
+   PAWCONNECT — PET ADOPTION / LOST & FOUND VISUAL CONSISTENCY
+   Native Ionic fixed header, matching dimensions and scroll space.
+   Photo viewer stays fullscreen for readability.
+   ================================================================ */
+
+ion-header.adoption-fixed-header {
+  display: block;
+  position: relative;
+  z-index: 20;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
+  background: #f5f9f6;
+  border-bottom: 1px solid #e1ebe5;
+  box-shadow: 0 2px 9px rgba(19, 55, 33, 0.04);
+
+  &::after { display: none; }
+
+  .adoption-header {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 10px 20px 14px;
+    gap: 13px;
+    min-height: 0;
+  }
+
+  .header-title {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    h1 {
+      margin: 0 0 5px;
+      color: #1b4332;
+      font-size: 23px;
+      font-weight: 750;
+      line-height: 1.25;
+      letter-spacing: -0.45px;
+    }
+
+    p {
+      margin: 0;
+      color: #718176;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+  }
+
+  .back-button,
+  .refresh-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 43px;
+    width: 43px;
+    height: 43px;
+    padding: 0;
+    border: 0;
+    background: #e5f4ea;
+    color: #2d8038;
+    cursor: pointer;
+  }
+
+  .back-button { border-radius: 50%; }
+  .refresh-button {
+    border: 1px solid #d9eae0;
+    border-radius: 12px;
+  }
+
+  .back-button ion-icon,
+  .refresh-button ion-icon { font-size: 23px; }
+}
+
+ion-content.adoption-content {
+  --background: #f5f9f6;
+}
+
+ion-content.adoption-content .adoption-container {
+  width: 100%;
+  max-width: 760px;
+  box-sizing: border-box;
+  padding: 20px 20px max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
+}
+
+ion-content.adoption-content::part(scroll) {
+  scroll-padding-bottom: max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
+}
+
+/* Keep the full-screen photo viewer over the native Ionic header.
+   Do not replace its dark photo-viewing background with the lighter
+   backdrop used by form/detail modals in Lost & Found. */
+:host:has(.photo-viewer) ion-header.adoption-fixed-header {
+  filter: brightness(0.75);
+  pointer-events: none;
+}
+
+@media (max-width: 400px) {
+  ion-header.adoption-fixed-header .adoption-header {
+    padding: 9px 14px 12px;
+    gap: 12px;
+  }
+
+  ion-content.adoption-content .adoption-container {
+    padding: 18px 14px max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
+  }
+}
+
+@media (max-width: 360px) {
+  ion-content.adoption-content .adoption-container {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+/* PET ADOPTION — match Lost & Found button heights */
+.adoption-actions ion-button {
+  height: 50px;
+  min-height: 50px;
+  --min-height: 50px;
+}
+
+/* Match the compact "I Found This Pet" action in Lost & Found. */
+.view-details-button {
+  height: 44px;
+  min-height: 44px;
+  --min-height: 44px;
+  --padding-top: 9px;
+  --padding-bottom: 9px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 10px;
+  font-size: 12px;
+}

@@ -6,11 +6,9 @@
      Uses the existing post-adoption.page.scss classes.
 ===================================== -->
 
-<ion-content [fullscreen]="true" class="post-adoption-content">
-  <div class="post-adoption-container">
-
-    <!-- PAGE HEADER: ONE CLEAR TITLE, NO REPEATED INTRO CARD -->
-    <header class="page-header">
+<ion-header class="post-adoption-ion-header" mode="md">
+  <ion-toolbar class="post-adoption-toolbar">
+    <div class="page-header">
       <button
         type="button"
         class="back-button"
@@ -20,12 +18,16 @@
       >
         <ion-icon name="arrow-back-outline"></ion-icon>
       </button>
-
       <div class="header-text">
         <h1>New Adoption Listing</h1>
         <p>Share your pet's details with the community</p>
       </div>
-    </header>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="post-adoption-content">
+  <div class="post-adoption-container">
 
     <!-- =====================================
          SUCCESS SCREEN
@@ -184,14 +186,33 @@
         <span>{{ errorMessage }}</span>
       </div>
 
+      <!-- Three-step progress, matching the Report a Pet flow. -->
+      <section class="wizard-progress" aria-label="Adoption listing progress">
+        <div class="wizard-progress-summary">
+          <span class="wizard-step-count">Step {{ formStep }} of 3</span>
+          <span class="wizard-progress-hint">{{ formStep === 1 ? 'Tell us about your pet' : formStep === 2 ? 'Where is the pet located?' : 'Add photos and confirm' }}</span>
+        </div>
+        <div class="wizard-progress-track" aria-hidden="true">
+          <span [class.is-active]="formStep >= 1"></span>
+          <span [class.is-active]="formStep >= 2"></span>
+          <span [class.is-active]="formStep >= 3"></span>
+        </div>
+        <div class="wizard-progress-labels" aria-hidden="true">
+          <span [class.is-current]="formStep === 1">Pet Details</span>
+          <span [class.is-current]="formStep === 2">Location</span>
+          <span [class.is-current]="formStep === 3">Photos &amp; Review</span>
+        </div>
+      </section>
+
       <form
         class="adoption-form"
         #adoptionForm="ngForm"
         (ngSubmit)="submitPost()"
+        novalidate
       >
 
         <!-- SECTION 1: PET DETAILS -->
-        <section class="form-section">
+        <section class="form-section wizard-panel" [hidden]="formStep !== 1">
           <h2>Pet Details</h2>
           <p class="section-description">
             Tell potential adopters about the pet.
@@ -255,48 +276,24 @@
               [disabled]="saving || uploading"
             >
               <option [ngValue]="null">Unknown / Not sure</option>
-              <optgroup label="Puppy / Kitten (Under 1 year)">
-                <option [ngValue]="0">Less than 1 month</option>
-                <option [ngValue]="1">1 month</option>
-                <option [ngValue]="2">2 months</option>
-                <option [ngValue]="3">3 months</option>
-                <option [ngValue]="4">4 months</option>
-                <option [ngValue]="5">5 months</option>
-                <option [ngValue]="6">6 months</option>
-                <option [ngValue]="7">7 months</option>
-                <option [ngValue]="8">8 months</option>
-                <option [ngValue]="9">9 months</option>
-                <option [ngValue]="10">10 months</option>
-                <option [ngValue]="11">11 months</option>
+              <optgroup label="Under 1 year">
+                <option [ngValue]="2">0–3 months</option>
+                <option [ngValue]="5">4–6 months</option>
+                <option [ngValue]="9">7–11 months</option>
               </optgroup>
-              <optgroup label="1 to 3 years">
+              <optgroup label="1 year and older">
                 <option [ngValue]="12">1 year</option>
-                <option [ngValue]="18">1 year, 6 months</option>
                 <option [ngValue]="24">2 years</option>
-                <option [ngValue]="30">2 years, 6 months</option>
                 <option [ngValue]="36">3 years</option>
-              </optgroup>
-              <optgroup label="4 years and older">
                 <option [ngValue]="48">4 years</option>
                 <option [ngValue]="60">5 years</option>
                 <option [ngValue]="72">6 years</option>
                 <option [ngValue]="84">7 years</option>
                 <option [ngValue]="96">8 years</option>
-                <option [ngValue]="108">9 years</option>
-                <option [ngValue]="120">10 years</option>
-                <option [ngValue]="132">11 years</option>
-                <option [ngValue]="144">12 years</option>
-                <option [ngValue]="156">13 years</option>
-                <option [ngValue]="168">14 years</option>
-                <option [ngValue]="180">15 years</option>
-                <option [ngValue]="192">16 years</option>
-                <option [ngValue]="204">17 years</option>
-                <option [ngValue]="216">18 years</option>
-                <option [ngValue]="228">19 years</option>
-                <option [ngValue]="240">20 years</option>
+                <option [ngValue]="120">10 years or older (approx.)</option>
               </optgroup>
             </select>
-            <small>Select the closest age. Choose Unknown if unsure.</small>
+            <small>Select an approximate age, or choose Unknown if unsure.</small>
           </div>
 
           <!-- Show relevant breed choices for the selected animal. -->
@@ -313,27 +310,14 @@
                 <option value="Aspin">Aspin (Local Dog)</option>
                 <option value="Mixed Breed">Mixed Breed</option>
                 <option value="Shih Tzu">Shih Tzu</option>
-                <option value="Pomeranian">Pomeranian</option>
-                <option value="Chihuahua">Chihuahua</option>
-                <option value="Poodle">Poodle</option>
                 <option value="Labrador Retriever">Labrador Retriever</option>
                 <option value="Golden Retriever">Golden Retriever</option>
-                <option value="German Shepherd">German Shepherd</option>
-                <option value="Siberian Husky">Siberian Husky</option>
-                <option value="Beagle">Beagle</option>
-                <option value="Dachshund">Dachshund</option>
-                <option value="French Bulldog">French Bulldog</option>
               </ng-container>
               <ng-container *ngIf="model.animal_type === 'cat'">
                 <option value="Puspin">Puspin (Local Cat)</option>
                 <option value="Mixed Breed">Mixed Breed</option>
                 <option value="Persian">Persian</option>
                 <option value="Siamese">Siamese</option>
-                <option value="British Shorthair">British Shorthair</option>
-                <option value="Maine Coon">Maine Coon</option>
-                <option value="Ragdoll">Ragdoll</option>
-                <option value="Bengal">Bengal</option>
-                <option value="Sphynx">Sphynx</option>
               </ng-container>
             </select>
             <small>Breed is optional. If unsure, leave it unselected.</small>
@@ -357,37 +341,30 @@
 
           <div class="form-group">
             <label for="healthPreset">Health Information (Optional)</label>
-            <select
-              id="healthPreset"
-              [ngModel]="''"
-              (ngModelChange)="model.health_notes = $event || model.health_notes"
-              [ngModelOptions]="{ standalone: true }"
-              [disabled]="saving || uploading"
-            >
-              <option value="" disabled>Choose a quick answer (optional)</option>
-              <option value="Vaccinated">Vaccinated</option>
-              <option value="Dewormed">Dewormed</option>
-              <option value="Vaccinated and dewormed">Vaccinated and dewormed</option>
-              <option value="Not yet vaccinated">Not yet vaccinated</option>
-              <option value="Health status unknown">Health status unknown</option>
-              <option value="Needs special medical attention">Needs special medical attention</option>
-            </select>
             <textarea
               id="healthNotes"
               name="health_notes"
               [(ngModel)]="model.health_notes"
               rows="2"
               maxlength="3000"
-              placeholder="Selected answer appears here. Add details if necessary."
+              placeholder="e.g., Vaccinated, dewormed, or special care needs (if known)"
               aria-label="Health information and additional notes"
               [disabled]="saving || uploading"
             ></textarea>
-            <small>Select a quick answer or type specific health information.</small>
+            <small>Share only health information you know.</small>
+          </div>
+          <!-- Navigation belongs inside the Pet Details card. -->
+          <div class="wizard-actions" style="display:flex; width:100%; margin-top:24px;">
+            <button type="button" class="wizard-action wizard-action-next"
+              style="flex:1 1 100%; width:100%;"
+              (click)="nextStep()" [disabled]="saving || uploading || cameraOpening">
+              <span>Next</span>
+            </button>
           </div>
         </section>
 
         <!-- SECTION 2: LOCATION -->
-        <section class="form-section">
+        <section class="form-section wizard-panel" [hidden]="formStep !== 2">
           <h2>Location</h2>
 
           <div class="form-group">
@@ -424,15 +401,29 @@
             ></textarea>
             <small>For privacy, avoid posting your full home address.</small>
           </div>
+          <!-- Navigation belongs inside the Location card. -->
+          <div class="wizard-actions has-previous" style="display:flex; width:100%; gap:12px; margin-top:24px;">
+            <button type="button" class="wizard-action wizard-action-back"
+              style="flex:1 1 0; width:0; min-width:0;"
+              (click)="previousStep()" [disabled]="saving || uploading || cameraOpening">
+              <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+              <span>Back</span>
+            </button>
+            <button type="button" class="wizard-action wizard-action-next"
+              style="flex:1 1 0; width:0; min-width:0;"
+              (click)="nextStep()" [disabled]="saving || uploading || cameraOpening">
+              <span>Next</span>
+            </button>
+          </div>
         </section>
 
         <!-- SECTION 3: PHOTOS -->
-        <section class="form-section">
+        <section class="form-section wizard-panel" [hidden]="formStep !== 3">
           <div class="photo-section-header">
             <div>
-              <h2>Photos</h2>
+              <h2>Photos &amp; Review</h2>
               <p class="section-description">
-                Add clear photos so adopters can recognize the pet.
+                Photos are optional. Check your details before publishing.
               </p>
             </div>
             <span class="photo-count" aria-live="polite">
@@ -515,15 +506,26 @@
           <p class="photo-help">
             Up to 10 photos · JPG, PNG, or WebP · Maximum 5 MB each.
           </p>
+        <!-- Review information before publishing; no additional API fields. -->
+        <section class="wizard-review" [hidden]="formStep !== 3" aria-label="Review adoption listing">
+          <div class="wizard-review-header">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            <h3>Review Listing</h3>
+          </div>
+          <div class="wizard-review-row"><span>Pet Name</span><strong>{{ model.pet_name || 'Not provided' }}</strong></div>
+          <div class="wizard-review-row"><span>Animal Type</span><strong>{{ model.animal_type === 'dog' ? 'Dog' : 'Cat' }}</strong></div>
+          <div class="wizard-review-row"><span>Sex</span><strong>{{ model.sex === 'unknown' ? 'Unknown' : (model.sex === 'male' ? 'Male' : 'Female') }}</strong></div>
+          <div class="wizard-review-row"><span>Age</span><strong>{{ model.age_months === null ? 'Unknown' : model.age_months + ' month(s)' }}</strong></div>
+          <div class="wizard-review-row" *ngIf="model.breed"><span>Breed</span><strong>{{ model.breed || 'Not specified' }}</strong></div>
+          <div class="wizard-review-row"><span>Description</span><strong>{{ model.description }}</strong></div>
+          <div class="wizard-review-row" *ngIf="model.health_notes.trim()"><span>Health Information</span><strong>{{ model.health_notes || 'Not provided' }}</strong></div>
+          <div class="wizard-review-row"><span>Barangay</span><strong>{{ model.barangay }}</strong></div>
+          <div class="wizard-review-row" *ngIf="model.location_details.trim()"><span>Nearby Landmark</span><strong>{{ model.location_details || 'Not provided' }}</strong></div>
+          <div class="wizard-review-row"><span>Photos</span><strong>{{ selectedPhotos.length }} selected</strong></div>
         </section>
 
-        <!-- SUBMIT / SAVE STATUS -->
-        <div
-          class="submission-progress"
-          *ngIf="saving"
-          role="status"
-          aria-live="polite"
-        >
+          <!-- Navigation belongs inside Photos & Review; Publish is wider than Back. -->
+        <div class="submission-progress" *ngIf="saving && formStep === 3" role="status" aria-live="polite">
           <ion-spinner name="crescent"></ion-spinner>
           <div>
             <strong>Publishing your listing...</strong>
@@ -531,26 +533,23 @@
           </div>
         </div>
 
-        <ion-button
-          type="submit"
-          expand="block"
-          class="submit-button"
-          [disabled]="saving || uploading || cameraOpening || adoptionForm.invalid"
-        >
-          <ion-icon name="paw-outline" slot="start"></ion-icon>
-          {{ saving ? 'Publishing...' : 'Publish Adoption Listing' }}
-        </ion-button>
+          <div class="wizard-actions has-previous is-final-step" style="display:flex; width:100%; gap:12px; margin-top:24px; align-items:stretch;">
+            <button type="button" class="wizard-action wizard-action-back"
+              style="flex:0 0 34%; width:34%; min-width:0;"
+              (click)="previousStep()" [disabled]="saving || uploading || cameraOpening">
+              <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+              <span>Back</span>
+            </button>
+            <ion-button type="submit" class="submit-button wizard-publish-button"
+              style="flex:1 1 0; width:0; min-width:0; margin:0;"
+              [disabled]="saving || uploading || cameraOpening || adoptionForm.invalid">
+              {{ saving ? 'Publishing...' : 'Publish Listing' }}
+            </ion-button>
+          </div>
+        </section>
 
-        <ion-button
-          type="button"
-          expand="block"
-          fill="clear"
-          class="cancel-button"
-          (click)="goBack()"
-          [disabled]="saving || uploading || cameraOpening"
-        >
-          Cancel
-        </ion-button>
+        <p class="wizard-step-error" *ngIf="stepError" role="alert">{{ stepError }}</p>
+
       </form>
     </ng-container>
   </div>
