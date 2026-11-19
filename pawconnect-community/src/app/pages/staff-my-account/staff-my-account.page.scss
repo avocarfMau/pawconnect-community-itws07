@@ -1,0 +1,809 @@
+/* ============================================================
+   PAWCONNECT — MVO STAFF MY ACCOUNT
+   Companion: staff-my-account.page.html (automatic profile load)
+   Based on the resident My Account design, with staff navigation.
+   The profile screen deliberately has NO manual Refresh button.
+   ============================================================ */
+
+:host {
+  display: block;
+  color-scheme: light;
+  --account-green-dark: #173d28;
+  --account-green: #2e7d45;
+  --account-green-soft: #eef7f0;
+  --account-text: #263e2e;
+  --account-muted: #687b6e;
+  --account-border: #e2ebe3;
+  --account-bg: #f5f8f5;
+  --account-white: #ffffff;
+  --account-shadow: 0 3px 14px rgba(28, 68, 39, 0.04);
+}
+
+:host, :host * , :host *::before, :host *::after {
+  box-sizing: border-box;
+}
+
+.staff-account-content {
+  --background: var(--account-bg);
+  --color: var(--account-text);
+}
+
+.staff-account-shell {
+  width: 100%;
+  max-width: 720px;
+  min-width: 0;
+  margin: 0 auto;
+  /* Reserve enough space to avoid overlap with the fixed 3-tab navigation. */
+  padding: calc(18px + var(--ion-safe-area-top, 0px)) 16px
+    calc(110px + env(safe-area-inset-bottom, 0px));
+  color: var(--account-text);
+}
+
+/* ============================================================
+   HEADER — BACK ARROW + TITLE, NO REFRESH BUTTON
+   ============================================================ */
+
+.staff-account-page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  margin-bottom: 22px;
+}
+
+.staff-account-back-button {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #d9e6db;
+  border-radius: 12px;
+  background: var(--account-white);
+  color: #23583a;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 160ms ease, border-color 160ms ease,
+    transform 160ms ease;
+
+  ion-icon { font-size: 22px; pointer-events: none; }
+
+  &:hover:not(:disabled) {
+    background: #eaf5ed;
+    border-color: #a8d1b3;
+  }
+
+  &:active:not(:disabled) { transform: scale(0.96); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.staff-account-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  h1 {
+    margin: 0;
+    color: var(--account-green-dark);
+    font-size: 23px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.4px;
+  }
+
+  p {
+    margin: 3px 0 0;
+    color: var(--account-muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+}
+
+/* ============================================================
+   AUTO-LOADING, ERROR AND EMPTY PROFILE STATES
+   ============================================================ */
+
+.staff-account-loading,
+.staff-account-unavailable {
+  min-width: 0;
+  padding: 38px 20px;
+  border: 1px solid var(--account-border);
+  border-radius: 18px;
+  background: var(--account-white);
+  text-align: center;
+  box-shadow: var(--account-shadow);
+
+  p {
+    margin: 12px 0 0;
+    color: var(--account-muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  > ion-icon {
+    display: block;
+    margin: auto;
+    color: #92aa98;
+    font-size: 54px;
+  }
+
+  h2 {
+    margin: 10px 0 6px;
+    color: #234a32;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  ion-spinner {
+    width: 30px;
+    height: 30px;
+    color: var(--account-green);
+  }
+}
+
+.staff-account-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid #f1c9c9;
+  border-radius: 12px;
+  background: #fff1f1;
+  color: #9b2f2f;
+  font-size: 13px;
+  line-height: 1.5;
+
+  > ion-icon {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    font-size: 22px;
+  }
+}
+
+.staff-account-error-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  strong { display: block; margin-bottom: 4px; font-weight: 750; }
+  p { margin: 0; }
+}
+
+.staff-account-retry {
+  appearance: none;
+  margin-top: 11px;
+  min-height: 39px;
+  padding: 8px 16px;
+  border: 1px solid #d5a8a8;
+  border-radius: 10px;
+  background: #fff;
+  color: #9b2f2f;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  &:active:not(:disabled) { background: #ffe3e3; }
+}
+
+/* ============================================================
+   PROFILE SUMMARY — SAME GREEN CARD AS RESIDENT MY ACCOUNT
+   ============================================================ */
+
+.staff-account-profile-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 18px;
+  padding: 22px 18px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #205a39, #327849);
+  color: #ffffff;
+  box-shadow: 0 8px 22px rgba(22, 74, 42, 0.13);
+
+  &::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    width: 180px;
+    height: 180px;
+    right: -70px;
+    top: -110px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    pointer-events: none;
+  }
+}
+
+.staff-account-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.17);
+  color: #ffffff;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: center;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.staff-account-identity {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  h2 {
+    margin: 0 0 6px;
+    color: #fff;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+}
+
+.staff-account-identity-role {
+  margin: 0 0 5px;
+  color: #d8f1df;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1.45;
+}
+
+.staff-account-identity-email {
+  margin: 0;
+  color: #e1f3e5;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   PERSONAL INFORMATION CARD / EDIT HEADING
+   ============================================================ */
+
+.staff-account-details-card {
+  min-width: 0;
+  margin-bottom: 18px;
+  padding: 20px 16px;
+  overflow: hidden;
+  border: 1px solid var(--account-border);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--account-shadow);
+}
+
+.staff-account-details-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+  margin-bottom: 18px;
+}
+
+.staff-account-details-intro {
+  flex: 1 1 175px;
+  min-width: 0;
+
+  h2 {
+    margin: 0 0 4px;
+    color: #1d4e31;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  p {
+    margin: 0;
+    color: #6a7b6e;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+.staff-account-edit-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid #b8dcc1;
+  border-radius: 11px;
+  background: #eaf6ee;
+  color: #1d6035;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  ion-icon { font-size: 18px; }
+  &:hover:not(:disabled) { background: #dff0e4; border-color: #8fc9a1; }
+  &:active:not(:disabled) { background: #d2e8d9; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+.staff-account-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.staff-account-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #edf2ee;
+  border-radius: 12px;
+  background: #fafcf9;
+  transition: background-color 160ms ease, border-color 160ms ease;
+
+  > ion-icon {
+    flex: 0 0 21px;
+    margin-top: 3px;
+    font-size: 21px;
+    color: #2d7748;
+  }
+
+  > div { flex: 1; min-width: 0; }
+
+  dt {
+    color: #708073;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  dd {
+    margin: 4px 0 0;
+    color: #263e2e;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  &:hover {
+    background: #f2f8f3;
+    border-color: #d2e5d6;
+  }
+}
+
+/* ============================================================
+   EDIT PROFILE FORM / VALIDATION / BUTTONS
+   ============================================================ */
+
+.staff-account-edit-success,
+.staff-account-edit-error {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 16px;
+  padding: 13px 14px;
+  border-radius: 11px;
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.staff-account-edit-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border: 1px solid #c8e6d0;
+  background: #ecf8ef;
+  color: #1d6035;
+  box-shadow: inset 3px 0 0 #4caa69;
+
+  ion-icon { flex: 0 0 auto; font-size: 18px; }
+}
+
+.staff-account-edit-error {
+  border: 1px solid #f1c9c9;
+  background: #fff1f1;
+  color: #9b2f2f;
+  box-shadow: inset 3px 0 0 #d66a6a;
+}
+
+.staff-account-edit-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 15px;
+  width: 100%;
+  min-width: 0;
+  animation: staff-account-form-appear 180ms ease-out;
+}
+
+.staff-account-required-note {
+  margin: 0;
+  color: #617568;
+  font-size: 12px;
+  line-height: 1.6;
+
+  strong { color: #b43d3d; }
+}
+
+.staff-account-edit-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+
+  label {
+    display: block;
+    color: #32583f;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .required { color: #b43d3d; }
+  .optional { color: #738478; font-weight: 400; }
+
+  input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 11px 12px;
+    border: 1px solid #cdded1;
+    border-radius: 11px;
+    background: #ffffff;
+    color: #263e2e;
+    font: inherit;
+    font-size: 16px; /* Prevent mobile text-field auto-zoom. */
+    line-height: 1.4;
+    caret-color: var(--account-green-dark);
+    appearance: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 150ms ease, box-shadow 150ms ease,
+      background-color 150ms ease;
+
+    &::placeholder { color: #87978a; opacity: 1; }
+
+    &:hover:not(:disabled):not([readonly]) { border-color: #99c2a4; }
+
+    &:focus:not([readonly]) {
+      border-color: #2e7d45;
+      outline: 2px solid transparent;
+      box-shadow: 0 0 0 3px rgba(46, 125, 69, 0.16);
+    }
+
+    &:focus-visible { outline: 2px solid #7ebc90; outline-offset: 1px; }
+
+    &:disabled {
+      cursor: not-allowed;
+      border-color: #e0e9e2;
+      background: #f5f8f6;
+      color: #748377;
+      opacity: 0.8;
+    }
+
+    &[readonly] {
+      cursor: default;
+      border-color: #e1e8e2;
+      background: #f2f6f3;
+      color: #6a7b6e;
+    }
+  }
+
+  small {
+    display: block;
+    color: #748478;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+}
+
+.staff-account-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.staff-account-cancel-button,
+.staff-account-save-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 1 145px;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  ion-icon { flex: 0 0 auto; font-size: 18px; }
+  ion-spinner { flex: 0 0 auto; width: 18px; height: 18px; }
+  &:disabled { opacity: 0.58; cursor: not-allowed; }
+}
+
+.staff-account-cancel-button {
+  border-color: #bdcec1;
+  color: #47604d;
+  background: #fff;
+
+  &:hover:not(:disabled) { background: #f0f5f1; }
+  &:active:not(:disabled) { background: #e8f0ea; }
+}
+
+.staff-account-save-button {
+  border-color: #2e7d45;
+  color: #fff;
+  background: #2e7d45;
+
+  &:hover:not(:disabled) { background: #256a3a; }
+  &:active:not(:disabled) { background: #205b33; }
+}
+
+@keyframes staff-account-form-appear {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   AUTOMATIC LAST-UPDATED NOTE / PRIVACY / LOGOUT
+   ============================================================ */
+
+.staff-account-updated {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: -5px 0 18px;
+  color: #738478;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+
+  ion-icon { flex: 0 0 auto; font-size: 15px; color: #2d7748; }
+}
+
+.staff-account-privacy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  margin-bottom: 20px;
+  padding: 14px;
+  border: 1px solid #d6e8db;
+  border-radius: 12px;
+  background: #ecf6ef;
+
+  > ion-icon {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    color: #2d7748;
+    font-size: 22px;
+  }
+
+  > div { flex: 1; min-width: 0; }
+
+  h3 {
+    margin: 0 0 4px;
+    color: #20533a;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  p {
+    margin: 0;
+    color: #526e5d;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+}
+
+.staff-account-session {
+  padding-bottom: 4px;
+
+  .staff-account-edit-error { margin-bottom: 12px; }
+}
+
+.staff-account-logout {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 15px;
+  border: 1.5px solid #d47b7b;
+  border-radius: 11px;
+  background: #fffafa;
+  color: #b43d3d;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  ion-icon { font-size: 19px; }
+  ion-spinner { width: 19px; height: 19px; color: currentColor; }
+
+  &:hover:not(:disabled) { background: #fff1f1; }
+  &:active:not(:disabled) { background: #fce7e7; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+/* ============================================================
+   FIXED STAFF BOTTOM NAVIGATION — THREE TABS
+   ============================================================ */
+
+.bottom-nav.staff-bottom-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 100;
+  width: 100%;
+  margin: 0;
+  padding: 7px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #e2ebe3;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 -4px 16px rgba(18, 61, 41, 0.06);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.staff-bottom-nav .bottom-nav-inner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.staff-bottom-nav .nav-item {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 58px;
+  padding: 7px 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #687b6e;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease, color 150ms ease;
+
+  ion-icon {
+    flex: 0 0 auto;
+    display: block;
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+  }
+
+  span {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  &.active, &[aria-current='page'] {
+    color: #1e734e;
+    background: #e9f5eb;
+    font-weight: 800;
+  }
+
+  &:active:not(:disabled) { background: #e0f0e5; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+/* ============================================================
+   ACCESSIBILITY AND RESPONSIVE LAYOUT
+   ============================================================ */
+
+.staff-account-back-button,
+.staff-account-retry,
+.staff-account-edit-button,
+.staff-account-cancel-button,
+.staff-account-save-button,
+.staff-account-logout,
+.staff-bottom-nav .nav-item {
+  &:focus-visible {
+    outline: 3px solid #91cda1;
+    outline-offset: 2px;
+  }
+}
+
+@media (max-width: 420px) {
+  .staff-account-shell {
+    padding: calc(14px + var(--ion-safe-area-top, 0px)) 12px
+      calc(105px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .staff-account-page-header { gap: 10px; margin-bottom: 18px; }
+  .staff-account-heading h1 { font-size: 21px; }
+  .staff-account-profile-card { gap: 12px; padding: 18px 14px; }
+  .staff-account-avatar { flex-basis: 60px; width: 60px; height: 60px; font-size: 23px; }
+  .staff-account-identity h2 { font-size: 18px; }
+  .staff-account-details-card { padding: 18px 13px; }
+  .staff-account-detail-item { padding: 11px; }
+  .staff-account-edit-form { gap: 13px; }
+  .staff-account-edit-actions { gap: 9px; }
+}
+
+@media (max-width: 359px) {
+  .staff-account-profile-card { gap: 10px; }
+  .staff-account-avatar { flex-basis: 54px; width: 54px; height: 54px; font-size: 20px; }
+  .staff-account-identity-role { font-size: 9px; }
+  .staff-account-identity h2 { font-size: 16px; }
+  .staff-account-edit-button { width: 100%; }
+  .staff-account-cancel-button, .staff-account-save-button { flex-basis: 100%; }
+  .staff-bottom-nav .nav-item { padding-inline: 2px; font-size: 9.5px; }
+  .bottom-nav.staff-bottom-nav { padding-inline: 8px; }
+}
+
+@media (min-width: 600px) {
+  .staff-account-shell { padding-top: 28px; padding-inline: 24px; }
+  .staff-account-profile-card { padding: 26px 24px; }
+  .staff-account-details-card { padding: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staff-account-back-button,
+  .staff-account-edit-button,
+  .staff-account-detail-item,
+  .staff-account-edit-form,
+  .staff-account-edit-field input,
+  .staff-bottom-nav .nav-item { animation: none; transition: none; }
+}

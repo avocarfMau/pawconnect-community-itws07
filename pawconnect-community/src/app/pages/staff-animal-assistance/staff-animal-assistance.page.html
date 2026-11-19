@@ -1,149 +1,149 @@
 <!-- ============================================================
-     PAWCONNECT — VETERINARY OFFICE
-     Animal Assistance Management: staff-only case listing
-
-     Companion files:
-       staff-animal-assistance.page.ts
-       staff-animal-assistance.page.scss (next implementation step)
-
-     Cases originate from resident Found Pet reports marked
-     "Needs Assistance". This is NOT a resident reporting form.
-     Route: /staff-animal-assistance (protect with staffGuard).
-     ============================================================ -->
-
+  PAWCONNECT — MVO STAFF | ANIMAL ASSISTANCE
+  UI redesign only. Compatible with the existing, working
+  staff-animal-assistance.page.ts (no TypeScript changes required).
+  Current filters, automatic loading, pagination, and case navigation
+  remain wired to their existing component methods.
+============================================================ -->
 <ion-content [fullscreen]="true" class="staff-assistance-content">
   <main class="staff-assistance-shell">
 
-    <!-- Header and return to the staff dashboard -->
-    <header class="assistance-header">
-      <button
-        type="button"
-        class="assistance-back-button"
-        (click)="backToDashboard()"
-        aria-label="Back to staff dashboard">
-        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
-      </button>
-
-      <div class="assistance-header-copy">
-        <p class="assistance-eyebrow">PawConnect · Staff Portal</p>
-        <h1>Animal Assistance</h1>
+    <!-- Consistent portal identification -->
+    <div class="assistance-brand-row">
+      <div class="assistance-brand">
+        <span class="assistance-brand-mark" aria-hidden="true">
+          <ion-icon name="paw-outline"></ion-icon>
+        </span>
+        <span class="assistance-brand-title">PawConnect</span>
       </div>
-
-      <button
-        type="button"
-        class="assistance-refresh-button"
-        (click)="refreshCases()"
-        [disabled]="loading || loadingMore"
-        [attr.aria-label]="loading ? 'Refreshing cases' : 'Refresh cases'">
-        <ion-spinner *ngIf="loading" name="crescent" aria-hidden="true"></ion-spinner>
-        <ion-icon *ngIf="!loading" name="refresh-outline" aria-hidden="true"></ion-icon>
-      </button>
-    </header>
-
-    <!-- Purpose / explanation -->
-    <section class="assistance-intro" aria-labelledby="assistanceIntroTitle">
-      <span class="assistance-intro-icon" aria-hidden="true">
-        <ion-icon name="paw-outline"></ion-icon>
-      </span>
-      <div class="assistance-intro-copy">
-        <h2 id="assistanceIntroTitle">Manage assistance cases</h2>
-        <p>Review animals flagged as needing assistance in residents' Found Pet reports.</p>
-      </div>
-    </section>
-
-    <!-- List heading and count returned by PHP -->
-    <div class="assistance-section-heading">
-      <div>
-        <h2>Assistance Cases</h2>
-        <p>View and follow up on reported animal concerns</p>
-      </div>
-      <span class="assistance-total-count" aria-label="Cases matching selected filter">
-        {{ hasLoaded ? totalCases : '—' }} cases
-      </span>
+      <span class="assistance-brand-pill">Staff Portal</span>
     </div>
 
-    <!-- Status filters; button semantics support touch and keyboard -->
+    <header class="assistance-header">
+      <button type="button" class="assistance-back-button"
+              (click)="backToDashboard()" aria-label="Back to staff dashboard">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </button>
+      <div class="assistance-header-copy">
+        <h1>Animal Assistance</h1>
+        <p>Review reported animals that need assistance.</p>
+      </div>
+    </header>
+
+    <!-- The existing TypeScript controls the filters with one tap. -->
     <div class="assistance-filters" role="group" aria-label="Filter assistance cases by status">
-      <button
-        type="button"
-        class="assistance-filter-button"
-        *ngFor="let filter of filters"
-        [class.is-active]="selectedFilter === filter.value"
-        [attr.aria-pressed]="selectedFilter === filter.value"
-        (click)="setFilter(filter.value)">
+      <button *ngFor="let filter of filters" type="button"
+              class="assistance-filter-button"
+              [class.is-active]="selectedFilter === filter.value"
+              [attr.aria-pressed]="selectedFilter === filter.value"
+              (click)="setFilter(filter.value)">
         {{ filter.label }}
       </button>
     </div>
 
-    <!-- Error feedback and retry -->
-    <div class="assistance-error" *ngIf="errorMessage" role="alert">
+    <div class="assistance-results-top" *ngIf="hasLoaded && !errorMessage">
+      <span>{{ totalCases }} {{ totalCases === 1 ? 'case' : 'cases' }} found</span>
+      <span *ngIf="loading && cases.length > 0" class="assistance-inline-progress">
+        <ion-spinner name="dots" aria-hidden="true"></ion-spinner>
+        Updating
+      </span>
+    </div>
+
+    <!-- Error + retry only when necessary; no manual Refresh button. -->
+    <section class="assistance-error" *ngIf="errorMessage" role="alert">
       <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
       <div class="assistance-error-content">
         <strong>Unable to load cases</strong>
         <p>{{ errorMessage }}</p>
-        <button type="button" class="assistance-retry-button" (click)="refreshCases()">
+        <button type="button" class="assistance-retry-button"
+                (click)="refreshCases()" [disabled]="loading || loadingMore">
           Try Again
         </button>
       </div>
-    </div>
+    </section>
 
-    <!-- Initial / refresh loading -->
-    <div class="assistance-loading" *ngIf="loading && cases.length === 0" role="status" aria-live="polite">
+    <div class="assistance-loading" *ngIf="loading && cases.length === 0"
+         role="status" aria-live="polite">
       <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
       <p>Loading assistance cases...</p>
     </div>
 
-    <!-- Empty state is shown only after a successful load -->
-    <section
-      class="assistance-empty"
-      *ngIf="hasLoaded && !loading && !errorMessage && cases.length === 0"
-      aria-live="polite">
+    <section class="assistance-empty"
+             *ngIf="hasLoaded && !loading && !errorMessage && cases.length === 0"
+             aria-live="polite">
       <span class="assistance-empty-icon" aria-hidden="true">
         <ion-icon name="document-text-outline"></ion-icon>
       </span>
-      <h3>No cases found</h3>
+      <h2>No cases found</h2>
       <p *ngIf="selectedFilter === 'all'">
-        Cases will appear here when residents submit Found Pet reports marked as needing assistance.
+        Reports marked as needing animal assistance will appear here.
       </p>
-      <p *ngIf="selectedFilter !== 'all'">
-        There are no cases with this status. Select another filter to view other cases.
+      <p *ngIf="selectedFilter === 'pending'">There are no pending cases right now.</p>
+      <p *ngIf="selectedFilter === 'rescued'">No rescued cases have been recorded yet.</p>
+      <p *ngIf="selectedFilter !== 'all' && selectedFilter !== 'pending' && selectedFilter !== 'rescued'">
+        No cases match this status. Choose another filter.
       </p>
     </section>
 
-    <!-- Real assistance cases returned by animal_assistance/get_cases.php -->
-    <section class="assistance-case-list" *ngIf="cases.length > 0" aria-label="Animal assistance cases">
-      <button
-        type="button"
-        class="assistance-case-card"
-        *ngFor="let item of cases; trackBy: trackCase"
-        (click)="openCase(item.id)"
-        [attr.aria-label]="'Open case number ' + item.id + ', ' + getCaseName(item) + ', ' + getStatusLabel(item.status)">
-        <span class="assistance-case-top">
-          <span class="assistance-case-identity">
-            <span class="assistance-case-icon" aria-hidden="true">
-              <ion-icon name="paw-outline"></ion-icon>
+    <!-- Image list: card is one button so View Details remains one tap. -->
+    <section class="assistance-case-list" *ngIf="cases.length > 0"
+             aria-label="Animal assistance cases">
+      <button *ngFor="let item of cases; trackBy: trackCase"
+              type="button" class="assistance-case-card"
+              (click)="openCase(item.id)"
+              [attr.aria-label]="'View case ' + item.id + ', ' + getCaseName(item) + ', ' + getStatusLabel(item.status)">
+
+        <span class="assistance-card-body">
+          <span class="assistance-card-photo" aria-hidden="true">
+            <ion-icon class="assistance-photo-fallback" name="paw-outline"></ion-icon>
+            <!-- Existing API photo_path is used as-is. Hide a broken image and
+                 reveal the fallback instead; URL-normalization would require TS. -->
+            <img *ngIf="item.photo_path" [src]="item.photo_path"
+                 [alt]="''" loading="lazy" decoding="async"
+                 (error)="$any($event.target).style.display = 'none'" />
+          </span>
+
+          <span class="assistance-card-main">
+            <span class="assistance-card-title-line">
+              <strong class="assistance-card-name">{{ getCaseName(item) }}</strong>
+              <span class="assistance-case-status" [ngClass]="'status-' + item.status">
+                {{ getStatusLabel(item.status) }}
+              </span>
             </span>
-            <span class="assistance-case-names">
-              <strong>{{ getCaseName(item) }}</strong>
-              <small>Case #{{ item.id }} · Found Pet #{{ item.found_report_id }}</small>
+
+            <span class="assistance-card-meta">
+              <span class="assistance-type-chip">Found Pet</span>
+              <span class="assistance-animal-type">
+                <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                {{ item.animal_type | titlecase }}
+              </span>
+            </span>
+
+            <span class="assistance-card-desc" *ngIf="item.description">
+              {{ item.description }}
+            </span>
+            <span class="assistance-card-reason">
+              <strong>Needs Assistance:</strong> {{ getReasonLabel(item.assistance_reason) }}
+            </span>
+
+            <span class="assistance-card-location" *ngIf="item.location_address || (item.latitude != null && item.longitude != null)">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              <span *ngIf="item.location_address">{{ item.location_address }}</span>
+              <span *ngIf="!item.location_address">GPS: {{ item.latitude }}, {{ item.longitude }}</span>
+            </span>
+            <span class="assistance-card-date">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                <path d="M7 3v4M17 3v4M3 10h18"></path>
+              </svg>
+              {{ (item.incident_date || item.created_at) | date:'MMM d, y' }}
             </span>
           </span>
-          <span class="assistance-case-status" [ngClass]="'status-' + item.status">
-            {{ getStatusLabel(item.status) }}
-          </span>
-        </span>
-
-        <span class="assistance-case-reason">
-          <strong>Needs assistance:</strong> {{ getReasonLabel(item.assistance_reason) }}
-        </span>
-
-        <span class="assistance-case-location" *ngIf="item.location_address">
-          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-          <span>{{ item.location_address }}</span>
         </span>
 
         <span class="assistance-case-bottom">
-          <small>Submitted {{ item.created_at | date:'MMM d, y' }}</small>
+          <span class="assistance-case-id">Case #{{ item.id }} · Found Report #{{ item.found_report_id }}</span>
           <span class="assistance-case-detail-link">
             View Details
             <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
@@ -152,18 +152,10 @@
       </button>
     </section>
 
-    <!-- Pagination and update timestamp -->
     <div class="assistance-list-footer" *ngIf="hasLoaded && cases.length > 0">
-      <p class="assistance-results-note" aria-live="polite">
-        Showing {{ cases.length }} of {{ totalCases }} matching cases
-      </p>
-
-      <button
-        *ngIf="hasMore"
-        type="button"
-        class="assistance-load-more"
-        [disabled]="loading || loadingMore"
-        (click)="loadMore()">
+      <p class="assistance-results-note">Showing {{ cases.length }} of {{ totalCases }} cases</p>
+      <button *ngIf="hasMore" type="button" class="assistance-load-more"
+              (click)="loadMore()" [disabled]="loading || loadingMore">
         <ion-spinner *ngIf="loadingMore" name="crescent" aria-hidden="true"></ion-spinner>
         {{ loadingMore ? 'Loading...' : 'Load More Cases' }}
       </button>
@@ -172,10 +164,5 @@
     <p class="assistance-updated-at" *ngIf="lastUpdated && !loading">
       Last updated {{ lastUpdated | date:'MMM d, y, h:mm a' }}
     </p>
-
-    <footer class="assistance-footer">
-      <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-      PawConnect · Veterinary Office
-    </footer>
   </main>
 </ion-content>

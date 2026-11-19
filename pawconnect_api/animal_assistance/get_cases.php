@@ -3,7 +3,7 @@
 // =====================================
 // PAWRESCUE COMMUNITY
 // ANIMAL ASSISTANCE MANAGEMENT
-// GET CASES - VETERINARY OFFICE STAFF ONLY
+// GET CASES - MUNICIPAL VETERINARY OFFICE STAFF ONLY
 // =====================================
 //
 // Cases are created by the backend when a resident marks a
@@ -15,7 +15,7 @@
 // Example GET requests:
 //   /animal_assistance/get_cases.php
 //   /animal_assistance/get_cases.php?status=pending
-//   /animal_assistance/get_cases.php?status=under_review&limit=20&offset=0
+//   /animal_assistance/get_cases.php?status=rescued&limit=20&offset=0
 //   /animal_assistance/get_cases.php?case_id=1
 //
 // Authorization: Bearer <authenticated staff access token>
@@ -56,7 +56,8 @@ try {
     // VALIDATE QUERY PARAMETERS
     // =====================================
     $status = $_GET['status'] ?? 'all';
-    $allowedStatuses = ['all', 'pending', 'under_review', 'in_progress', 'resolved'];
+    // Keep legacy status filters for existing cases; add the new rescue outcome.
+    $allowedStatuses = ['all', 'pending', 'under_review', 'in_progress', 'resolved', 'rescued'];
 
     if (!is_string($status) || !in_array($status, $allowedStatuses, true)) {
         assistanceResponse(400, false, 'Invalid status filter.');
@@ -155,6 +156,10 @@ try {
             a.staff_notes,
             a.reviewed_at,
             a.resolved_at,
+            a.rescue_proof_path,
+            a.rescue_note,
+            a.rescued_at,
+            a.rescued_by_user_id,
             a.created_at,
             a.updated_at,
 
@@ -196,6 +201,8 @@ try {
         $case['id'] = (int) $case['id'];
         $case['found_report_id'] = (int) $case['found_report_id'];
         $case['reporter_user_id'] = (int) $case['reporter_user_id'];
+        $case['rescued_by_user_id'] = $case['rescued_by_user_id'] !== null
+            ? (int) $case['rescued_by_user_id'] : null;
         $case['latitude'] = $case['latitude'] !== null
             ? (float) $case['latitude'] : null;
         $case['longitude'] = $case['longitude'] !== null

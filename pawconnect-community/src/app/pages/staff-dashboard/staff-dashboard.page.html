@@ -1,13 +1,15 @@
 <!-- =====================================================
-     PAWCONNECT — L VETERINARY OFFICE
+     PAWCONNECT — MUNICIPAL VETERINARY OFFICE
      Staff Dashboard (mobile-first)
 
      Companion files:
        staff-dashboard.page.ts
        staff-dashboard.page.scss
 
-     Staff-only routing must be protected by staffGuard.
-     Animal Assistance list/details routes will be added later.
+     Staff-only routing is protected by staffGuard.
+     Animal Assistance list/details routes are already implemented.
+
+     Statistics align with the Pending -> Rescued workflow.
      ===================================================== -->
 
 <ion-content [fullscreen]="true" class="staff-dashboard-content">
@@ -21,7 +23,7 @@
         </span>
         <div class="staff-brand-copy">
           <p class="staff-brand-name">PawConnect</p>
-          <p class="staff-brand-subtitle">Veterinary Office</p>
+          <p class="staff-brand-subtitle">Municipal Veterinary Office</p>
         </div>
       </div>
       <span class="staff-role-tag">Staff Portal</span>
@@ -45,21 +47,12 @@
       </div>
     </section>
 
-    <!-- Dashboard heading and manual refresh -->
+    <!-- Dashboard overview. Case totals load automatically when this view opens. -->
     <div class="staff-section-heading staff-overview-heading">
       <div>
         <h2>Case Overview</h2>
         <p>Assistance requests submitted by residents</p>
       </div>
-      <button
-        type="button"
-        class="staff-icon-action"
-        (click)="refreshDashboard()"
-        [disabled]="loading"
-        [attr.aria-label]="loading ? 'Refreshing dashboard' : 'Refresh dashboard'">
-        <ion-spinner *ngIf="loading" name="crescent" aria-hidden="true"></ion-spinner>
-        <ion-icon *ngIf="!loading" name="refresh-outline" aria-hidden="true"></ion-icon>
-      </button>
     </div>
 
     <!-- Network / server feedback (no made-up data). -->
@@ -71,7 +64,7 @@
       </div>
     </div>
 
-    <!-- Four cards: 2 columns on narrow phones, no horizontal scroll -->
+    <!-- Three overview cards: Total, Pending, and Rescued. -->
     <section class="staff-stats-grid" aria-label="Animal assistance case statistics">
       <div class="staff-stat-card total">
         <span class="staff-stat-icon" aria-hidden="true">
@@ -93,25 +86,17 @@
         <span class="staff-stat-label">Pending</span>
       </div>
 
-      <div class="staff-stat-card progress">
-        <span class="staff-stat-icon" aria-hidden="true">
-          <ion-icon name="pulse-outline"></ion-icon>
-        </span>
-        <strong class="staff-stat-number" aria-label="Cases in progress">
-          {{ counts.inProgress === null ? '—' : counts.inProgress }}
-        </strong>
-        <span class="staff-stat-label">In Progress</span>
-      </div>
-
-      <div class="staff-stat-card resolved">
+      <!-- Keep the existing resolved style for the completed/rescued statistic. -->
+      <div class="staff-stat-card resolved rescued">
         <span class="staff-stat-icon" aria-hidden="true">
           <ion-icon name="checkmark-circle-outline"></ion-icon>
         </span>
-        <strong class="staff-stat-number" aria-label="Resolved cases">
-          {{ counts.resolved === null ? '—' : counts.resolved }}
+        <strong class="staff-stat-number" aria-label="Rescued cases">
+          {{ counts.rescued === null ? '—' : counts.rescued }}
         </strong>
-        <span class="staff-stat-label">Resolved</span>
+        <span class="staff-stat-label">Rescued</span>
       </div>
+
     </section>
 
     <p class="staff-update-note" *ngIf="loading" role="status" aria-live="polite">
@@ -150,86 +135,57 @@
       </button>
     </section>
 
-    <!-- Live list from staff-only get_cases.php -->
-    <section class="staff-recent-section" aria-labelledby="staffRecentTitle">
-      <div class="staff-section-heading">
-        <div>
-          <h2 id="staffRecentTitle">Recent Cases</h2>
-          <p>Latest assistance referrals from Found Pet reports</p>
-        </div>
-        <button
-          type="button"
-          class="staff-text-action"
-          (click)="openAnimalAssistance()">
-          View All
-          <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-        </button>
-      </div>
-
-      <!-- Initial loading only: previous data remains readable during refresh. -->
-      <div
-        class="staff-loading-card"
-        *ngIf="loading && counts.total === null"
-        role="status"
-        aria-live="polite">
-        <ion-spinner name="crescent"></ion-spinner>
-        <span>Loading recent cases...</span>
-      </div>
-
-      <div
-        class="staff-empty-card"
-        *ngIf="!loading && !errorMessage && recentCases.length === 0">
-        <span class="staff-empty-icon" aria-hidden="true">
-          <ion-icon name="checkmark-circle-outline"></ion-icon>
-        </span>
-        <strong>No assistance cases yet</strong>
-        <p>
-          New cases will appear here when a resident marks a Found Pet
-          report as needing assistance.
-        </p>
-      </div>
-
-      <div class="staff-recent-list" *ngIf="recentCases.length > 0">
-        <button
-          type="button"
-          class="staff-case-card"
-          *ngFor="let item of recentCases; trackBy: trackCase"
-          (click)="openCase(item.id)"
-          [attr.aria-label]="'Open assistance case number ' + item.id">
-          <span class="staff-case-header">
-            <span class="staff-case-identity">
-              <span class="staff-case-icon" aria-hidden="true">
-                <ion-icon name="paw-outline"></ion-icon>
-              </span>
-              <span class="staff-case-titles">
-                <strong>{{ item.pet_name || (item.animal_type === 'cat' ? 'Found Cat' : 'Found Dog') }}</strong>
-                <small>Case #{{ item.id }} · {{ getReasonLabel(item.assistance_reason) }}</small>
-              </span>
-            </span>
-            <span class="staff-case-status" [ngClass]="'status-' + item.status">
-              {{ getStatusLabel(item.status) }}
-            </span>
-          </span>
-
-          <span class="staff-case-location" *ngIf="item.location_address">
-            <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-            <span>{{ item.location_address }}</span>
-          </span>
-
-          <span class="staff-case-footer">
-            <small>{{ item.created_at | date:'MMM d, y' }}</small>
-            <span>
-              View Details
-              <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-            </span>
-          </span>
-        </button>
-      </div>
-    </section>
 
     <footer class="staff-dashboard-footer">
       <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-      PawConnect ·  Veterinary Office
+      PawConnect · Municipal Veterinary Office
     </footer>
   </main>
+
+  <!--
+    STAFF BOTTOM NAVIGATION
+    Mirrors the regular user's .bottom-nav / .bottom-nav-inner / .nav-item markup,
+    but stays independent from resident routes.
+
+    My Assisted Cases opens the staff-only route protected by staffGuard.
+    My Account opens the staff-only route protected by staffGuard.
+    Never link staff to the resident /my-account route.
+  -->
+  <nav class="bottom-nav staff-bottom-nav" aria-label="Staff main navigation">
+    <div class="bottom-nav-inner">
+      <button
+        type="button"
+        class="nav-item active"
+        aria-current="page"
+        aria-label="Home, Staff Dashboard">
+        <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+        <span>Home</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-item"
+        (click)="openMyAssistedCases()"
+        aria-label="Open My Assisted Cases">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <span>My Assisted Cases</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-item"
+        (click)="openMyAccount()"
+        aria-label="Open Staff My Account">
+        <!-- Inline SVG preserves the existing icon without a new Ionicons import. -->
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="9" r="3"></circle>
+          <path d="M5.5 19a7 7 0 0 1 13 0"></path>
+        </svg>
+        <span>My Account</span>
+      </button>
+    </div>
+  </nav>
 </ion-content>
