@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
+import { HapticsService } from '../../services/haptics.service';
+import { IonContent, IonIcon, IonSpinner, IonHeader } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
@@ -77,12 +78,13 @@ interface FetchResult<T> {
   templateUrl: './notifications.page.html',
   styleUrls: ['./notifications.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonContent, IonIcon, IonSpinner]
+  imports: [IonHeader, CommonModule, IonContent, IonIcon, IonSpinner]
 })
 export class NotificationsPage implements OnInit, OnDestroy {
   private readonly petReportsService = inject(PetReportsService);
   private readonly adoptionService = inject(PetAdoptionService);
   private readonly router = inject(Router);
+  private readonly haptics = inject(HapticsService);
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   private fetchSubscription?: Subscription;
@@ -192,6 +194,8 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   setFilter(filter: ActivityFilter): void {
+    if (this.activeFilter === filter) return;
+    void this.haptics.light();
     this.activeFilter = filter;
     this.visibleCount = 20;
   }
@@ -205,14 +209,18 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   showMore(): void {
+    if (!this.hasMore) return;
+    void this.haptics.light();
     this.visibleCount += 20;
   }
 
   goBack(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/home');
   }
 
   openActivity(item: NotificationActivity): void {
+    void this.haptics.light();
     // The destination pages enforce authenticated record access.
     // This is section-level navigation, not a link to private images.
     this.router.navigateByUrl(item.route);
@@ -220,6 +228,14 @@ export class NotificationsPage implements OnInit, OnDestroy {
 
   trackActivity(_index: number, item: NotificationActivity): string {
     return item.id;
+  }
+
+  // Called only by explicit Refresh / Retry button taps in the HTML.
+  // Automatic lifecycle reloads continue using loadNotifications() silently.
+  refreshNotifications(): void {
+    if (this.loading || this.destroyed) return;
+    void this.haptics.light();
+    this.loadNotifications();
   }
 
   // Show each API result as soon as it arrives. Previously forkJoin
