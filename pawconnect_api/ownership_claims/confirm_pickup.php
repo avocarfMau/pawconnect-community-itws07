@@ -185,7 +185,7 @@ try {
 
 
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :found_report_id
          LIMIT 1 FOR UPDATE'
@@ -224,6 +224,14 @@ try {
         sendPickupConfirmationResponse(404, [
             'success' => false,
             'message' => 'Ownership claim not found.'
+        ]);
+    }
+
+    if ($report['deleted_at'] !== null) {
+        $conn->rollBack();
+        sendPickupConfirmationResponse(409, [
+            'success' => false,
+            'message' => 'This Found Pet report has been archived. Pickup confirmation is no longer allowed.'
         ]);
     }
 

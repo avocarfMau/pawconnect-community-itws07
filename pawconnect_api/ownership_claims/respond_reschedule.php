@@ -237,7 +237,7 @@ try {
     // Lock order: pet_reports -> pet_ownership_claims ->
     // pet_ownership_pickup_reschedules. Matches Steps 7 and 8.
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :report_id LIMIT 1 FOR UPDATE'
     );
@@ -309,6 +309,15 @@ try {
         sendRescheduleDecisionResponse(404, [
             'success' => false,
             'message' => 'Reschedule request not found or not assigned to you.'
+        ]);
+    }
+
+    // Archived reports retain their history but cannot process pickup changes.
+    if ($report['deleted_at'] !== null) {
+        $conn->rollBack();
+        sendRescheduleDecisionResponse(409, [
+            'success' => false,
+            'message' => 'This Found Pet report has been archived. Pickup reschedule decisions are unavailable.'
         ]);
     }
 

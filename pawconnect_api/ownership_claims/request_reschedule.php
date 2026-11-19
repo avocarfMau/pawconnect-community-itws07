@@ -287,7 +287,7 @@ try {
     $conn->beginTransaction();
 
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports WHERE id = :report_id
          LIMIT 1 FOR UPDATE'
     );
@@ -328,6 +328,15 @@ try {
         sendRescheduleResponse(404, [
             'success' => false,
             'message' => 'Ownership claim not found.'
+        ]);
+    }
+
+    // Archived reports remain in history but cannot start new pickup changes.
+    if ($report['deleted_at'] !== null) {
+        $conn->rollBack();
+        sendRescheduleResponse(409, [
+            'success' => false,
+            'message' => 'This Found Pet report has been archived. Pickup rescheduling is unavailable.'
         ]);
     }
 

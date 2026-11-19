@@ -1,7 +1,7 @@
 <?php
 
 // =====================================
-// PAWRESCUE COMMUNITY
+// PAWCONNECT
 // GET LOGGED-IN RESIDENT'S PET REPORTS
 // =====================================
 
@@ -110,6 +110,7 @@ try {
             ON u.id = p.user_id
         WHERE p.user_id = :resident_id
           AND p.report_type IN ('lost', 'found')
+          AND p.deleted_at IS NULL
     ";
 
     $params = [
@@ -259,7 +260,7 @@ try {
 } catch (Throwable $e) {
 
     error_log(
-        "[PawRescue Get My Reports Error] " .
+        "[PawConnect Get My Reports Error] " .
         $e->getMessage()
     );
 

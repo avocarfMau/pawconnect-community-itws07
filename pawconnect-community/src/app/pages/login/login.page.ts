@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 
 import {
   IonContent,
@@ -12,6 +12,7 @@ import {
 } from '@ionic/angular';
 
 import { AuthService } from '../../services/auth';
+import { HapticsService } from '../../services/haptics.service';
 
 @Component({
   selector: 'app-login',
@@ -31,6 +32,17 @@ import { AuthService } from '../../services/auth';
 export class LoginPage {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private haptics = inject(HapticsService);
+  private zone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
+
+  // Ensure the Ionic template reflects asynchronous HTTP state changes.
+  private updateLoginUI(update: () => void): void {
+    this.zone.run(() => {
+      update();
+      this.cdr.detectChanges();
+    });
+  }
 
   loginInput = '';
   password = '';
@@ -48,9 +60,11 @@ export class LoginPage {
 
     if (!this.loginInput.trim() || !this.password) {
       this.errorMessage = 'Please complete all fields.';
+      void this.haptics.error();
       return;
     }
 
+    void this.haptics.medium();
     this.loading = true;
     console.time('Login API Request');
 
@@ -59,13 +73,15 @@ export class LoginPage {
       this.password
     )
     .pipe(
+      timeout(12000),
       finalize(() => {
-        this.loading = false;
+        this.updateLoginUI(() => { this.loading = false; });
         console.timeEnd('Login API Request');
       })
     )
     .subscribe({
       next: (response) => {
+        this.updateLoginUI(() => {
         if (response.success && response.token) {
           const role = response.user?.role;
 
@@ -73,9 +89,11 @@ export class LoginPage {
             this.authService.clearSession();
             this.errorMessage =
               'Invalid account role. Please contact support.';
+            void this.haptics.error();
             return;
           }
 
+          void this.haptics.success();
           this.authService.saveSession(response);
           this.password = '';
 
@@ -86,28 +104,39 @@ export class LoginPage {
             replaceUrl: true
           }).then((navigated) => {
             if (!navigated) {
-              this.errorMessage =
-                'Login successful, but unable to open the dashboard.';
+              this.updateLoginUI(() => {
+                this.errorMessage = 'Login successful, but unable to open the dashboard.';
+              });
+              void this.haptics.error();
             }
           }).catch((error) => {
             console.error('Navigation error:', error);
-            this.errorMessage =
-              'Unable to open the dashboard. Please try again.';
+            this.updateLoginUI(() => {
+              this.errorMessage = 'Unable to open the dashboard. Please try again.';
+            });
+            void this.haptics.error();
           });
         } else {
           this.errorMessage =
             response.message ||
             'Login failed. Please try again.';
+          void this.haptics.error();
         }
+        });
       },
       error: (error) => {
-        console.error(
-          'Login request failed:',
-          error.status,
-          error.message
-        );
+        // A 401 is an expected result for incorrect credentials.
+        if (error?.status !== 401) {
+          console.error('Login request failed:', error?.status, error?.message);
+        }
 
-        if (error.status === 401) {
+        void this.haptics.error();
+        this.updateLoginUI(() => {
+
+        if (error?.name === 'TimeoutError') {
+          this.errorMessage =
+            'Login is taking too long. Please check your connection and try again.';
+        } else if (error.status === 401) {
           this.errorMessage =
             'Invalid email/username or password.';
         } else if (error.status === 403) {
@@ -121,15 +150,18 @@ export class LoginPage {
             error.error?.message ||
             'Something went wrong. Please try again.';
         }
+        });
       }
     });
   }
 
   togglePassword() {
+    void this.haptics.selection();
     this.showPassword = !this.showPassword;
   }
 
   goToRegister() {
+    void this.haptics.light();
     this.router.navigateByUrl('/register');
   }
 }

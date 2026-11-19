@@ -1,19 +1,25 @@
-<ion-content [fullscreen]="true">
-  <div class="page-container">
-    <!-- PAGE HEADER -->
+<!-- Fixed header, consistent with other PawConnect management pages. -->
+<ion-header class="report-pet-fixed-header">
+  <div class="report-pet-fixed-header-inner">
     <div class="page-header">
       <button
         type="button"
         class="back-button"
         (click)="goBack()"
-        [disabled]="loading || uploadingPhoto">
+        [disabled]="loading || uploadingPhoto"
+        aria-label="Go back">
         <ion-icon name="arrow-back-outline"></ion-icon>
       </button>
-      <div>
+      <div class="header-text">
         <h1>Report a Pet</h1>
         <p>Help our community find missing pets</p>
       </div>
     </div>
+  </div>
+</ion-header>
+
+<ion-content [fullscreen]="false" class="report-pet-content">
+  <div class="page-container">
     <!-- SUCCESS SCREEN: shown only after a newly confirmed submission. -->
     <section class="success-card" *ngIf="submittedReportId !== null" aria-labelledby="reportSuccessHeading">
       <div class="success-icon-shell" aria-hidden="true">

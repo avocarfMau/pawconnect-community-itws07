@@ -13,6 +13,7 @@ import {
 } from '@ionic/angular';
 
 import { AuthService } from '../../services/auth';
+import { HapticsService } from '../../services/haptics.service';
 
 @Component({
   selector: 'app-register',
@@ -33,6 +34,7 @@ export class RegisterPage {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private haptics = inject(HapticsService);
 
   form = {
     first_name: '',
@@ -48,6 +50,11 @@ export class RegisterPage {
   loading = false;
   errorMessage = '';
   successMessage = '';
+
+  private validationError(message: string): void {
+    this.errorMessage = message;
+    void this.haptics.error();
+  }
 
   register() {
     // Prevent multiple submissions
@@ -79,7 +86,7 @@ export class RegisterPage {
       !data.password ||
       !data.confirm_password
     ) {
-      this.errorMessage = 'Please complete all required fields.';
+      this.validationError('Please complete all required fields.');
       return;
     }
 
@@ -89,7 +96,7 @@ export class RegisterPage {
       data.middle_name.length > 100 ||
       data.last_name.length > 100
     ) {
-      this.errorMessage = 'Name fields must not exceed 100 characters.';
+      this.validationError('Name fields must not exceed 100 characters.');
       return;
     }
 
@@ -100,7 +107,7 @@ export class RegisterPage {
     ].filter(Boolean).join(' ');
 
     if (fullName.length > 150) {
-      this.errorMessage = 'Full name must not exceed 150 characters.';
+      this.validationError('Full name must not exceed 150 characters.');
       return;
     }
 
@@ -108,7 +115,7 @@ export class RegisterPage {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(data.email)) {
-      this.errorMessage = 'Please enter a valid email address.';
+      this.validationError('Please enter a valid email address.');
       return;
     }
 
@@ -116,8 +123,9 @@ export class RegisterPage {
     const usernameRegex = /^[a-zA-Z0-9_]{3,50}$/;
 
     if (!usernameRegex.test(data.username)) {
-      this.errorMessage =
-        'Username must be 3-50 characters and contain only letters, numbers, or underscores.';
+      this.validationError(
+        'Username must be 3-50 characters and contain only letters, numbers, or underscores.'
+      );
       return;
     }
 
@@ -125,7 +133,7 @@ export class RegisterPage {
     const contactRegex = /^\+?[0-9]{10,15}$/;
 
     if (!contactRegex.test(data.contact_number)) {
-      this.errorMessage = 'Please enter a valid contact number.';
+      this.validationError('Please enter a valid contact number.');
       return;
     }
 
@@ -134,15 +142,16 @@ export class RegisterPage {
       data.password.length < 8 ||
       data.password.length > 72
     ) {
-      this.errorMessage = 'Password must be 8-72 characters.';
+      this.validationError('Password must be 8-72 characters.');
       return;
     }
 
     if (data.password !== data.confirm_password) {
-      this.errorMessage = 'Passwords do not match.';
+      this.validationError('Passwords do not match.');
       return;
     }
 
+    void this.haptics.medium();
     this.loading = true;
     this.cdr.detectChanges();
 
@@ -159,6 +168,7 @@ export class RegisterPage {
       .subscribe({
         next: (response) => {
           if (response.success) {
+            void this.haptics.success();
             this.successMessage = response.message;
 
             // Clear form on success
@@ -175,12 +185,14 @@ export class RegisterPage {
 
             this.cdr.detectChanges();
           } else {
+            void this.haptics.error();
             this.errorMessage = response.message;
           }
         },
 
         error: (error) => {
           console.error('Registration error:', error);
+          void this.haptics.error();
 
           if (error.name === 'TimeoutError') {
             this.errorMessage =
@@ -199,6 +211,7 @@ export class RegisterPage {
   }
 
   goToLogin() {
+    void this.haptics.light();
     this.router.navigateByUrl('/login');
   }
 }

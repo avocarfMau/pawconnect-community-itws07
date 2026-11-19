@@ -1868,3 +1868,537 @@ ion-button[disabled] {
   .edit-photo-image { height: 115px; }
   .edit-photo-actions { grid-template-columns: 1fr; }
 }
+
+/* =====================================================
+   PAWCONNECT EDIT REPORT — LOST & FOUND DESIGN ALIGNMENT
+   Matches the resident Lost & Found palette and spacing.
+   ===================================================== */
+:host {
+  --edit-green: #267b4e;
+  --edit-deep: #213d2d;
+  --edit-muted: #718579;
+  --edit-border: #dce9df;
+  --edit-soft: #edf6ef;
+}
+
+ion-content.pawconnect-edit-report { --background: #f5f9f6; }
+.pawconnect-edit-report .page-container {
+  max-width: 650px;
+  margin: 0 auto;
+  padding: max(64px, calc(env(safe-area-inset-top, 0px) + 26px)) 18px 88px;
+}
+.pawconnect-edit-report .page-header {
+  display: flex; align-items: center; gap: 15px; margin-bottom: 24px;
+  h1 { margin: 0 0 5px; font-size: 23px; font-weight: 750; color: #213d2d; }
+  p { margin: 0; font-size: 12px; color: #829087; }
+}
+.pawconnect-edit-report .back-button {
+  display: flex; align-items: center; justify-content: center;
+  flex: 0 0 42px; width: 42px; height: 42px;
+  background: #fff; color: #267b4e; border: 1px solid #e7eee9;
+  border-radius: 12px; box-shadow: 0 2px 8px rgba(28,75,46,.04);
+  ion-icon { font-size: 23px; }
+  &:active { background: #edf5ef; }
+}
+.pawconnect-edit-report .edit-intro-card {
+  display: flex; align-items: flex-start; gap: 13px;
+  padding: 19px 17px; margin-bottom: 13px;
+  border: 1px solid #dce9df; border-radius: 16px;
+  background: #fff; box-shadow: 0 4px 16px rgba(30,76,47,.035);
+  .edit-intro-icon {
+    display: grid; place-items: center; flex: 0 0 44px;
+    width: 44px; height: 44px; border-radius: 13px;
+    background: #edf6ef; color: #267b4e;
+    ion-icon { font-size: 23px; }
+  }
+  .edit-eyebrow { display: block; font-size: 10px; letter-spacing: 1px; font-weight: 800; color: #267b4e; margin: 1px 0 5px; }
+  h2 { margin: 0 0 5px; font-size: 17px; font-weight: 750; color: #213d2d; }
+  p { margin: 0; color: #718579; font-size: 12px; line-height: 1.55; }
+}
+.pawconnect-edit-report .edit-report-info {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; margin: 0 0 17px;
+  border: 1px solid #dce9df; border-radius: 12px;
+  background: #edf6ef; color: #355f45;
+  > ion-icon { font-size: 19px; flex-shrink: 0; margin-top: 1px; }
+  strong { font-size: 12px; }
+  p { margin: 3px 0 0; font-size: 11px; line-height: 1.5; }
+}
+.pawconnect-edit-report .edit-report-form { display: flex; flex-direction: column; gap: 16px; }
+.pawconnect-edit-report .edit-form-section {
+  min-width: 0; margin: 0; padding: 18px 16px;
+  background: #fff; border: 1px solid #e1ebe3; border-radius: 16px;
+  box-shadow: 0 3px 14px rgba(30,76,47,.035);
+}
+.pawconnect-edit-report .edit-section-heading {
+  display: flex; align-items: center; gap: 11px;
+  margin: 0 0 19px; padding: 0 0 14px;
+  border-bottom: 1px solid #edf1ed;
+  .edit-section-number {
+    display: grid; place-items: center; flex: 0 0 34px;
+    height: 34px; border-radius: 10px; background: #edf6ef;
+    color: #267b4e; font-size: 12px; font-weight: 800;
+  }
+  h2 { margin: 0 0 3px; color: #213d2d; font-size: 15px; font-weight: 750; }
+  p { margin: 0; color: #829087; font-size: 11px; line-height: 1.45; }
+}
+.pawconnect-edit-report .edit-form-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pawconnect-edit-report .form-group {
+  min-width: 0; margin-bottom: 15px;
+  label { display: block; margin: 0 0 8px; color: #304b39; font-size: 12px; font-weight: 700; }
+  label span { color: #c55252; }
+  input, select, textarea {
+    display: block; width: 100%; min-width: 0; box-sizing: border-box;
+    background: #fbfdfb; border: 1px solid #dce9df; border-radius: 11px;
+    color: #243d2d; padding: 12px 13px; font-size: 13px;
+    outline: none; box-shadow: none; transition: border-color .15s, box-shadow .15s;
+    &:focus { border-color: #267b4e; box-shadow: 0 0 0 3px rgba(38,123,78,.1); }
+    &:disabled { opacity: .65; }
+  }
+  textarea { resize: vertical; line-height: 1.55; }
+  small { display: block; margin-top: 7px; font-size: 11px; line-height: 1.45; color: #829087; }
+}
+.pawconnect-edit-report .edit-form-field-grid .form-group { margin: 0; }
+.pawconnect-edit-report .edit-form-field-grid .form-group:has(textarea) { grid-column: 1 / -1; }
+.pawconnect-edit-report .location-details-card {
+  background: #f8fbf8; border: 1px solid #e2eee5; border-radius: 13px;
+  padding: 15px; margin-bottom: 16px;
+}
+.pawconnect-edit-report .location-details-heading {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 16px;
+  ion-icon { font-size: 20px; color: #267b4e; }
+  h3 { margin: 0 0 3px; font-size: 13px; font-weight: 750; color: #213d2d; }
+  p { margin: 0; font-size: 11px; color: #829087; }
+}
+.pawconnect-edit-report .location-reminder,
+.pawconnect-edit-report .selected-location-card {
+  background: #edf6ef; border: 1px solid #d6e9dc; border-radius: 11px;
+  padding: 12px; color: #356a49; font-size: 12px;
+}
+.pawconnect-edit-report .location-reminder { display: flex; gap: 9px; align-items: flex-start; p { margin: 0; } ion-icon { flex-shrink: 0; font-size: 18px; } }
+.pawconnect-edit-report .location-actions,
+.pawconnect-edit-report .edit-photo-choices,
+.pawconnect-edit-report .edit-photo-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.pawconnect-edit-report .location-action-button,
+.pawconnect-edit-report .photo-upload-label {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; padding: 11px; text-align: center;
+  border-radius: 11px; border: 1px solid #cfe3d5; background: #f5faf6;
+  color: #267b4e; font-size: 12px; font-weight: 700;
+  ion-icon { font-size: 18px; }
+  &:disabled { opacity: .55; }
+}
+.pawconnect-edit-report .location-map-wrapper { overflow: hidden; margin-top: 14px; border-radius: 13px; border: 1px solid #dce9df; }
+.pawconnect-edit-report .location-map-header { background: #edf6ef; color: #356a49; font-size: 12px; font-weight: 700; padding: 11px 13px; }
+.pawconnect-edit-report .location-map { width: 100%; height: 290px; }
+.pawconnect-edit-report .map-help-text { padding: 0 12px; color: #718579; font-size: 11px; }
+.pawconnect-edit-report .selected-location-card { margin-top: 13px; }
+.pawconnect-edit-report .coordinate-details { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 11px; margin: 9px 0; }
+.pawconnect-edit-report .clear-location-button { border: 0; background: transparent; color: #b45353; font-weight: 700; font-size: 12px; padding: 6px 0; }
+.pawconnect-edit-report .photo-management-section { margin: 0; padding: 0; background: transparent; border: 0; box-shadow: none; }
+.pawconnect-edit-report .photo-management-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px;
+  h3 { color: #213d2d; font-size: 15px; margin: 0 0 4px; }
+  p { margin: 0; font-size: 11px; color: #829087; }
+}
+.pawconnect-edit-report .photo-selection-badge { background: #edf6ef; color: #267b4e; border-radius: 99px; padding: 6px 10px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.pawconnect-edit-report .photo-management-help,
+.pawconnect-edit-report .edit-photo-hint { color: #718579; font-size: 11px; line-height: 1.55; }
+.pawconnect-edit-report .edit-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; margin: 14px 0; }
+.pawconnect-edit-report .edit-photo-card { min-width: 0; overflow: hidden; border: 1px solid #dce9df; border-radius: 12px; background: #fff; padding: 8px; }
+.pawconnect-edit-report .edit-photo-image { height: 138px; border-radius: 9px; overflow: hidden; background: #edf2ee;
+  img { width: 100%; height: 100%; object-fit: contain; }
+}
+.pawconnect-edit-report .edit-photo-caption { display: block; margin: 9px 2px 7px; font-size: 11px; color: #526a59; }
+.pawconnect-edit-report .edit-photo-remove { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; padding: 9px 6px; border: 1px solid #f0d9d9; border-radius: 9px; background: #fff6f6; color: #aa4949; font-size: 11px; font-weight: 700; }
+.pawconnect-edit-report .pending-photo-section { margin-top: 16px; h4 { color: #304b39; font-size: 12px; } }
+.pawconnect-edit-report .edit-photo-picker { position: relative; cursor: pointer; }
+.pawconnect-edit-report .edit-photo-file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.pawconnect-edit-report .edit-photo-actions { margin-top: 14px; }
+.pawconnect-edit-report ion-button { --border-radius: 11px; --background: #267b4e; --background-activated: #1e6540; --color: #fff; font-size: 12px; font-weight: 700; text-transform: none; min-height: 44px; }
+.pawconnect-edit-report ion-button[fill="outline"] { --background: transparent; --color: #267b4e; --border-color: #c9dfd0; }
+.pawconnect-edit-report .edit-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 11px; margin: 3px 0 0; }
+.pawconnect-edit-report .edit-actions ion-button { margin: 0; }
+.pawconnect-edit-report .loading-state,
+.pawconnect-edit-report .error-state,
+.pawconnect-edit-report .success-card { background: #fff; border: 1px solid #dce9df; border-radius: 16px; padding: 28px 18px; text-align: center; }
+.pawconnect-edit-report .success-card > ion-icon { font-size: 48px; color: #267b4e; }
+.pawconnect-edit-report .error-message { color: #a44343; background: #fff5f5; border: 1px solid #f2d6d6; border-radius: 10px; padding: 11px 12px; font-size: 12px; }
+.pawconnect-edit-report .location-message,
+.pawconnect-edit-report .photo-action-message { color: #267b4e; font-size: 12px; }
+@media (max-width: 440px) {
+  .pawconnect-edit-report .page-container { padding-left: 15px; padding-right: 15px; }
+  .pawconnect-edit-report .edit-form-section { padding: 16px 13px; }
+  .pawconnect-edit-report .edit-form-field-grid { grid-template-columns: 1fr; }
+  .pawconnect-edit-report .edit-form-field-grid .form-group:has(textarea) { grid-column: auto; }
+  .pawconnect-edit-report .edit-photo-image { height: 116px; }
+  .pawconnect-edit-report .edit-photo-actions { grid-template-columns: 1fr; }
+}
+
+
+/* ============================================================
+   FIXED IONIC HEADER — SAME STRUCTURE AS LOST & FOUND PETS
+   Header is a sibling of ion-content, not inside the scroll area.
+   ============================================================ */
+ion-header.lost-found-fixed-header {
+  display: block;
+  position: relative;
+  z-index: 20;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
+  background: #f5f9f6;
+  border-bottom: 1px solid #e1ebe5;
+  box-shadow: 0 2px 9px rgba(19, 55, 33, 0.04);
+
+  &::after { display: none; }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 10px 20px 14px;
+    gap: 13px;
+
+    h1 { margin: 0 0 5px; font-size: 23px; font-weight: 750; color: #213d2d; }
+    p { margin: 0; font-size: 12px; color: #829087; }
+  }
+
+  .back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    background: #fff;
+    color: #267b4e;
+    border: 1px solid #e7eee9;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(28, 75, 46, 0.04);
+    cursor: pointer;
+    ion-icon { font-size: 23px; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+/* Remove the old safe-area/header space now that header is outside content. */
+ion-content.pawconnect-edit-report .page-container {
+  padding-top: 20px;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 400px) {
+  ion-header.lost-found-fixed-header .page-header {
+    padding: 9px 14px 12px;
+    gap: 12px;
+    h1 { font-size: 21px; }
+  }
+  ion-content.pawconnect-edit-report .page-container { padding-top: 18px; }
+}
+
+
+/* ============================================================
+   PAWCONNECT BUTTON PALETTE — MATCH LOST & FOUND PETS
+   Primary: #268554 | hover: #207448
+   Secondary: #eaf7ee | border: #c6e6d1
+   ============================================================ */
+ion-content.pawconnect-edit-report {
+  .save-report-button,
+  .edit-photo-actions ion-button:not([fill="outline"]),
+  .success-card ion-button,
+  .error-state ion-button:not([fill="outline"]) {
+    --background: #268554;
+    --background-hover: #207448;
+    --background-activated: #1c633e;
+    --color: #ffffff;
+    --border-radius: 12px;
+    --box-shadow: none;
+    font-weight: 600;
+    text-transform: none;
+  }
+
+  .cancel-report-button,
+  .edit-photo-actions ion-button[fill="outline"] {
+    --background: transparent;
+    --background-hover: #eaf7ee;
+    --background-activated: #d3ebdc;
+    --color: #268554;
+    --border-color: #c6e6d1;
+    --border-radius: 11px;
+    --box-shadow: none;
+    font-weight: 600;
+    text-transform: none;
+  }
+
+  .location-action-button,
+  .photo-upload-label,
+  .map-toggle-button {
+    background: #eaf7ee;
+    color: #268554;
+    border: 1px solid #c6e6d1;
+    border-radius: 11px;
+    font-weight: 600;
+    transition: background-color .15s ease;
+    &:hover:not(:disabled) { background: #dff1e5; }
+    &:active:not(:disabled) { background: #d3ebdc; }
+    &:focus-visible { outline: 2px solid #268554; outline-offset: 2px; }
+  }
+
+  .photo-upload-label.edit-photo-picker:focus-within {
+    outline: 2px solid #268554;
+    outline-offset: 2px;
+  }
+
+  .edit-photo-remove {
+    background: #fff5f5;
+    color: #a44343;
+    border-color: #f0d9d9;
+    &:hover:not(:disabled) { background: #ffe8e8; }
+  }
+
+  .clear-location-button {
+    color: #a44343;
+    &:hover:not(:disabled) { color: #873434; }
+  }
+
+  ion-button:focus-visible { outline: 2px solid #268554; outline-offset: 2px; }
+  ion-button[disabled], button:disabled { cursor: not-allowed; }
+}
+
+
+/* ============================================================
+   FINAL BUTTON COLOR ALIGNMENT — MY CLAIMS REFERENCE
+   Uses the exact primary/outline/subtle/danger palette.
+   Placed last to override earlier Edit Report button colors.
+   ============================================================ */
+:host {
+  --edit-green: #2d8038;
+  --edit-green-dark: #23692e;
+  --edit-green-hover: #277232;
+  --edit-green-soft: #e5f4ea;
+}
+
+ion-content.pawconnect-edit-report {
+  /* Ionic buttons need their shadow-part variables, not background alone. */
+  ion-button:not([fill="outline"]):not([fill="clear"]),
+  .save-report-button,
+  .edit-photo-actions ion-button:not([fill="outline"]) {
+    --background: #2d8038;
+    --background-hover: #277232;
+    --background-activated: #23692e;
+    --background-focused: #277232;
+    --color: #ffffff;
+    --color-hover: #ffffff;
+    --color-activated: #ffffff;
+    --border-color: #2d8038;
+    --border-radius: 11px;
+    --box-shadow: none;
+  }
+
+  ion-button[fill="outline"],
+  .cancel-report-button,
+  .edit-photo-actions ion-button[fill="outline"] {
+    --background: #ffffff;
+    --background-hover: #edf8f0;
+    --background-activated: #edf8f0;
+    --background-focused: #edf8f0;
+    --color: #2d8038;
+    --color-hover: #2d8038;
+    --color-activated: #23692e;
+    --border-color: #2d8038;
+    --border-width: 1.5px;
+    --border-style: solid;
+    --border-radius: 11px;
+    --box-shadow: none;
+  }
+
+  /* Native HTML buttons (GPS, map and camera) don't use Ionic variables. */
+  button.location-action-button,
+  button.current-location-button,
+  button.map-toggle-button,
+  button.photo-upload-label,
+  .photo-upload-label.edit-photo-camera {
+    background: #edf8f0;
+    color: #2d8038 !important;
+    border: 1.5px solid #cfe5d5;
+    border-radius: 11px;
+  }
+
+  button.location-action-button:active:not(:disabled),
+  button.photo-upload-label:active:not(:disabled) {
+    background: #e5f4ea;
+  }
+
+  .photo-upload-label.edit-photo-picker {
+    background: #f2faf4;
+    color: #2d8038 !important;
+    border-color: #cfe5d5;
+  }
+
+  button.edit-photo-remove,
+  .edit-photo-remove {
+    background: #fff0f0;
+    color: #b84c4c !important;
+    border-color: #f0d9d9;
+  }
+
+  button.clear-location-button,
+  .clear-location-button {
+    color: #b84c4c !important;
+  }
+
+  ion-button:focus-visible,
+  button:focus-visible,
+  .photo-upload-label:focus-within {
+    outline: 2px solid #2d8038;
+    outline-offset: 2px;
+  }
+}
+
+
+/* ============================================================
+   EDIT REPORT — COMPACT COLLAPSIBLE SECTIONS
+   Matches edit-report.page.collapsible.html.txt (<details>/<summary>).
+   Preserve the existing My Claims green button palette above.
+   ============================================================ */
+ion-content.pawconnect-edit-report {
+  .edit-collapsible-section {
+    display: block;
+    overflow: visible;
+    padding: 0;
+    background: #ffffff;
+    border: 1px solid #e1ebe3;
+    border-radius: 16px;
+    box-shadow: 0 3px 14px rgba(30, 76, 47, 0.035);
+
+    &[open] { border-color: #cfe5d5; }
+
+    > summary.edit-collapsible-heading {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 16px;
+      border-bottom: 0;
+      border-radius: 15px;
+      min-height: 70px;
+      box-sizing: border-box;
+      transition: background-color 160ms ease;
+
+      &::-webkit-details-marker { display: none; }
+      &::marker { content: ''; }
+      &:hover { background: #f6faf7; }
+      &:active { background: #edf8f0; }
+      &:focus-visible { outline: 2px solid #2d8038; outline-offset: 3px; }
+
+      > div {
+        flex: 1;
+        min-width: 0;
+      }
+
+      h2 { color: #213d2d; font-size: 15px; margin: 0 0 4px; }
+      p { color: #718579; font-size: 11px; line-height: 1.45; margin: 0; }
+
+      .edit-section-number {
+        flex: 0 0 34px;
+        width: 34px;
+        height: 34px;
+        background: #edf8f0;
+        color: #2d8038;
+      }
+
+      .edit-disclosure-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 30px;
+        width: 30px;
+        height: 30px;
+        border: 1px solid #d9e9dd;
+        border-radius: 9px;
+        background: #f4faf5;
+        color: #2d8038;
+        font-size: 22px;
+        line-height: 1;
+        font-weight: 700;
+        transition: transform 180ms ease, background-color 180ms ease;
+      }
+    }
+
+    &[open] > summary.edit-collapsible-heading {
+      border-bottom: 1px solid #e5eee7;
+      border-radius: 15px 15px 0 0;
+      .edit-disclosure-icon { transform: rotate(180deg); background: #e5f4ea; }
+    }
+
+    > .edit-collapsible-body {
+      padding: 16px;
+      min-width: 0;
+    }
+
+    > .edit-collapsible-body > :last-child { margin-bottom: 0; }
+  }
+
+  /* Keep Save Changes easy to identify even when both sections are closed. */
+  .edit-form-actions { margin-top: 2px; }
+  .edit-form-actions .save-report-button {
+    --background: #2d8038;
+    --background-activated: #23692e;
+    --background-hover: #277232;
+    --color: #ffffff;
+  }
+  .edit-form-actions .cancel-report-button {
+    --background: #ffffff;
+    --color: #2d8038;
+    --border-color: #2d8038;
+  }
+}
+
+@media (max-width: 440px) {
+  ion-content.pawconnect-edit-report {
+    .edit-report-form { gap: 12px; }
+    .edit-collapsible-section {
+      > summary.edit-collapsible-heading { padding: 13px; min-height: 66px; }
+      > .edit-collapsible-body { padding: 13px; }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ion-content.pawconnect-edit-report .edit-collapsible-section
+    > summary.edit-collapsible-heading,
+  ion-content.pawconnect-edit-report .edit-collapsible-section
+    .edit-disclosure-icon { transition: none; }
+}
+
+
+/* ============================================================
+ * EDIT REPORT — BACK BUTTON MATCHES LOST & FOUND PETS
+ * Source: lost-found.page(8).scss, final .back-button design.
+ * Keep this override last to win over earlier square styles.
+ * ============================================================ */
+ion-header.lost-found-fixed-header .page-header > button.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #e5f4ea;
+  color: #2d8038;
+  box-shadow: none;
+  cursor: pointer;
+
+  ion-icon { font-size: 23px; }
+  &:active { background: #d5eddd; }
+  &:focus-visible { outline: 3px solid #268554; outline-offset: 3px; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}

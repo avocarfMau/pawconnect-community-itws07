@@ -221,7 +221,7 @@ try {
 
     // Global lock order: pet_reports -> pet_ownership_claims.
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :report_id
          LIMIT 1 FOR UPDATE'
@@ -300,6 +300,16 @@ try {
             'finder_handover_confirmed_at' => $claim['finder_handover_confirmed_at'],
             'claimant_handover_confirmed_at' => $claim['claimant_handover_confirmed_at'],
             'completed_at' => $claim['completed_at']
+        ]);
+    }
+
+    // An archived report cannot receive any new handover confirmation.
+    // The completed/idempotent response above remains readable to participants.
+    if ($report['deleted_at'] !== null) {
+        $conn->rollBack();
+        respondHandover(409, [
+            'success' => false,
+            'message' => 'This Found Pet report has been archived. Handover confirmation is no longer available.'
         ]);
     }
 
@@ -470,7 +480,8 @@ try {
         "UPDATE pet_reports
          SET status = 'resolved'
          WHERE id = :report_id AND report_type = 'found'
-           AND status IN ('pending', 'under_review', 'in_progress')"
+           AND status IN ('pending', 'under_review', 'in_progress')
+           AND deleted_at IS NULL"
     );
     $resolveReport->execute([':report_id' => $foundReportId]);
     if ($resolveReport->rowCount() !== 1) {

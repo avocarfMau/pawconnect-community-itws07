@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { HapticsService } from '../services/haptics.service';
 
 import {
   IonContent,
@@ -32,7 +33,8 @@ import {
 export class HomePage {
 
   constructor(
-    private router: Router
+    private router: Router,
+    private haptics: HapticsService
   ) {
     addIcons({
       paw,
@@ -54,12 +56,14 @@ export class HomePage {
 
     // LOST AND FOUND PETS
     if (feature === 'lost-found') {
+      void this.haptics.light();
       this.router.navigateByUrl('/lost-found');
       return;
     }
 
     // PET ADOPTION COMMUNITY
     if (feature === 'adoption') {
+      void this.haptics.light();
       this.router.navigateByUrl('/pet-adoption');
       return;
     }
@@ -72,6 +76,7 @@ export class HomePage {
   // =====================================
 
   openNotifications(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/notifications');
   }
 
@@ -80,6 +85,7 @@ export class HomePage {
   // =====================================
 
   openAccount(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/my-account');
   }
 
@@ -88,6 +94,7 @@ export class HomePage {
   // =====================================
 
   openReports(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/my-reports');
   }
 }

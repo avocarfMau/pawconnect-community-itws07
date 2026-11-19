@@ -24,7 +24,8 @@ import {
   IonContent,
   IonButton,
   IonSpinner,
-  IonIcon
+  IonIcon,
+  IonHeader
 } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -60,6 +61,7 @@ import {
   PetReportsService,
   CreatePetReportRequest
 } from '../../services/pet-reports';
+import { HapticsService } from '../../services/haptics.service';
 
 interface SelectedPetPhoto {
   file: File;
@@ -87,13 +89,14 @@ interface FoundPetAssistanceFields {
   templateUrl: './report-pet.page.html',
   styleUrls: ['./report-pet.page.scss'],
   standalone: true,
-  imports: [
+  imports: [IonHeader, 
     CommonModule,
     FormsModule,
     IonContent,
     IonButton,
     IonSpinner,
-    IonIcon
+    IonIcon,
+    IonHeader,
   ]
 })
 export class ReportPetPage implements OnDestroy {
@@ -101,6 +104,7 @@ export class ReportPetPage implements OnDestroy {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
+  private haptics = inject(HapticsService);
 
   private submitRequest?: Subscription;
   private photoRequest?: Subscription;
@@ -163,6 +167,7 @@ export class ReportPetPage implements OnDestroy {
   }
 
   onNeedsAssistanceChange(checked: boolean): void {
+    void this.haptics.light();
     this.needsAssistance = this.form.report_type === 'found' && checked;
     if (!this.needsAssistance) {
       this.assistanceReason = '';
@@ -208,6 +213,7 @@ export class ReportPetPage implements OnDestroy {
     if (this.formStep === 1) {
       if (!this.form.description.trim()) {
         this.stepError = 'Please describe the pet before continuing.';
+        void this.haptics.error();
         return;
       }
       if (
@@ -215,13 +221,16 @@ export class ReportPetPage implements OnDestroy {
         this.form.incident_date > this.today
       ) {
         this.stepError = 'Please select a valid date when the pet was lost or found.';
+        void this.haptics.error();
         return;
       }
       const assistanceError = this.assistanceValidationError();
       if (assistanceError) {
         this.stepError = assistanceError;
+        void this.haptics.error();
         return;
       }
+      void this.haptics.light();
       this.formStep = 2;
       if (this.form.report_type === 'found' && !this.foundGpsVerified) {
         void this.useCurrentLocation();
@@ -230,25 +239,30 @@ export class ReportPetPage implements OnDestroy {
       if (this.form.report_type === 'found') {
         if (this.gettingLocation) {
           this.stepError = 'Please wait for GPS location capture to finish.';
+          void this.haptics.error();
           return;
         }
         if (!this.foundGpsVerified || this.selectedLatitude === null || this.selectedLongitude === null) {
           this.stepError = 'Please capture the GPS location where you found the pet before continuing.';
+          void this.haptics.error();
           return;
         }
       } else if (!this.selectedBarangay.trim()) {
         this.stepError = 'Please select the barangay where your missing pet was last seen.';
+        void this.haptics.error();
         return;
       }
       this.updateLocationAddress();
       if (this.form.location_address.length > 255) {
         this.stepError = 'The location is too long. Please shorten the landmark.';
+        void this.haptics.error();
         return;
       }
       if (this.showMap) {
         this.showMap = false;
         this.destroyMap();
       }
+      void this.haptics.light();
       this.formStep = 3;
     }
 
@@ -263,6 +277,7 @@ export class ReportPetPage implements OnDestroy {
       return;
     }
     this.stepError = '';
+    void this.haptics.light();
     this.formStep = this.formStep === 3 ? 2 : 1;
     this.scrollFormToTop();
   }
@@ -322,8 +337,11 @@ export class ReportPetPage implements OnDestroy {
   }
 
   onReportTypeChange(type: 'lost' | 'found'): void {
+    void this.haptics.light();
     this.form.report_type = type;
-    this.onNeedsAssistanceChange(false);
+    this.needsAssistance = false;
+    this.assistanceReason = '';
+    this.assistanceDetails = '';
     this.locationRequestId++;
     this.gettingLocation = false;
     this.showMap = false;
@@ -400,7 +418,9 @@ export class ReportPetPage implements OnDestroy {
       incident_date: '',
       location_address: ''
     };
-    this.onNeedsAssistanceChange(false);
+    this.needsAssistance = false;
+    this.assistanceReason = '';
+    this.assistanceDetails = '';
     this.selectedBarangay = '';
     this.landmark = '';
     this.selectedLatitude = null;
@@ -430,6 +450,7 @@ export class ReportPetPage implements OnDestroy {
     ) {
       return;
     }
+    void this.haptics.light();
     this.resetForNewReport();
     void this.pageContent?.scrollToTop(0);
   }
@@ -512,9 +533,11 @@ export class ReportPetPage implements OnDestroy {
     ) {
       this.locationError =
         'Location access requires HTTPS or localhost.';
+      void this.haptics.error();
       return;
     }
 
+    void this.haptics.light();
     this.gettingLocation = true;
     const requestId = ++this.locationRequestId;
     this.cdr.detectChanges();
@@ -569,6 +592,7 @@ export class ReportPetPage implements OnDestroy {
         }
       });
 
+      void this.haptics.success();
       console.log(
         'Current location:',
         position.coords.latitude,
@@ -582,6 +606,7 @@ export class ReportPetPage implements OnDestroy {
         return;
       }
 
+      void this.haptics.error();
       console.error('Geolocation error:', error);
 
       this.updateUI(() => {
@@ -631,6 +656,7 @@ export class ReportPetPage implements OnDestroy {
       return;
     }
 
+    void this.haptics.light();
     if (this.showMap) {
       this.showMap = false;
       this.destroyMap();
@@ -685,6 +711,7 @@ export class ReportPetPage implements OnDestroy {
           event.latlng.lng
         );
 
+        void this.haptics.light();
         this.locationMessage =
           'Location pin selected. ' +
           'You can drag the marker to adjust ' +
@@ -794,6 +821,7 @@ export class ReportPetPage implements OnDestroy {
       this.updateUI(() => {
         this.setSelectedLocation(position.lat, position.lng);
 
+        void this.haptics.light();
         this.locationMessage =
           'Location marker adjusted successfully.';
       });
@@ -816,6 +844,7 @@ export class ReportPetPage implements OnDestroy {
       return;
     }
 
+    void this.haptics.light();
     this.locationRequestId++;
     this.gettingLocation = false;
     this.selectedLatitude = null;
@@ -859,10 +888,12 @@ export class ReportPetPage implements OnDestroy {
 
     if (this.remainingPhotoSlots === 0) {
       this.photoError = `You can add up to ${this.maxPhotos} photos per report.`;
+      void this.haptics.error();
       return;
     }
 
     if (!Capacitor.isNativePlatform()) {
+      void this.haptics.error();
       this.updateUI(() => {
         this.photoError =
           'Take Photo requires the installed PawConnect Android app. ' +
@@ -871,6 +902,7 @@ export class ReportPetPage implements OnDestroy {
       return;
     }
 
+    void this.haptics.light();
     this.updateUI(() => {
       this.cameraOpening = true;
       this.photoError = '';
@@ -904,6 +936,7 @@ export class ReportPetPage implements OnDestroy {
         this.updateUI(() => {
           this.photoError =
             'Unable to reduce photo below 5 MB. Please try again.';
+          void this.haptics.error();
         });
         return;
       }
@@ -925,6 +958,7 @@ export class ReportPetPage implements OnDestroy {
         }
 
         this.addPhotoToSelection(file);
+        void this.haptics.light();
         this.photoError = '';
       });
     } catch (error: any) {
@@ -932,6 +966,7 @@ export class ReportPetPage implements OnDestroy {
       const code = String(error?.code || '').toLowerCase();
 
       if (!message.includes('cancel') && !code.includes('cancel')) {
+        void this.haptics.error();
         console.error('[PAWCONNECT CAMERA] Capture failed:', error);
 
         this.updateUI(() => {
@@ -1108,6 +1143,8 @@ export class ReportPetPage implements OnDestroy {
     }
 
     this.photoError = warnings.join(' ');
+    if (warnings.length > 0) void this.haptics.warning();
+    else if (addedCount > 0) void this.haptics.light();
 
     if (addedCount > 0) {
       console.log(
@@ -1141,6 +1178,7 @@ export class ReportPetPage implements OnDestroy {
       return;
     }
 
+    void this.haptics.light();
     const [removed] = this.selectedPhotos.splice(index, 1);
     URL.revokeObjectURL(removed.previewUrl);
 
@@ -1185,6 +1223,7 @@ export class ReportPetPage implements OnDestroy {
     const assistanceError = this.assistanceValidationError();
     if (assistanceError) {
       this.errorMessage = assistanceError;
+      void this.haptics.error();
       return;
     }
 
@@ -1215,6 +1254,7 @@ export class ReportPetPage implements OnDestroy {
       !data.location_address
     ) {
       this.errorMessage = 'Please complete all required fields.';
+      void this.haptics.error();
       return;
     }
 
@@ -1224,6 +1264,7 @@ export class ReportPetPage implements OnDestroy {
       (data.pet_name && data.pet_name.length > 100)
     ) {
       this.errorMessage = 'One or more fields are too long.';
+      void this.haptics.error();
       return;
     }
 
@@ -1232,9 +1273,11 @@ export class ReportPetPage implements OnDestroy {
       data.incident_date > this.today
     ) {
       this.errorMessage = 'Please select a valid incident date.';
+      void this.haptics.error();
       return;
     }
 
+    void this.haptics.medium();
     this.loading = true;
     this.cdr.detectChanges();
 
@@ -1271,6 +1314,7 @@ export class ReportPetPage implements OnDestroy {
               this.successMessage =
                 'Pet report submitted successfully!';
               this.errorMessage = '';
+              void this.haptics.success();
 
               console.log(
                 'Report saved successfully. ID:',
@@ -1279,6 +1323,7 @@ export class ReportPetPage implements OnDestroy {
             } else {
               this.errorMessage =
                 response.message || 'Unable to submit report.';
+              void this.haptics.error();
             }
           });
 
@@ -1290,6 +1335,7 @@ export class ReportPetPage implements OnDestroy {
           }
         },
         error: (error) => {
+          void this.haptics.error();
           console.error('Pet report submission error:', error);
 
           this.updateUI(() => {
@@ -1422,12 +1468,14 @@ export class ReportPetPage implements OnDestroy {
               : `Pet report saved. Uploading photos (${this.uploadedPhotosCount}/${this.selectedPhotos.length})...`;
           });
 
+          if (this.photoUploaded) void this.haptics.success();
           console.log(
             '[PAWCONNECT PHOTOS] Uploaded:',
             response.photo_path
           );
         },
         error: (error) => {
+          void this.haptics.error();
           console.error('[PAWCONNECT PHOTOS] Upload failed:', error);
 
           this.updateUI(() => {
@@ -1480,6 +1528,7 @@ export class ReportPetPage implements OnDestroy {
 
     this.destroyMap();
 
+    void this.haptics.light();
     void this.router.navigateByUrl('/lost-found').then((navigated) => {
       if (navigated && !this.destroyed) this.resetForNewReport();
     });
@@ -1496,6 +1545,7 @@ export class ReportPetPage implements OnDestroy {
 
     this.destroyMap();
 
+    void this.haptics.light();
     void this.router.navigateByUrl('/my-reports').then((navigated) => {
       if (navigated && !this.destroyed) this.resetForNewReport();
     });

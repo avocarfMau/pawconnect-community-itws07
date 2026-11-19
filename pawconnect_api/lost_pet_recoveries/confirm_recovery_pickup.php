@@ -142,7 +142,7 @@ try {
 
     // All recovery mutations lock LOST report -> recovery row.
     $reportStmt = $conn->prepare(
-        'SELECT id, user_id, report_type, status
+        'SELECT id, user_id, report_type, status, deleted_at
          FROM pet_reports
          WHERE id = :lost_report_id
          LIMIT 1 FOR UPDATE'
@@ -246,6 +246,14 @@ try {
                 'finder_confirmed_at' => (string) $recovery['pickup_confirmed_by_finder_at']
             ]
         ]);
+    }
+
+    // Archived Lost Pet reports are read-only. Keep the already-confirmed
+    // response above available without recording a new confirmation.
+    if ($report['deleted_at'] !== null) {
+        denyRecoveryPickup($conn, 409,
+            'This Lost Pet report has been archived. Pickup confirmation is no longer available.'
+        );
     }
 
     // A new pickup confirmation is not valid once a physical

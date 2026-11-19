@@ -5,7 +5,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
-import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
+import { IonContent, IonHeader, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
@@ -43,6 +43,7 @@ import {
   LostPetRecoveryDecisionRequest,
   RequestLostPetRecoveryRescheduleRequest
 } from '../../services/pet-reports';
+import { HapticsService } from '../../services/haptics.service';
 
 type RecoveryTab = 'sent' | 'received';
 type RecoveryFormMode = 'approve' | 'reject' | 'reschedule' | null;
@@ -83,11 +84,12 @@ type RecoveryPrivatePhoto = {
   templateUrl: './my-recoveries.page.html',
   styleUrls: ['./my-recoveries.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonContent, IonIcon, IonSpinner]
+  imports: [CommonModule, FormsModule, IonContent, IonIcon, IonSpinner, IonHeader]
 })
 export class MyRecoveriesPage implements OnInit, OnDestroy {
   private readonly reportsService = inject(PetReportsService);
   private readonly router = inject(Router);
+  private readonly haptics = inject(HapticsService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly zone = inject(NgZone);
@@ -308,6 +310,12 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
           current.hasMore = response.has_more;
           current.nextOffset = response.offset + response.count;
           current.loaded = true;
+          // An archived report disappears from the server's refreshed first page.
+          // Close any previously open details that no longer belong to this list.
+          if (!loadMore && this.selectedScope === scope && this.selectedRecovery &&
+              !current.items.some(item => item.id === this.selectedRecovery?.id)) {
+            this.closeDetails();
+          }
         });
       },
       error: error => {
@@ -322,11 +330,13 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   }
 
   loadMore(): void {
+    void this.haptics.light();
     this.loadRecoveries(this.activeTab, true);
   }
 
   refreshRecoveries(): void {
     if (this.actionBusy || this.destroyed) return;
+    void this.haptics.light();
     this.loadRecoveries(this.activeTab);
     if (this.selectedRecovery && this.selectedScope) this.refreshSelectedRecovery();
   }
@@ -334,6 +344,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   changeTab(tab: RecoveryTab): void {
     if (this.destroyed || this.activeTab === tab || this.actionBusy) return;
     this.closeDetails();
+    void this.haptics.light();
     this.activeTab = tab;
     if (!this.lists[tab].loaded) this.loadRecoveries(tab);
   }
@@ -344,6 +355,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   openDetails(recovery: LostPetRecovery, scope: RecoveryTab = this.activeTab): void {
     if (this.destroyed || this.actionBusy) return;
     this.closeDetails();
+    void this.haptics.light();
     this.selectedScope = scope;
     this.selectedRecovery = recovery;
     this.loadEvidencePhotos(recovery);
@@ -352,6 +364,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
 
   closeDetails(): void {
     if (this.actionBusy) return; // Never hide a submitting mutation mid-request.
+    if (this.selectedRecovery) void this.haptics.light();
     ++this.detailVersion;
     this.detailRequest?.unsubscribe();
     this.clearEvidencePhotos();
@@ -384,6 +397,12 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
           this.detailLoading = false;
           const fresh = response.recoveries?.[0];
           if (!response.success || !fresh) {
+            // A successful empty detail response means the record is no longer
+            // visible (for example, its Lost Pet report was archived).
+            if (response.success && !fresh) {
+              this.closeDetails();
+              return;
+            }
             this.detailError = response.message || 'Unable to refresh recovery details.';
             return;
           }
@@ -544,12 +563,14 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     if (!this.canReview) return;
     this.resetForm();
     this.formMode = 'approve';
+    void this.haptics.light();
   }
 
   startRejection(): void {
     if (!this.canReview) return;
     this.resetForm();
     this.formMode = 'reject';
+    void this.haptics.light();
   }
 
   startReschedule(): void {
@@ -557,6 +578,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     if (!r || !this.canRequestReschedule) return;
     this.resetForm();
     this.formMode = 'reschedule';
+    void this.haptics.light();
     this.pickupLocation = r.pickup.location || '';
     this.pickupDate = r.pickup.date || '';
     this.pickupTime = (r.pickup.time || '').slice(0, 5);
@@ -569,6 +591,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     if (mode === 'reschedule_response' && !this.canRespondReschedule) return;
     this.actionError = '';
     this.actionModal = mode;
+    void this.haptics.light();
     this.handoverAcknowledged = false;
     this.responseNote = '';
   }
@@ -576,11 +599,13 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   closeActionModal(): void {
     if (this.actionBusy || this.pickupLocationLoading) return;
     this.actionModal = null;
+    void this.haptics.light();
     this.resetForm();
   }
 
   cancelForm(): void {
     if (this.actionBusy || this.pickupLocationLoading) return;
+    void this.haptics.light();
     this.resetForm();
   }
 
@@ -608,6 +633,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   async capturePickupLocation(): Promise<void> {
     if (this.actionBusy || this.pickupLocationLoading ||
         (this.formMode !== 'approve' && this.formMode !== 'reschedule')) return;
+    void this.haptics.light();
     this.pickupLocationLoading = true;
     this.actionError = '';
     try {
@@ -622,9 +648,11 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
       this.render(() => {
         this.pickupLatitude = position.coords.latitude;
         this.pickupLongitude = position.coords.longitude;
+        void this.haptics.success();
       });
     } catch (error: unknown) {
       this.render(() => {
+        void this.haptics.error();
         this.actionError = error instanceof Error ? error.message :
           'Unable to get your GPS location. Enter the pickup location manually.';
       });
@@ -660,7 +688,10 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     // Rescheduling has its own API method and must not be sent here.
     if (!r || !this.canReview ||
         (this.formMode !== 'approve' && this.formMode !== 'reject')) return;
-    if (this.formMode === 'approve' && !this.validPickupFields()) return;
+    if (this.formMode === 'approve' && !this.validPickupFields()) {
+      void this.haptics.error();
+      return;
+    }
     const data: LostPetRecoveryDecisionRequest = {
       recovery_id: r.id,
       action: this.formMode
@@ -690,7 +721,10 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   requestReschedule(): void {
     const r = this.selectedRecovery;
     if (!r || this.formMode !== 'reschedule' || !this.canRequestReschedule ||
-        !this.validPickupFields()) return;
+        !this.validPickupFields()) {
+      if (this.formMode === 'reschedule') void this.haptics.error();
+      return;
+    }
     const data: RequestLostPetRecoveryRescheduleRequest = {
       recovery_id: r.id,
       pickup_location: this.pickupLocation.trim(),
@@ -722,6 +756,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     const r = this.selectedRecovery;
     if (!r || !this.canConfirmHandover || !this.handoverAcknowledged) {
       this.actionError = 'Confirm that the pet was physically handed over before proceeding.';
+      void this.haptics.error();
       return;
     }
     // This is a factual attestation; never auto-confirm on page open or pickup agreement.
@@ -738,6 +773,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     const scope = this.selectedScope;
     const version = ++this.actionVersion;
     this.actionRequest?.unsubscribe();
+    void this.haptics.medium();
     this.render(() => {
       this.actionBusy = true;
       this.actionError = '';
@@ -754,6 +790,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
         if (this.destroyed || version !== this.actionVersion ||
             this.selectedRecovery?.id !== currentId || this.selectedScope !== scope) return;
         if (!response.success) {
+          void this.haptics.error();
           this.render(() => { this.actionError = response.message || 'Unable to complete the request.'; });
           return;
         }
@@ -764,6 +801,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
           this.handoverAcknowledged = false;
           this.responseNote = '';
         });
+        void this.haptics.success();
         // Server's current status/confirmation timestamps are authoritative.
         this.refreshSelectedRecovery();
         // Refresh both lists; a decision can cancel other pending requests.
@@ -772,6 +810,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
       },
       error: error => {
         if (this.destroyed || version !== this.actionVersion) return;
+        void this.haptics.error();
         this.render(() => {
           this.actionError = this.apiError(error, 'Unable to complete the action. Please retry.');
         });
@@ -812,6 +851,10 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
           list.hasMore = response.has_more;
           list.loaded = true;
           list.error = '';
+          if (this.selectedScope === scope && this.selectedRecovery &&
+              !list.items.some(item => item.id === this.selectedRecovery?.id)) {
+            this.closeDetails();
+          }
         });
       },
       error: error => {
@@ -829,6 +872,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   goBack(): void {
     if (this.actionBusy) return;
     this.closeDetails();
+    void this.haptics.light();
     void this.router.navigateByUrl('/lost-found');
   }
 

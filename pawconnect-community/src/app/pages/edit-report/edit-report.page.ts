@@ -23,7 +23,8 @@ import {
   IonContent,
   IonButton,
   IonSpinner,
-  IonIcon
+  IonIcon,
+  IonHeader
 } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -56,6 +57,7 @@ import {
   PetReportPhoto,
   UpdatePetReportRequest
 } from '../../services/pet-reports';
+import { HapticsService } from '../../services/haptics.service';
 
 interface PendingPhoto {
   file: File;
@@ -73,7 +75,8 @@ interface PendingPhoto {
     IonContent,
     IonButton,
     IonSpinner,
-    IonIcon
+    IonIcon,
+    IonHeader
   ]
 })
 export class EditReportPage implements OnInit, OnDestroy {
@@ -81,6 +84,7 @@ export class EditReportPage implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private haptics = inject(HapticsService);
 
   // =====================================
   // LOADING AND MESSAGE STATES
@@ -107,6 +111,7 @@ export class EditReportPage implements OnInit, OnDestroy {
   selectedPhotos: PendingPhoto[] = [];
   uploadingPhoto = false;
   cameraOpening = false;
+  preparingPhotos = false;
   deletingPhotoId: number | null = null;
   refreshingPhotos = false;
   photoError = '';
@@ -367,6 +372,7 @@ export class EditReportPage implements OnInit, OnDestroy {
 
   toggleMap(): void {
     if (this.loading || this.saving || this.gettingLocation) return;
+    void this.haptics.light();
 
     if (this.showMap) {
       this.showMap = false;
@@ -390,6 +396,7 @@ export class EditReportPage implements OnInit, OnDestroy {
       return;
     }
 
+    void this.haptics.light();
     const requestId = ++this.locationRequestId;
     this.gettingLocation = true;
     this.cdr.detectChanges();
@@ -417,11 +424,13 @@ export class EditReportPage implements OnInit, OnDestroy {
 
       this.setSelectedLocation(position.coords.latitude, position.coords.longitude);
       this.locationMessage = 'Current GPS location selected. Verify the incident location.';
+      void this.haptics.success();
     } catch (error: any) {
       if (this.destroyed || requestId !== this.locationRequestId) return;
       this.locationError = String(error?.message || '').toLowerCase().includes('permission')
         ? 'Location permission was denied. Select a location on the map.'
         : 'Unable to retrieve location. Try again or select on the map.';
+      void this.haptics.error();
     } finally {
       if (!this.destroyed && requestId === this.locationRequestId) {
         this.gettingLocation = false;
@@ -472,6 +481,7 @@ export class EditReportPage implements OnInit, OnDestroy {
       if (this.saving || this.loading) return;
       this.setSelectedLocation(event.latlng.lat, event.latlng.lng);
       this.locationMessage = 'Location pin selected. Drag it to adjust the location.';
+      void this.haptics.selection();
       this.cdr.detectChanges();
     });
 
@@ -531,6 +541,7 @@ export class EditReportPage implements OnInit, OnDestroy {
       const position = this.locationMarker.getLatLng();
       this.setSelectedLocation(position.lat, position.lng);
       this.locationMessage = 'Location marker adjusted successfully.';
+      void this.haptics.selection();
       this.cdr.detectChanges();
     });
   }
@@ -540,6 +551,7 @@ export class EditReportPage implements OnInit, OnDestroy {
 
     ++this.locationRequestId;
     this.gettingLocation = false;
+    void this.haptics.warning();
     this.selectedLatitude = null;
     this.selectedLongitude = null;
     this.locationMessage = '';
@@ -568,7 +580,7 @@ export class EditReportPage implements OnInit, OnDestroy {
   // =====================================
   // SELECT ADDITIONAL GALLERY PHOTOS
   // =====================================
-  onPhotosSelected(event: Event): void {
+  async onPhotosSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
     input.value = '';
@@ -576,30 +588,90 @@ export class EditReportPage implements OnInit, OnDestroy {
     if (this.isPhotoBusy() || this.photoUploadUncertain) return;
 
     this.photoError = '';
+    this.preparingPhotos = true;
     let rejected = 0;
     let noSpace = false;
-
-    for (const file of files) {
-      if (this.remainingPhotoSlots <= 0) {
-        noSpace = true;
-        break;
-      }
-      if (!this.isValidPhoto(file)) {
-        rejected++;
-        continue;
-      }
-      this.selectedPhotos.push({
-        file,
-        previewUrl: URL.createObjectURL(file)
-      });
-    }
-
-    if (rejected > 0 || noSpace) {
-      this.photoError =
-        (rejected > 0 ? `${rejected} invalid photo(s) skipped. Use JPG/PNG/WebP under 5 MB. ` : '') +
-        (noSpace ? 'A report can have at most 10 photos.' : '');
-    }
+    let added = 0;
     this.cdr.detectChanges();
+
+    try {
+      for (const file of files) {
+        if (this.destroyed) return;
+        if (this.remainingPhotoSlots <= 0) {
+          noSpace = true;
+          break;
+        }
+        if (!this.isValidPhoto(file)) {
+          rejected++;
+          continue;
+        }
+
+        // Resize large gallery images before uploading. Never increase file size.
+        // Fall back to the original photo if this device cannot decode it.
+        let prepared = file;
+        try {
+          prepared = await this.preparePhotoForUpload(file);
+        } catch (error) {
+          console.warn('[PAWCONNECT PHOTO OPTIMIZATION]', error);
+        }
+        if (this.destroyed) return;
+        this.selectedPhotos.push({
+          file: prepared,
+          previewUrl: URL.createObjectURL(prepared)
+        });
+        added++;
+      }
+
+      if (added > 0) void this.haptics.selection();
+      if (rejected > 0 || noSpace) {
+        void this.haptics.warning();
+        this.photoError =
+          (rejected > 0 ? `${rejected} invalid photo(s) skipped. Use JPG/PNG/WebP under 5 MB. ` : '') +
+          (noSpace ? 'A report can have at most 10 photos.' : '');
+      }
+    } finally {
+      if (!this.destroyed) {
+        this.preparingPhotos = false;
+        this.cdr.detectChanges();
+      }
+    }
+  }
+
+  private async preparePhotoForUpload(file: File): Promise<File> {
+    // Small images are already efficient; avoid unnecessary CPU work.
+    if (file.size <= 450 * 1024) return file;
+
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    try {
+      const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return file;
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+      // Use JPEG for photographic content, but keep transparent PNG/WebP
+      // originals so transparent areas are not accidentally replaced.
+      const isJpeg = file.type === 'image/jpeg';
+      if (!isJpeg) return file;
+      let best: Blob | null = null;
+      for (const quality of [0.80, 0.68, 0.56]) {
+        const candidate = await new Promise<Blob | null>(resolve =>
+          canvas.toBlob(resolve, 'image/jpeg', quality)
+        );
+        if (candidate && candidate.size > 0 && (!best || candidate.size < best.size)) {
+          best = candidate;
+        }
+        if (candidate && candidate.size <= 800 * 1024) break;
+      }
+      if (!best || best.size >= file.size) return file;
+      return new File([best], file.name.replace(/\.[^.]+$/, '') + '.jpg', {
+        type: 'image/jpeg', lastModified: Date.now()
+      });
+    } finally {
+      bitmap.close();
+    }
   }
 
   private isValidPhoto(file: File): boolean {
@@ -609,14 +681,17 @@ export class EditReportPage implements OnInit, OnDestroy {
 
   private isPhotoBusy(): boolean {
     return this.destroyed || this.loading || this.saving || this.saved ||
-      this.uploadingPhoto || this.cameraOpening || this.deletingPhotoId !== null ||
+      this.uploadingPhoto || this.cameraOpening || this.preparingPhotos || this.deletingPhotoId !== null ||
       this.refreshingPhotos;
   }
 
   removeSelectedPhoto(index: number): void {
     if (this.isPhotoBusy()) return;
     const removed = this.selectedPhotos.splice(index, 1)[0];
-    if (removed) URL.revokeObjectURL(removed.previewUrl);
+    if (removed) {
+      URL.revokeObjectURL(removed.previewUrl);
+      void this.haptics.light();
+    }
     this.photoError = '';
     this.cdr.detectChanges();
   }
@@ -635,10 +710,12 @@ export class EditReportPage implements OnInit, OnDestroy {
     if (this.isPhotoBusy() || this.remainingPhotoSlots <= 0 || this.photoUploadUncertain) return;
     if (!Capacitor.isNativePlatform()) {
       this.photoError = 'Camera capture requires the PawConnect Android app. You can use Choose Photos instead.';
+      void this.haptics.error();
       this.cdr.detectChanges();
       return;
     }
 
+    void this.haptics.light();
     this.cameraOpening = true;
     this.photoError = '';
     this.cdr.detectChanges();
@@ -658,12 +735,14 @@ export class EditReportPage implements OnInit, OnDestroy {
       if (!this.isValidPhoto(file)) throw new Error('Photo must be under 5 MB.');
       if (!this.destroyed && this.remainingPhotoSlots > 0) {
         this.selectedPhotos.push({ file, previewUrl: URL.createObjectURL(file) });
+        void this.haptics.selection();
       }
     } catch (error: any) {
       const message = String(error?.message || '').toLowerCase();
       const code = String(error?.code || '').toLowerCase();
       if (!message.includes('cancel') && !code.includes('cancel')) {
         this.photoError = 'Unable to capture photo. Check permissions and try again.';
+        void this.haptics.error();
         console.error('[PAWCONNECT EDIT PHOTO]', error);
       }
     } finally {
@@ -693,7 +772,7 @@ export class EditReportPage implements OnInit, OnDestroy {
       if (!compressed || compressed.size > 5 * 1024 * 1024) {
         throw new Error('Could not compress photo below 5 MB.');
       }
-      return new File([compressed], `pawrescue-edit-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      return new File([compressed], `pawconnect-edit-${Date.now()}.jpg`, { type: 'image/jpeg' });
     } finally {
       image.close();
     }
@@ -706,6 +785,7 @@ export class EditReportPage implements OnInit, OnDestroy {
     if (this.isPhotoBusy() || this.photoUploadUncertain ||
         this.reportId === null || this.selectedPhotos.length === 0) return;
 
+    void this.haptics.medium();
     this.uploadingPhoto = true;
     this.photoError = '';
     this.photoActionMessage = '';
@@ -753,8 +833,10 @@ export class EditReportPage implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
       this.photoActionMessage = `${totalToUpload} photo(s) added successfully!`;
+      void this.haptics.success();
     } catch (error: any) {
       console.error('[PAWCONNECT EDIT PHOTO UPLOAD]', error);
+      void this.haptics.error();
       const uncertain = error?.status === 0 || error?.name === 'TimeoutError';
       this.photoUploadUncertain = uncertain;
       this.photoError = uncertain
@@ -773,6 +855,7 @@ export class EditReportPage implements OnInit, OnDestroy {
   // =====================================
   async refreshPhotos(): Promise<void> {
     if (this.isPhotoBusy() || this.reportId === null) return;
+    void this.haptics.light();
     this.refreshingPhotos = true;
     this.photoError = '';
     try {
@@ -796,8 +879,10 @@ export class EditReportPage implements OnInit, OnDestroy {
       this.clearSelectedPhotos();
       this.photoUploadUncertain = false;
       this.photoActionMessage = 'Photo gallery refreshed. You can select additional photos.';
+      void this.haptics.success();
     } catch (error: any) {
       this.photoError = error?.message || 'Unable to refresh photos.';
+      void this.haptics.error();
     } finally {
       if (!this.destroyed) {
         this.refreshingPhotos = false;
@@ -813,6 +898,7 @@ export class EditReportPage implements OnInit, OnDestroy {
     if (this.isPhotoBusy() || this.photoUploadUncertain ||
         this.reportId === null || photo.id < 1) return;
     if (!window.confirm('Delete this photo from your pet report? This cannot be undone.')) return;
+    void this.haptics.warning();
 
     this.deletingPhotoId = photo.id;
     this.photoError = '';
@@ -836,8 +922,10 @@ export class EditReportPage implements OnInit, OnDestroy {
         };
       }
       this.photoActionMessage = 'Photo removed successfully.';
+      void this.haptics.success();
     } catch (error: any) {
       console.error('[PAWCONNECT DELETE PHOTO]', error);
+      void this.haptics.error();
       this.photoError = error?.status === 0 || error?.name === 'TimeoutError'
         ? 'Unable to confirm deletion. Tap Refresh Photos to check before trying again.'
         : error?.error?.message || error?.message || 'Unable to delete photo.';
@@ -854,7 +942,7 @@ export class EditReportPage implements OnInit, OnDestroy {
   // =====================================
 
   saveChanges(): void {
-    if (this.destroyed || this.loading || this.saving || this.uploadingPhoto ||
+    if (this.destroyed || this.loading || this.saving || this.uploadingPhoto || this.preparingPhotos ||
         this.deletingPhotoId !== null || !this.originalReport || this.reportId === null) {
       return;
     }
@@ -877,6 +965,7 @@ export class EditReportPage implements OnInit, OnDestroy {
 
     if (!this.selectedBarangay || !data.description || !data.incident_date || !data.location_address) {
       this.errorMessage = 'Please complete all required fields.';
+      void this.haptics.error();
       return;
     }
 
@@ -886,15 +975,18 @@ export class EditReportPage implements OnInit, OnDestroy {
       (data.pet_name && data.pet_name.length > 100)
     ) {
       this.errorMessage = 'One or more fields are too long.';
+      void this.haptics.error();
       return;
     }
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(data.incident_date) || data.incident_date > this.today) {
       this.errorMessage = 'Please select a valid incident date.';
+      void this.haptics.error();
       return;
     }
 
     if (!window.confirm('Save changes to this pet report?')) return;
+    void this.haptics.medium();
 
     this.saving = true;
     this.cdr.detectChanges();
@@ -915,18 +1007,21 @@ export class EditReportPage implements OnInit, OnDestroy {
           if (this.destroyed) return;
 
           if (response.success) {
+            void this.haptics.success();
             this.saved = true;
             this.successMessage = response.message || 'Pet report updated successfully!';
             this.destroyMap();
             this.showMap = false;
           } else {
             this.errorMessage = response.message || 'Unable to update report.';
+            void this.haptics.error();
           }
 
           this.cdr.detectChanges();
         },
         error: error => {
           if (this.destroyed) return;
+          void this.haptics.error();
 
           if (error.status === 401) {
             this.errorMessage = 'Your session has expired. Please log in again.';
@@ -950,7 +1045,8 @@ export class EditReportPage implements OnInit, OnDestroy {
   // =====================================
 
   goBack(): void {
-    if (this.saving || this.uploadingPhoto || this.deletingPhotoId !== null) return;
+    if (this.saving || this.uploadingPhoto || this.preparingPhotos || this.deletingPhotoId !== null) return;
+    void this.haptics.light();
     this.destroyMap();
     this.router.navigateByUrl('/my-reports');
   }

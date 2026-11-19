@@ -1,29 +1,26 @@
-<!-- ============================================================
-     PAWCONNECT — MY RECOVERIES
-     Step 65: Sent / Received Lost Pet recovery management
-     Companion: my-recoveries.page.ts (Step 64)
-     Private details and evidence are intentionally shown only here.
-     ============================================================ -->
-<ion-content [fullscreen]="true">
-  <main class="recoveries-page">
-    <header class="recoveries-header">
-      <button type="button" class="recoveries-icon-button recoveries-back-button"
-        (click)="goBack()" [disabled]="actionBusy"
-        aria-label="Back to Lost and Found">
-        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
-      </button>
-      <div class="recoveries-header-title">
-        <h1>My Recoveries</h1>
-        <p>Manage missing pet recovery reports</p>
-      </div>
-      <button type="button" class="recoveries-icon-button recoveries-refresh-button"
-        (click)="refreshRecoveries()"
-        [disabled]="actionBusy || currentList.loading || currentList.loadingMore"
-        aria-label="Refresh recovery reports">
-        <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
-      </button>
-    </header>
+<!-- PAWCONNECT — MY RECOVERIES: Sent / Received Lost Pet recovery management -->
+<ion-header class="recoveries-fixed-header">
+  <header class="recoveries-header">
+    <button type="button" class="recoveries-icon-button recoveries-back-button"
+      (click)="goBack()" [disabled]="actionBusy"
+      aria-label="Back to Lost and Found">
+      <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <div class="recoveries-header-title">
+      <h1>My Recoveries</h1>
+      <p>Manage missing pet recovery reports</p>
+    </div>
+    <button type="button" class="recoveries-icon-button recoveries-refresh-button"
+      (click)="refreshRecoveries()"
+      [disabled]="actionBusy || currentList.loading || currentList.loadingMore"
+      aria-label="Refresh recovery reports">
+      <ion-icon name="refresh-outline" aria-hidden="true"></ion-icon>
+    </button>
+  </header>
+</ion-header>
 
+<ion-content [fullscreen]="false">
+  <main class="recoveries-page">
     <nav class="recoveries-tabs" aria-label="Recovery categories">
       <button type="button" class="recoveries-tab"
         [class.is-active]="activeTab === 'sent'"
@@ -63,16 +60,19 @@
         <ion-spinner name="crescent"></ion-spinner>
         <p>Loading recoveries...</p>
       </div>
+
       <div class="recoveries-notice recoveries-notice--error" *ngIf="currentList.error" role="alert">
         <span>{{ currentList.error }}</span>
         <button type="button" (click)="loadRecoveries(activeTab)"
           [disabled]="currentList.loading || actionBusy">Retry</button>
       </div>
+
       <div class="recoveries-loading recoveries-loading--compact"
         *ngIf="currentList.loading && currentList.loaded" role="status">
         <ion-spinner name="dots"></ion-spinner>
         <span>Refreshing...</span>
       </div>
+
       <div class="recoveries-empty"
         *ngIf="!currentList.loading && currentList.loaded && currentList.items.length === 0 && !currentList.error">
         <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
@@ -116,6 +116,8 @@
       </div>
     </section>
   </main>
+
+</ion-content>
 
   <!-- DETAILS DIALOG: The only place where private evidence, finding
        location and pickup arrangements are displayed. -->
@@ -186,18 +188,18 @@
             <span class="recoveries-disclosure-chevron" aria-hidden="true"></span>
           </summary>
           <div class="recoveries-disclosure-content">
-          <p class="recoveries-prewrap">{{ recovery.finding_description }}</p>
-          <div class="recoveries-detail-lines">
-            <p><strong>Found at:</strong> {{ recovery.found_location }}</p>
-            <p *ngIf="recovery.found_at"><strong>Date found:</strong> {{ recovery.found_at }}</p>
-            <p *ngIf="recovery.linked_found_report_id !== null">
-              <strong>Linked Found Pet report:</strong> #{{ recovery.linked_found_report_id }}
+            <p class="recoveries-prewrap">{{ recovery.finding_description }}</p>
+            <div class="recoveries-detail-lines">
+              <p><strong>Found at:</strong> {{ recovery.found_location }}</p>
+              <p *ngIf="recovery.found_at"><strong>Date found:</strong> {{ recovery.found_at }}</p>
+              <p *ngIf="recovery.linked_found_report_id !== null">
+                <strong>Linked Found Pet report:</strong> #{{ recovery.linked_found_report_id }}
+              </p>
+            </div>
+            <p class="recoveries-muted" *ngIf="recovery.found_latitude !== null && recovery.found_longitude !== null">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              Finder provided GPS coordinates: {{ recovery.found_latitude }}, {{ recovery.found_longitude }}
             </p>
-          </div>
-          <p class="recoveries-muted" *ngIf="recovery.found_latitude !== null && recovery.found_longitude !== null">
-            <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-            Finder provided GPS coordinates: {{ recovery.found_latitude }}, {{ recovery.found_longitude }}
-          </p>
           </div>
         </details>
 
@@ -212,26 +214,26 @@
           <div class="recoveries-disclosure-content">
             <div class="recoveries-section-inline-heading">
               <h3>Evidence photos</h3>
-            <button type="button" class="recoveries-text-button"
-              *ngIf="evidenceError && !evidenceLoading"
-              (click)="loadEvidencePhotos(recovery)">Retry Photos</button>
-          </div>
-          <p class="recoveries-muted">These photos are available only to the participants and authorized staff.</p>
-          <div class="recoveries-working" *ngIf="evidenceLoading" role="status">
-            <ion-spinner name="dots"></ion-spinner> Loading evidence photos...
-          </div>
-          <p class="recoveries-notice recoveries-notice--error" *ngIf="evidenceError" role="alert">
-            {{ evidenceError }}
-          </p>
-          <p class="recoveries-muted" *ngIf="!evidenceLoading && recovery.evidence_photos.length === 0">
-            No evidence photos were submitted.
-          </p>
-          <div class="recoveries-photo-grid" *ngIf="evidencePhotos.length > 0">
-            <figure *ngFor="let photo of evidencePhotos; let photoIndex = index; trackBy: trackEvidence">
-              <img [src]="photo.url" [alt]="'Private recovery photo ' + (photoIndex + 1)" />
-              <figcaption>Photo {{ photoIndex + 1 }}</figcaption>
-            </figure>
-          </div>
+              <button type="button" class="recoveries-text-button"
+                *ngIf="evidenceError && !evidenceLoading"
+                (click)="loadEvidencePhotos(recovery)">Retry Photos</button>
+            </div>
+            <p class="recoveries-muted">These photos are available only to the participants and authorized staff.</p>
+            <div class="recoveries-working" *ngIf="evidenceLoading" role="status">
+              <ion-spinner name="dots"></ion-spinner> Loading evidence photos...
+            </div>
+            <p class="recoveries-notice recoveries-notice--error" *ngIf="evidenceError" role="alert">
+              {{ evidenceError }}
+            </p>
+            <p class="recoveries-muted" *ngIf="!evidenceLoading && recovery.evidence_photos.length === 0">
+              No evidence photos were submitted.
+            </p>
+            <div class="recoveries-photo-grid" *ngIf="evidencePhotos.length > 0">
+              <figure *ngFor="let photo of evidencePhotos; let photoIndex = index; trackBy: trackEvidence">
+                <img [src]="photo.url" [alt]="'Private recovery photo ' + (photoIndex + 1)" />
+                <figcaption>Photo {{ photoIndex + 1 }}</figcaption>
+              </figure>
+            </div>
           </div>
         </details>
 
@@ -306,16 +308,19 @@
             <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon> Confirm Pickup Arrangement
           </button>
         </section>
+
         <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="canRequestReschedule">
           <button type="button" class="recoveries-button recoveries-button--subtle recoveries-button--full"
             (click)="startReschedule()" [disabled]="actionBusy || detailLoading">Request Reschedule</button>
         </section>
+
         <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="canConfirmHandover">
           <button type="button" class="recoveries-button recoveries-button--primary recoveries-button--full"
             (click)="openActionModal('handover')" [disabled]="actionBusy || detailLoading">
             <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Confirm Actual Pet Handover
           </button>
         </section>
+
         <section class="recoveries-dialog-section" *ngIf="recovery.owner_handover_confirmed_at || recovery.finder_handover_confirmed_at">
           <h3><ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Handover Progress</h3>
           <div class="recoveries-confirmation-list">
@@ -338,6 +343,7 @@
           Recovery completed. The missing pet has been returned and the Lost Pet report resolved.
         </p>
       </div>
+
       <footer class="recoveries-dialog-footer">
         <button type="button" class="recoveries-button recoveries-button--outline"
           (click)="closeDetails()" [disabled]="actionBusy">Close</button>
@@ -356,12 +362,13 @@
           <ion-icon name="close-outline"></ion-icon>
         </button>
       </header>
+
       <div class="recoveries-action-body">
         <div class="recoveries-notice recoveries-notice--error" *ngIf="actionError" role="alert">{{ actionError }}</div>
+
         <!-- Approve/reject forms reuse Step 64 component state. -->
         <section class="recoveries-dialog-section recoveries-dialog-section--action" *ngIf="formMode === 'approve' || formMode === 'reject'">
           <form class="recoveries-form" (ngSubmit)="submitDecision()">
-            
             <p class="recoveries-muted" *ngIf="formMode === 'approve'">
               This meeting place will be shared privately with the approved finder only.
             </p>
@@ -449,13 +456,13 @@
               {{ pickupLocationLoading ? 'Getting GPS...' : (pickupLatitude !== null && pickupLongitude !== null ? 'GPS Pin Added — Tap to Update' : 'Add Current GPS Pin (Optional)') }}
             </button>
             <div class="recoveries-gps-result" *ngIf="pickupLatitude !== null && pickupLongitude !== null" role="status">
-                <strong><ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Location captured successfully</strong>
-                <div class="recoveries-gps-coordinates">
-                  <div><span>Latitude</span><b>{{ pickupLatitude | number:'1.6-6' }}</b></div>
-                  <div><span>Longitude</span><b>{{ pickupLongitude | number:'1.6-6' }}</b></div>
-                </div>
-                <small>Also enter the written meeting place above.</small>
+              <strong><ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon> Location captured successfully</strong>
+              <div class="recoveries-gps-coordinates">
+                <div><span>Latitude</span><b>{{ pickupLatitude | number:'1.6-6' }}</b></div>
+                <div><span>Longitude</span><b>{{ pickupLongitude | number:'1.6-6' }}</b></div>
               </div>
+              <small>Also enter the written meeting place above.</small>
+            </div>
             <label class="recoveries-field">
               <span>Reason (optional)</span>
               <textarea name="rescheduleReason" [(ngModel)]="rescheduleReason" rows="2"
@@ -471,7 +478,6 @@
           </form>
         </section>
 
-
         <section class="recoveries-dialog-section" *ngIf="actionModal === 'pickup' && selectedRecovery as recovery">
           <p class="recoveries-muted">Confirming the schedule does not mean you have received or handed over the pet.</p>
           <div class="recoveries-pickup-box">
@@ -482,6 +488,7 @@
           <button type="button" class="recoveries-button recoveries-button--primary recoveries-button--full"
             (click)="confirmPickup()" [disabled]="actionBusy">Confirm Pickup Arrangement</button>
         </section>
+
         <section class="recoveries-dialog-section recoveries-handover"
           *ngIf="actionModal === 'handover'">
           <h3><ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon> Confirm Actual Pet Handover</h3>
@@ -502,7 +509,6 @@
           </button>
           <p class="recoveries-muted">The Lost Pet report will be resolved only after both residents confirm.</p>
         </section>
-
 
         <section class="recoveries-dialog-section" *ngIf="actionModal === 'reschedule_response' && selectedRecovery as recovery">
           <p class="recoveries-muted">Review the proposed arrangement before responding.</p>
@@ -526,9 +532,7 @@
               Keep Original
             </button>
           </div>
-
         </section>
       </div>
     </div>
   </div>
-</ion-content>
