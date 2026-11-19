@@ -14,7 +14,8 @@ import {
   IonContent,
   IonIcon,
   IonButton,
-  IonSpinner
+  IonSpinner,
+  IonHeader
 } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -47,6 +48,7 @@ import {
   PetAdoptionService,
   AdoptionPost
 } from '../../services/pet-adoption';
+import { HapticsService } from '../../services/haptics.service';
 
 // =====================================
 // PAWRESCUE COMMUNITY
@@ -75,7 +77,8 @@ let lastFeedSnapshot: AdoptionFeedSnapshot | null = null;
     IonContent,
     IonIcon,
     IonButton,
-    IonSpinner
+    IonSpinner,
+    IonHeader
   ]
 })
 export class PetAdoptionPage implements OnInit, OnDestroy {
@@ -85,6 +88,7 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
   // =====================================
 
   private readonly adoption = inject(PetAdoptionService);
+  private readonly haptics = inject(HapticsService);
   private readonly router = inject(Router);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -217,6 +221,14 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
   // =====================================
   // LOAD / REFRESH ADOPTION LISTINGS
   // =====================================
+
+  // Called only by a user-tapped Refresh / Try Again button.
+  // Automatic lifecycle fetches still call loadPosts() without vibration.
+  refreshPosts(): void {
+    if (this.destroyed || this.refreshing) return;
+    void this.haptics.light();
+    this.loadPosts();
+  }
 
   loadPosts(): void {
     if (this.destroyed || this.refreshing) {
@@ -363,6 +375,7 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
     if (filter === this.selectedFilter) {
       return;
     }
+    void this.haptics.light();
 
     this.updateUI(() => {
       this.selectedFilter = filter;
@@ -404,7 +417,8 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
   }
 
   choosePhoto(post: AdoptionPost, index: number): void {
-    if (index >= 0 && index < this.urls(post).length) {
+    if (index >= 0 && index < this.urls(post).length && index !== this.index(post)) {
+      void this.haptics.light();
       this.photoIndexes.set(post.id, index);
     }
   }
@@ -413,6 +427,7 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
     const count = this.urls(post).length;
 
     if (count > 1) {
+      void this.haptics.light();
       this.photoIndexes.set(
         post.id,
         (this.index(post) + offset + count) % count
@@ -448,10 +463,12 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
   // =====================================
 
   openViewer(post: AdoptionPost): void {
+    void this.haptics.light();
     this.viewerPost = post;
   }
 
   closeViewer(): void {
+    if (this.viewerPost && !this.destroyed) void this.haptics.light();
     this.viewerPost = null;
     this.startX = null;
   }
@@ -461,6 +478,7 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
   // =====================================
 
   openPost(post: AdoptionPost): void {
+    if (!this.viewerPost) void this.haptics.light();
     this.closeViewer();
     this.router.navigate(['/adoption-details', post.id]);
   }
@@ -474,14 +492,17 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
   // =====================================
 
   goBack(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/home');
   }
 
   postPet(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/post-adoption');
   }
 
   myAdoptions(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/my-adoptions');
   }
 

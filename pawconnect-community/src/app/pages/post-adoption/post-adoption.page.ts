@@ -12,7 +12,9 @@ import {
   IonContent,
   IonIcon,
   IonButton,
-  IonSpinner
+  IonSpinner,
+  IonToolbar, 
+  IonHeader
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -39,6 +41,7 @@ import {
   PetAdoptionService,
   NewAdoptionPost
 } from '../../services/pet-adoption';
+import { HapticsService } from '../../services/haptics.service';
 
 // =====================================
 // PAWRESCUE COMMUNITY
@@ -71,7 +74,9 @@ interface SelectedPhoto {
     IonContent,
     IonIcon,
     IonButton,
-    IonSpinner
+    IonSpinner,
+    IonToolbar, 
+    IonHeader
   ]
 })
 export class PostAdoptionPage implements OnDestroy {
@@ -79,6 +84,7 @@ export class PostAdoptionPage implements OnDestroy {
   private readonly router = inject(Router);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly haptics = inject(HapticsService);
 
   private submitRequest?: Subscription;
   private photoRequest?: Subscription;
@@ -132,6 +138,10 @@ export class PostAdoptionPage implements OnDestroy {
   photoError = '';
   successMessage = '';
 
+  // Three-step adoption listing wizard (presentation only; API unchanged).
+  formStep: 1 | 2 | 3 = 1;
+  stepError = '';
+
   constructor() {
     addIcons({
       arrowBackOutline,
@@ -166,6 +176,53 @@ export class PostAdoptionPage implements OnDestroy {
   }
 
   // =====================================
+  // ADOPTION LISTING WIZARD
+  // =====================================
+  private validateWizardStep(step: 1 | 2 | 3): string {
+    if (step === 1) {
+      if (!this.model.pet_name.trim()) return 'Please enter the pet name.';
+      if (this.model.pet_name.trim().length > 100) return 'Pet name is too long.';
+      if (!['dog', 'cat'].includes(this.model.animal_type)) return 'Please select an animal type.';
+      if (!this.model.description.trim()) return 'Please enter a pet description.';
+      if (this.model.description.trim().length > 5000) return 'Description is too long.';
+      if (this.model.breed.length > 120 || this.model.health_notes.length > 3000) {
+        return 'One or more pet details are too long.';
+      }
+      const age = this.model.age_months;
+      if (age !== null && (!Number.isInteger(Number(age)) || Number(age) < 0 || Number(age) > 600)) {
+        return 'Please select a valid approximate age.';
+      }
+    }
+    if (step === 2) {
+      if (!this.barangays.includes(this.model.barangay)) return 'Please select a barangay.';
+      if (this.model.location_details.length > 255) return 'Nearby landmark is too long.';
+    }
+    return '';
+  }
+
+  nextStep(): void {
+    if (this.isLocked || this.formStep >= 3) return;
+    const error = this.validateWizardStep(this.formStep);
+    if (error) {
+      this.stepError = error;
+      void this.haptics.error();
+      return;
+    }
+    this.stepError = '';
+    this.errorMessage = '';
+    this.formStep = (this.formStep + 1) as 1 | 2 | 3;
+    void this.haptics.light();
+  }
+
+  previousStep(): void {
+    if (this.isLocked || this.formStep <= 1) return;
+    this.stepError = '';
+    this.errorMessage = '';
+    this.formStep = (this.formStep - 1) as 1 | 2 | 3;
+    void this.haptics.light();
+  }
+
+  // =====================================
   // GALLERY PHOTO SELECTION
   // =====================================
   // Large gallery images are optimized in advance, while the user finishes
@@ -177,6 +234,7 @@ export class PostAdoptionPage implements OnDestroy {
     input.value = '';
 
     if (this.isLocked) return;
+    if (files.length > 0) void this.haptics.light();
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     const maxSize = 5 * 1024 * 1024;
@@ -235,6 +293,7 @@ export class PostAdoptionPage implements OnDestroy {
     if (excessive) messages.push('Maximum of 10 photos per adoption post.');
 
     this.photoError = messages.join(' ');
+    if (messages.length > 0) void this.haptics.error();
     this.cdr.detectChanges();
   }
 
@@ -315,6 +374,7 @@ export class PostAdoptionPage implements OnDestroy {
 
     if (this.selectedPhotos.length >= this.maxPhotos) {
       this.photoError = 'Maximum of 10 photos per adoption post.';
+      void this.haptics.error();
       return;
     }
 
@@ -324,6 +384,7 @@ export class PostAdoptionPage implements OnDestroy {
       return;
     }
 
+    void this.haptics.light();
     this.updateUI(() => {
       this.cameraOpening = true;
       this.photoError = '';
@@ -360,6 +421,7 @@ export class PostAdoptionPage implements OnDestroy {
           return;
         }
 
+        void this.haptics.success();
         this.selectedPhotos.push({
           file,
           preview: URL.createObjectURL(file),
@@ -373,6 +435,7 @@ export class PostAdoptionPage implements OnDestroy {
         this.updateUI(() => {
           this.photoError =
             'Unable to capture photo. Check camera permission and try again.';
+          void this.haptics.error();
         });
       }
     } finally {
@@ -432,6 +495,7 @@ export class PostAdoptionPage implements OnDestroy {
     const [removed] = this.selectedPhotos.splice(index, 1);
     URL.revokeObjectURL(removed.preview);
     this.photoError = '';
+    void this.haptics.light();
   }
 
   // =====================================
@@ -439,6 +503,22 @@ export class PostAdoptionPage implements OnDestroy {
   // =====================================
   submitPost(): void {
     if (this.isLocked) return;
+    // Prevent publishing before all wizard steps have been reviewed.
+    if (this.formStep !== 3) {
+      this.stepError = 'Complete all steps before publishing.';
+      void this.haptics.error();
+      return;
+    }
+    for (const step of [1, 2] as const) {
+      const error = this.validateWizardStep(step);
+      if (error) {
+        this.formStep = step;
+        this.stepError = error;
+        void this.haptics.error();
+        return;
+      }
+    }
+    this.stepError = '';
 
     this.errorMessage = '';
     this.photoError = '';
@@ -463,11 +543,13 @@ export class PostAdoptionPage implements OnDestroy {
 
     if (!data.pet_name || !data.description || !this.barangays.includes(data.barangay)) {
       this.errorMessage = 'Please complete all required fields.';
+      void this.haptics.error();
       return;
     }
 
     if (age !== null && (!Number.isInteger(age) || age < 0 || age > 600)) {
       this.errorMessage = 'Age must be between 0 and 600 months.';
+      void this.haptics.error();
       return;
     }
 
@@ -479,9 +561,11 @@ export class PostAdoptionPage implements OnDestroy {
       (data.location_details?.length || 0) > 255
     ) {
       this.errorMessage = 'One or more fields are too long.';
+      void this.haptics.error();
       return;
     }
 
+    void this.haptics.medium();
     this.updateUI(() => {
       this.saving = true;
     });
@@ -513,9 +597,11 @@ export class PostAdoptionPage implements OnDestroy {
               this.errorMessage = response.message ||
                 'Unable to confirm adoption post creation. Check My Adoptions.';
             });
+            void this.haptics.error();
             return;
           }
 
+          void this.haptics.success();
           this.updateUI(() => {
             this.createdId = id;
             this.errorMessage = '';
@@ -530,6 +616,7 @@ export class PostAdoptionPage implements OnDestroy {
           }
         },
         error: error => {
+          void this.haptics.error();
           this.updateUI(() => {
             if (error?.status === 401) {
               this.errorMessage = 'Session expired. Please log in again.';
@@ -620,6 +707,7 @@ export class PostAdoptionPage implements OnDestroy {
             photo.uploaded = true;
             this.uploadedCount = this.selectedPhotos.filter(item => item.uploaded).length;
             this.photoUploaded = this.selectedPhotos.every(item => item.uploaded);
+            if (this.photoUploaded) void this.haptics.success();
             this.photoError = '';
             this.successMessage = this.photoUploaded
               ? `Pet adoption post and ${this.uploadedCount} photo(s) submitted successfully!`
@@ -628,6 +716,7 @@ export class PostAdoptionPage implements OnDestroy {
           console.log('[PAWRESCUE ADOPTION] Photo uploaded:', response.photo_path);
         },
         error: error => {
+          void this.haptics.error();
           this.updateUI(() => {
             const uncertain = error?.name === 'TimeoutError' ||
               error?.status === 0 ||
@@ -657,12 +746,14 @@ export class PostAdoptionPage implements OnDestroy {
 
   goBack(): void {
     if (!this.saving && !this.uploading) {
+      void this.haptics.light();
       this.router.navigateByUrl('/pet-adoption');
     }
   }
 
   viewMyAdoptions(): void {
     if (!this.saving && !this.uploading) {
+      void this.haptics.light();
       this.router.navigateByUrl('/my-adoptions');
     }
   }

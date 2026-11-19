@@ -1,4 +1,3 @@
-
 import {
   Component,
   OnInit,
@@ -10,6 +9,7 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HapticsService } from '../../services/haptics.service';
 
 import {
   ActivatedRoute,
@@ -20,7 +20,9 @@ import {
   IonContent,
   IonIcon,
   IonButton,
-  IonSpinner
+  IonSpinner, 
+  IonHeader, 
+  IonToolbar
 } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -58,13 +60,15 @@ import {
   templateUrl: './adoption-details.page.html',
   styleUrls: ['./adoption-details.page.scss'],
   standalone: true,
-  imports: [
+  imports: [IonHeader, IonToolbar, 
     CommonModule,
     FormsModule,
     IonContent,
     IonIcon,
     IonButton,
-    IonSpinner
+    IonSpinner,
+    IonToolbar, 
+    IonHeader,
   ]
 })
 export class AdoptionDetailsPage implements OnInit, OnDestroy {
@@ -84,6 +88,7 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly haptics = inject(HapticsService);
 
   private destroyed = false;
   private firstIonicEntrance = true;
@@ -462,6 +467,8 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
       return;
     }
 
+    void this.haptics.selection();
+
     this.photoIndex =
       (
         this.photoIndex +
@@ -538,6 +545,7 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
     const requestMessage = this.message.trim();
 
     if (requestMessage.length < 10 || requestMessage.length > 2000) {
+      void this.haptics.error();
       this.updateUI(() => {
         this.errorMessage =
           'Please write an adoption message between 10 and 2000 characters.';
@@ -553,6 +561,8 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
     if (!confirmed || this.destroyed) {
       return;
     }
+
+    void this.haptics.medium();
 
     const adoptionId = Number(pet.id);
 
@@ -583,12 +593,14 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
       this.updateUI(() => {
         if (response.success) {
+          void this.haptics.success();
           this.requested = true;
           this.existingRequestStatus = 'pending';
           this.requestUncertain = false;
           this.successMessage =
             'Adoption request submitted successfully! You can track your application in My Adoptions.';
         } else {
+          void this.haptics.error();
           this.errorMessage =
             response.message || 'Unable to submit adoption request.';
         }
@@ -603,6 +615,7 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
         return;
       }
 
+      void this.haptics.error();
       this.updateUI(() => {
         const status = error?.status;
         const serverMessage = String(error?.error?.message || '').trim();
@@ -672,6 +685,8 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
   goBack(): void {
 
+    void this.haptics.light();
+
     const fromMyAdoptions =
       this.route.snapshot.queryParamMap
         .get('mine') === '1';
@@ -689,6 +704,8 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
   // =====================================
 
   goToMyAdoptions(): void {
+
+    void this.haptics.light();
 
     this.router.navigateByUrl(
       '/my-adoptions'

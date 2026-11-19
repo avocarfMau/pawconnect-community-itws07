@@ -4,81 +4,46 @@
      MY ADOPTIONS PAGE
 ===================================== -->
 
+<ion-header class="my-adoptions-fixed-header">
+  <div class="my-adoptions-fixed-header-inner">
+    <header class="page-header">
+    
+          <button
+            type="button"
+            class="back-button"
+            (click)="goBack()"
+            aria-label="Back to Pet Adoption"
+          >
+            <ion-icon name="arrow-back-outline"></ion-icon>
+          </button>
+    
+          <div class="header-text">
+            <h1>My Adoptions</h1>
+            <p>Manage your pet adoption activities</p>
+          </div>
+    
+          <button
+            type="button"
+            class="refresh-button"
+            (click)="loadAll()"
+            [disabled]="loading || busy"
+            aria-label="Refresh adoptions"
+          >
+            <ion-icon name="refresh-outline"></ion-icon>
+          </button>
+    
+        </header>
+  </div>
+</ion-header>
+
 <ion-content
-  [fullscreen]="true"
+  [fullscreen]="false"
   class="my-adoptions-content"
 >
 
   <div class="my-adoptions-container">
 
-    <!-- =====================================
-         HEADER
-    ===================================== -->
 
-    <header class="page-header">
-
-      <button
-        type="button"
-        class="back-button"
-        (click)="goBack()"
-        aria-label="Back to Pet Adoption"
-      >
-        <ion-icon name="arrow-back-outline"></ion-icon>
-      </button>
-
-      <div class="header-text">
-        <h1>My Adoptions</h1>
-        <p>Manage your pet adoption activities</p>
-      </div>
-
-      <button
-        type="button"
-        class="refresh-button"
-        (click)="loadAll()"
-        [disabled]="loading || busy"
-        aria-label="Refresh adoptions"
-      >
-        <ion-icon name="refresh-outline"></ion-icon>
-      </button>
-
-    </header>
-
-    <!-- =====================================
-         INTRODUCTION
-    ===================================== -->
-
-    <section class="intro-card">
-
-      <ion-icon name="paw-outline"></ion-icon>
-
-      <div>
-        <h2>Adoption Management</h2>
-        <p>
-          Manage your adoption listings and
-          keep track of adoption requests.
-        </p>
-      </div>
-
-    </section>
-
-    <!-- =====================================
-         POST A PET BUTTON
-    ===================================== -->
-
-    <ion-button
-      expand="block"
-      class="post-button"
-      (click)="postPet()"
-      [disabled]="busy"
-    >
-      <ion-icon
-        name="add-outline"
-        slot="start"
-      ></ion-icon>
-
-      Post a Pet for Adoption
-
-    </ion-button>
 
     <!-- =====================================
          SUCCESS MESSAGE
@@ -127,11 +92,7 @@
         [attr.aria-pressed]="selectedTab === 'posts'"
         (click)="setTab('posts')"
       >
-        My Posts
-
-        <span class="tab-count">
-          {{ posts.length }}
-        </span>
+        My Pet Listings
       </button>
 
       <button
@@ -141,11 +102,7 @@
         [attr.aria-pressed]="selectedTab === 'received'"
         (click)="setTab('received')"
       >
-        Received
-
-        <span class="tab-count">
-          {{ received.length }}
-        </span>
+        Requests Received
       </button>
 
       <button
@@ -155,11 +112,7 @@
         [attr.aria-pressed]="selectedTab === 'sent'"
         (click)="setTab('sent')"
       >
-        Sent
-
-        <span class="tab-count">
-          {{ sent.length }}
-        </span>
+        Requests Sent
       </button>
 
     </div>
@@ -187,7 +140,7 @@
     >
 
       <div class="section-heading">
-        <h2>My Adoption Posts</h2>
+        <h2 style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">My Pet Listings <span aria-label="My Pet Listings count" style="display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 999px; border: 1px solid #d3e8d9; background: #eaf7ee; color: #287d32; font-size: 14px; font-weight: 700; line-height: 1;">{{ posts.length }}</span></h2>
 
         <p>
           View pets you have posted for adoption.
@@ -241,7 +194,7 @@
             </h3>
 
             <p>
-              Posted
+              <ion-icon name="calendar-outline" aria-hidden="true" style="vertical-align: -2px; margin-right: 3px;"></ion-icon>
               {{ post.created_at | date:'mediumDate' }}
             </p>
           </div>
@@ -259,15 +212,15 @@
 
         <!-- PET INFO -->
 
-        <div class="pet-info">
+        <div class="pet-info" style="padding-bottom: 12px;">
 
-          <div class="pet-tags">
+          <div class="pet-tags" style="margin-bottom: 10px;">
 
             <span class="pet-tag">
               {{ post.animal_type | titlecase }}
             </span>
 
-            <span class="pet-tag">
+            <span class="pet-tag" *ngIf="post.sex">
               {{ post.sex | titlecase }}
             </span>
 
@@ -282,12 +235,11 @@
 
           </div>
 
-          <p
-            class="pet-description"
-            *ngIf="post.description"
-          >
-            {{ post.description }}
-          </p>
+          <div *ngIf="post.description && post.description.trim() && post.description.trim().toLowerCase() !== 'none'"
+               style="padding: 10px 12px; border-radius: 10px; background: #f6f9f6; border: 1px solid #e8efe9;">
+            <p style="margin: 0 0 4px; font-size: 10px; font-weight: 750; letter-spacing: .3px; text-transform: uppercase; color: #698071;">About this pet</p>
+            <p class="pet-description" style="margin: 0;">{{ post.description }}</p>
+          </div>
 
         </div>
 
@@ -390,7 +342,7 @@
 
         <!-- LOCATION -->
 
-        <div class="pet-location">
+        <div class="pet-location" style="display: flex; align-items: center; gap: 9px; padding: 12px 14px; background: #fbfdfb; border-top: 1px solid #edf1ed;">
 
           <ion-icon
             name="location-outline"
@@ -451,7 +403,7 @@
     >
 
       <div class="section-heading">
-        <h2>Received Requests</h2>
+        <h2 style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">Received Requests <span aria-label="Received Requests count" style="display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 999px; border: 1px solid #d3e8d9; background: #eaf7ee; color: #287d32; font-size: 14px; font-weight: 700; line-height: 1;">{{ received.length }}</span></h2>
 
         <p>
           Review adoption applications
@@ -497,10 +449,7 @@
               {{ request.requester_name }}
             </h3>
 
-            <p>
-              Wants to adopt
-              <strong>{{ request.pet_name }}</strong>
-            </p>
+            <p>Applicant for <strong>{{ request.pet_name }}</strong></p>
 
           </div>
 
@@ -517,19 +466,20 @@
 
         <!-- REQUEST MESSAGE -->
 
-        <div class="request-body">
+        <div class="request-body" style="padding: 14px;">
 
-          <p class="request-label">
-            Adoption Message
+          <p class="request-label" style="display: flex; align-items: center; gap: 6px; color: #315e3f;">
+            <ion-icon name="chatbubble-ellipses-outline" aria-hidden="true"></ion-icon>
+            Applicant's message
           </p>
 
-          <p class="request-message">
+          <p class="request-message" style="margin-bottom: 10px; border-left: 3px solid #c7decf; border-radius: 0 9px 9px 0;">
             {{ request.message || 'No message provided.' }}
           </p>
 
-          <p class="request-date">
-            Submitted
-            {{ request.created_at | date:'mediumDate' }}
+          <p class="request-date" style="display: flex; align-items: center; gap: 5px; padding-top: 10px; border-top: 1px solid #edf1ed;">
+            <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+            Requested {{ request.created_at | date:'mediumDate' }}
           </p>
 
         </div>
@@ -622,7 +572,7 @@
     >
 
       <div class="section-heading">
-        <h2>Sent Requests</h2>
+        <h2 style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">Sent Requests <span aria-label="Sent Requests count" style="display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 999px; border: 1px solid #d3e8d9; background: #eaf7ee; color: #287d32; font-size: 14px; font-weight: 700; line-height: 1;">{{ sent.length }}</span></h2>
 
         <p>
           Track your applications to adopt
@@ -674,10 +624,7 @@
 
             <h3>{{ request.pet_name }}</h3>
 
-            <p>
-              Pet Owner:
-              {{ request.owner_name }}
-            </p>
+            <p>Owner: {{ request.owner_name }}</p>
 
           </div>
 
@@ -692,30 +639,30 @@
 
         </div>
 
-        <div class="request-body">
+        <div class="request-body" style="padding: 14px;">
 
-          <div class="pet-tags">
+          <div class="pet-tags" style="margin-bottom: 10px;">
             <span class="pet-tag">
               {{ request.animal_type | titlecase }}
             </span>
 
             <span class="pet-tag">
-              Pet:
-              {{ statusLabel(request.adoption_status) }}
+              Pet status: {{ statusLabel(request.adoption_status) }}
             </span>
           </div>
 
-          <p class="request-label">
-            Your Message
+          <p class="request-label" style="display: flex; align-items: center; gap: 6px; color: #315e3f;">
+            <ion-icon name="chatbubble-ellipses-outline" aria-hidden="true"></ion-icon>
+            Your message
           </p>
 
-          <p class="request-message">
+          <p class="request-message" style="margin-bottom: 10px; border-left: 3px solid #c7decf; border-radius: 0 9px 9px 0;">
             {{ request.message || 'No message provided.' }}
           </p>
 
-          <p class="request-date">
-            Submitted
-            {{ request.created_at | date:'mediumDate' }}
+          <p class="request-date" style="display: flex; align-items: center; gap: 5px; padding-top: 10px; border-top: 1px solid #edf1ed;">
+            <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+            Requested {{ request.created_at | date:'mediumDate' }}
           </p>
 
           <!-- APPROVED ADOPTER: PICKUP SCHEDULE -->

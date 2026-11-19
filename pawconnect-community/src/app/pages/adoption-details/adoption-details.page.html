@@ -4,18 +4,42 @@
      ADOPTION DETAILS PAGE
 ===================================== -->
 
+<ion-header class="adoption-details-ion-header" mode="md">
+  <ion-toolbar class="adoption-details-toolbar">
+      <div class="page-header details-page-header">
+  
+        <button
+          type="button"
+          class="back-button"
+          (click)="goBack()"
+          aria-label="Go back"
+        >
+          <ion-icon
+            name="arrow-back-outline"
+          ></ion-icon>
+        </button>
+  
+        <div class="header-text">
+          <h1>Pet Details</h1>
+          <p>Meet your potential new companion</p>
+        </div>
+  
+      </div>
+  </ion-toolbar>
+</ion-header>
+
 <ion-content
   [fullscreen]="true"
   class="adoption-details-content"
 >
 
-  <div class="details-container">
+  <div class="details-container redesigned-details">
 
     <!-- =====================================
          PAGE HEADER
     ===================================== -->
 
-    <header class="page-header">
+    <header class="page-header details-page-header">
 
       <button
         type="button"
@@ -30,7 +54,7 @@
 
       <div class="header-text">
         <h1>Pet Details</h1>
-        <p>Pet Adoption Community</p>
+        <p>Meet your potential new companion</p>
       </div>
 
     </header>
@@ -98,14 +122,14 @@
            MAIN PET CARD
       ===================================== -->
 
-      <section class="pet-details-card">
+      <section class="pet-details-card pet-hero-card" aria-label="Pet profile">
 
         <!-- =====================================
              PET PHOTO GALLERY
         ===================================== -->
 
         <div
-          class="pet-gallery"
+          class="pet-gallery pet-hero-gallery"
           (touchstart)="onTouchStart($event)"
           (touchend)="onTouchEnd($event)"
         >
@@ -219,7 +243,7 @@
              PET MAIN INFORMATION
         ===================================== -->
 
-        <div class="pet-main-info">
+        <div class="pet-main-info pet-profile-summary">
 
           <div class="pet-title-row">
 
@@ -240,7 +264,7 @@
 
           <!-- PET TAGS -->
 
-          <div class="pet-tags">
+          <div class="pet-tags pet-profile-tags">
 
             <span class="pet-tag">
               {{ pet.animal_type | titlecase }}
@@ -264,7 +288,7 @@
           <!-- BREED -->
 
           <div
-            class="info-row"
+            class="info-row profile-meta-row"
             *ngIf="pet.breed"
           >
 
@@ -276,7 +300,7 @@
 
           <!-- PET OWNER -->
 
-          <div class="info-row">
+          <div class="info-row profile-meta-row">
 
             <strong>Posted By:</strong>
 
@@ -288,7 +312,7 @@
 
           <!-- DATE POSTED -->
 
-          <div class="info-row">
+          <div class="info-row profile-meta-row">
 
             <strong>Date Posted:</strong>
 
@@ -306,9 +330,9 @@
            PET DESCRIPTION
       ===================================== -->
 
-      <section class="details-section">
+      <section class="details-section info-panel">
 
-        <h2>About This Pet</h2>
+        <div class="details-section-heading"><ion-icon name="paw-outline" aria-hidden="true"></ion-icon><h2>About This Pet</h2></div>
 
         <p class="description-text">
           {{ pet.description }}
@@ -321,11 +345,11 @@
       ===================================== -->
 
       <section
-        class="details-section"
+        class="details-section info-panel"
         *ngIf="pet.health_notes"
       >
 
-        <h2>Health Information</h2>
+        <div class="details-section-heading"><ion-icon name="medkit-outline" aria-hidden="true"></ion-icon><h2>Health Information</h2></div>
 
         <p class="description-text">
           {{ pet.health_notes }}
@@ -337,11 +361,11 @@
            PET LOCATION
       ===================================== -->
 
-      <section class="details-section">
+      <section class="details-section info-panel">
 
-        <h2>Pet Location</h2>
+        <div class="details-section-heading"><ion-icon name="location-outline" aria-hidden="true"></ion-icon><h2>Pet Location</h2></div>
 
-        <div class="location-info">
+        <div class="location-info location-detail-card">
 
           <ion-icon
             name="location-outline"
@@ -368,7 +392,7 @@
       ===================================== -->
 
       <section
-        class="details-section owner-notice"
+        class="details-section owner-notice adoption-result-panel"
         *ngIf="pet.is_owner"
       >
 
@@ -404,7 +428,7 @@
       ===================================== -->
 
       <section
-        class="details-section request-section"
+        class="details-section request-section adoption-action-panel"
         *ngIf="
           !loading &&
           !pet.is_owner &&
@@ -414,7 +438,7 @@
         "
       >
 
-        <div class="request-header">
+        <div class="request-header adoption-request-heading">
 
           <ion-icon
             name="heart-outline"
@@ -437,6 +461,7 @@
         <!-- REQUEST FORM -->
 
         <form
+          class="adoption-request-form"
           #requestForm="ngForm"
           (ngSubmit)="sendRequest()"
         >
@@ -526,7 +551,7 @@
       ===================================== -->
 
       <section
-        class="details-section submitted-section"
+        class="details-section submitted-section adoption-result-panel"
         *ngIf="requested && !pet.is_owner"
         aria-live="polite"
       >
@@ -666,7 +691,7 @@
       ===================================== -->
 
       <section
-        class="details-section unavailable-section"
+        class="details-section unavailable-section adoption-result-panel"
         *ngIf="
           !pet.is_owner &&
           pet.status !== 'available' &&

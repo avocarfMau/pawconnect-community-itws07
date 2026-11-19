@@ -15,7 +15,8 @@ import {
   IonContent,
   IonIcon,
   IonButton,
-  IonSpinner
+  IonSpinner,
+  IonHeader
 } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -44,6 +45,7 @@ import {
   AdoptionPickupDetails,
   PetAdoptionService
 } from '../../services/pet-adoption';
+import { HapticsService } from '../../services/haptics.service';
 
 // =====================================
 // PAWRESCUE COMMUNITY - MY ADOPTIONS
@@ -75,13 +77,15 @@ let lastSnapshot: MyAdoptionsSnapshot | null = null;
     IonContent,
     IonIcon,
     IonButton,
-    IonSpinner
+    IonSpinner,
+    IonHeader
   ]
 })
 export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   private readonly adoption = inject(PetAdoptionService);
   private readonly router = inject(Router);
+  private readonly haptics = inject(HapticsService);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -278,7 +282,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.restoreSnapshot();
-    void this.loadAll();
+    void this.loadAll(false, false);
   }
 
   ionViewWillEnter(): void {
@@ -289,7 +293,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
     }
 
     // On a return visit, show the current data immediately and fetch changes.
-    void this.loadAll();
+    void this.loadAll(false, false);
   }
 
   ionViewDidLeave(): void {
@@ -405,8 +409,14 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   // Called by the existing Refresh button. Each request completes
   // independently, so My Posts can render while Received/Sent still load.
-  async loadAll(preserveMessages = false): Promise<void> {
+  async loadAll(preserveMessages = false, manualRefresh = true): Promise<void> {
     if (this.destroyed || this.busy) return;
+
+    // The HTML refresh button calls loadAll() with no arguments.
+    // Initial and Ionic re-entry loads explicitly pass manualRefresh=false.
+    if (manualRefresh) {
+      void this.haptics.light();
+    }
 
     this.ensureCurrentSession();
 
@@ -439,6 +449,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   setTab(tab: Tab): void {
     if (this.selectedTab === tab) return;
+    void this.haptics.light();
 
     this.updateUI(() => {
       if (!this.busy) {
@@ -483,6 +494,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   movePhoto(post: AdoptionPost, delta: number): void {
     const count = this.photoUrls(post).length;
     if (count <= 1) return;
+    void this.haptics.selection();
 
     this.photoIndexes.set(
       Number(post.id),
@@ -539,6 +551,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
     if (this.destroyed || this.busy || this.loading ||
         request.status !== 'pending') return;
 
+    void this.haptics.light();
     this.updateUI(() => {
       this.resetRescheduleForm();
       this.approvalRequest = request;
@@ -555,6 +568,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   cancelApprovalForm(): void {
     if (this.busy) return;
+    void this.haptics.light();
     this.updateUI(() => this.resetPickupForm());
   }
 
@@ -623,6 +637,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
     const details = this.validatePickupDetails();
     if (!details) {
+      void this.haptics.error();
       this.cdr.detectChanges();
       return;
     }
@@ -636,6 +651,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       'Reserved until its physical handover is confirmed.';
 
     if (!window.confirm(confirmation)) return;
+    void this.haptics.medium();
 
     await this.submitDecision(request, 'approve', details);
   }
@@ -657,6 +673,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
     if (!window.confirm(
       `Reject ${request.requester_name}'s request for ${request.pet_name}?`
     )) return;
+    void this.haptics.medium();
 
     await this.submitDecision(request, 'reject');
   }
@@ -730,8 +747,10 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
           (action === 'approve' ? 'Adoption approved. Pickup scheduled.' : 'Adoption request rejected.');
         this.saveSnapshot();
       });
+      void this.haptics.success();
     } catch (error: any) {
       if (this.destroyed) return;
+      void this.haptics.error();
 
       // 422 is a definite validation failure: nothing was approved.
       // 409 and network errors are rechecked rather than retrying the POST.
@@ -767,6 +786,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       return;
     }
 
+    void this.haptics.light();
     this.updateUI(() => {
       this.resetPickupForm();
       this.rescheduleRequest = request;
@@ -784,6 +804,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   cancelRescheduleForm(): void {
     if (this.busy) return;
+    void this.haptics.light();
     this.updateUI(() => this.resetRescheduleForm());
   }
 
@@ -797,6 +818,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
     const details = this.validatePickupDetails(this.rescheduleForm, 'reschedule');
     if (!details) {
+      void this.haptics.error();
       this.cdr.detectChanges();
       return;
     }
@@ -805,6 +827,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
     if (new TextEncoder().encode(reason).length > 255 ||
         /[\x00-\x1F\x7F]/.test(reason)) {
       this.rescheduleError = 'Reason must be a single line of up to 255 bytes.';
+      void this.haptics.error();
       this.cdr.detectChanges();
       return;
     }
@@ -815,6 +838,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
         details.pickup_date === (request.pickup_date ?? '') &&
         details.pickup_time === (request.pickup_time ?? '').slice(0, 5)) {
       this.rescheduleError = 'No schedule changes detected. Update the location, date, or time.';
+      void this.haptics.error();
       this.cdr.detectChanges();
       return;
     }
@@ -828,6 +852,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       '\nThe adoption will remain Approved and the pet will remain Reserved.';
 
     if (!window.confirm(confirmation)) return;
+    void this.haptics.medium();
 
     this.updateUI(() => {
       this.busy = true;
@@ -868,8 +893,10 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
         this.successMessage = response.message || 'Pickup schedule updated successfully.';
         this.saveSnapshot();
       });
+      void this.haptics.success();
     } catch (error: any) {
       if (this.destroyed) return;
+      void this.haptics.error();
 
       // The server may have applied an update despite an interrupted response.
       // Re-fetch on uncertainty, but never silently retry the POST.
@@ -904,6 +931,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       `Has ${post.pet_name} actually been handed over to the approved adopter? Only mark adopted after a completed handover.`
     );
     if (!confirmed) return;
+    void this.haptics.medium();
 
     this.updateUI(() => {
       this.busy = true;
@@ -933,8 +961,10 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
         this.successMessage = response.message || 'Adoption completed successfully.';
         this.saveSnapshot();
       });
+      void this.haptics.success();
     } catch (error: any) {
       if (this.destroyed) return;
+      void this.haptics.error();
       refreshNeeded = true;
       this.updateUI(() => {
         this.errorMessage = error?.error?.message ||
@@ -955,6 +985,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   // =====================================
 
   viewPost(post: AdoptionPost): void {
+    void this.haptics.light();
     this.router.navigate(['/adoption-details', post.id], {
       queryParams: { mine: 1 }
     });
@@ -969,10 +1000,12 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   }
 
   goBack(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/pet-adoption');
   }
 
   postPet(): void {
+    void this.haptics.light();
     this.router.navigateByUrl('/post-adoption');
   }
 

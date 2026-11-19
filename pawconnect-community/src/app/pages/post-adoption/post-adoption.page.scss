@@ -490,3 +490,993 @@
   }
 
 }
+
+/* =====================================
+   THREE-STEP ADOPTION WIZARD
+   Report a Pet-inspired styling; existing form rules retained.
+===================================== */
+.post-adoption-content {
+  --background: #f5f9f6;
+  --padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.post-adoption-container {
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+.wizard-progress {
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid #e1eae3;
+  border-radius: 14px;
+  background: #ffffff;
+}
+.wizard-progress-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 13px;
+}
+.wizard-step-count {
+  color: #1b4332;
+  font-size: 13px;
+  font-weight: 750;
+}
+.wizard-progress-hint {
+  color: #647568;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.wizard-progress-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 9px;
+}
+.wizard-progress-track span {
+  height: 6px;
+  border-radius: 99px;
+  background: #e1e9e3;
+}
+.wizard-progress-track span.is-active {
+  background: #2e7d32;
+}
+.wizard-progress-labels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.wizard-progress-labels span {
+  color: #7b887e;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.35;
+}
+.wizard-progress-labels span.is-current {
+  color: #216c32;
+  font-weight: 700;
+}
+
+/* [hidden] must win over .form-section's normal display. */
+.wizard-panel[hidden],
+.wizard-review[hidden] {
+  display: none !important;
+}
+.wizard-panel {
+  margin: 0;
+}
+.wizard-review {
+  padding: 17px 15px;
+  border: 1px solid #e1eae3;
+  border-radius: 14px;
+  background: #fff;
+}
+.wizard-review-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf1ed;
+}
+.wizard-review-header ion-icon {
+  font-size: 21px;
+  color: #2e7d32;
+}
+.wizard-review-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1b4332;
+}
+.wizard-review-row {
+  display: grid;
+  grid-template-columns: minmax(95px, 34%) minmax(0, 1fr);
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f0f3f0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.wizard-review-row:last-child { border-bottom: 0; }
+.wizard-review-row span { color: #66756a; }
+.wizard-review-row strong {
+  color: #223d2b;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.wizard-step-error {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #f3c9c9;
+  border-radius: 9px;
+  background: #fff5f5;
+  color: #a12828;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.wizard-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.wizard-actions.has-previous { justify-content: space-between; }
+.wizard-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 46px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.wizard-action:disabled { opacity: .55; cursor: not-allowed; }
+.wizard-action ion-icon { font-size: 17px; }
+.wizard-action-back {
+  border: 1px solid #d8e5db;
+  background: #fff;
+  color: #2d6f3b;
+}
+.wizard-action-next {
+  border: 1px solid #2e7d32;
+  background: #2e7d32;
+  color: #fff;
+  min-width: 124px;
+}
+
+@media (max-width: 400px) {
+  .post-adoption-container {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+  .wizard-progress { padding: 13px 12px; }
+  .wizard-progress-hint { font-size: 10px; }
+  .wizard-review { padding: 14px 12px; }
+  .wizard-review-row { grid-template-columns: minmax(85px, 33%) minmax(0, 1fr); gap: 8px; }
+  .wizard-action { min-height: 44px; }
+}
+
+/* =====================================
+   NATIVE IONIC HEADER — OUTSIDE ION-CONTENT
+   Works with post-adoption.page.ionic-header.html.txt
+===================================== */
+.post-adoption-ion-header {
+  background: #f5f9f6;
+  box-shadow: 0 2px 8px rgba(20, 60, 35, 0.04);
+  border-bottom: 1px solid #e0eae2;
+}
+
+.post-adoption-ion-header::after {
+  display: none;
+}
+
+.post-adoption-toolbar {
+  --background: #f5f9f6;
+  --color: #1f4230;
+  --border-width: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  --min-height: 74px;
+}
+
+.post-adoption-toolbar .page-header {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 16px;
+}
+
+.post-adoption-toolbar .back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #e5f4ea;
+  color: #2d8038;
+  cursor: pointer;
+}
+
+.post-adoption-toolbar .back-button ion-icon {
+  font-size: 23px;
+}
+
+.post-adoption-toolbar .back-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.post-adoption-toolbar .header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-adoption-toolbar .header-text h1 {
+  margin: 0;
+  color: #1f4230;
+  font-size: 23px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.post-adoption-toolbar .header-text p {
+  margin: 5px 0 0;
+  color: #829087;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* ion-content is positioned below ion-header by Ionic itself.
+   Do not reserve an extra 90px or position the header manually. */
+.post-adoption-content {
+  --background: #f5f9f6;
+  --padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.post-adoption-container {
+  padding-top: 16px;
+  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 400px) {
+  .post-adoption-toolbar .page-header {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .post-adoption-toolbar .header-text h1 {
+    font-size: 21px;
+  }
+  .post-adoption-container {
+    padding-top: 14px;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+
+/* ==============================================
+   REFINED WIZARD — STEPS 1 TO 3
+   Compatible with post-adoption.page.refined-steps.html.txt
+   Preserves native ion-header and all form controls.
+============================================== */
+.post-adoption-container {
+  max-width: 620px;
+  padding-left: 14px;
+  padding-right: 14px;
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+}
+.adoption-form { gap: 14px; }
+.wizard-progress {
+  margin-bottom: 14px;
+  padding: 14px 15px;
+  border-color: #dfe9e1;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(22, 63, 37, .025);
+}
+.wizard-progress-summary { align-items: center; margin-bottom: 12px; }
+.wizard-step-count { font-size: 13px; }
+.wizard-progress-hint { max-width: 65%; text-align: right; }
+.wizard-progress-track { gap: 5px; margin-bottom: 9px; }
+.wizard-progress-track span { height: 5px; }
+.wizard-progress-labels span { font-size: 10px; }
+.wizard-panel {
+  padding: 17px 15px;
+  border-radius: 14px;
+  border-color: #e1e9e2;
+  box-shadow: 0 2px 10px rgba(18, 61, 34, .025);
+}
+.wizard-panel h2 { font-size: 17px; }
+.wizard-panel .section-description { margin-bottom: 16px; }
+.wizard-panel .form-group { margin-bottom: 15px; }
+.wizard-panel .form-group:last-child { margin-bottom: 0; }
+.wizard-review {
+  padding: 15px;
+  border-color: #e1e9e2;
+  box-shadow: 0 2px 10px rgba(18, 61, 34, .025);
+}
+.wizard-review-header { padding-bottom: 10px; }
+.wizard-review-row {
+  grid-template-columns: minmax(0, 36%) minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.wizard-review-row strong { font-weight: 650; }
+/* All wizard navigation buttons occupy one consistent horizontal row. */
+.wizard-actions,
+.wizard-actions.has-previous,
+.wizard-actions.is-final-step {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 10px;
+  width: 100%;
+  margin-top: 3px;
+}
+.wizard-action {
+  box-sizing: border-box;
+  height: 48px;
+  min-height: 48px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+.wizard-action-back {
+  flex: 0 0 34%;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid #cdded1;
+  background: #fff;
+  color: #236f37;
+}
+.wizard-action-next {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 16px;
+  border: 1px solid #2e7d32;
+  background: #2e7d32;
+  color: #fff;
+}
+.wizard-actions:not(.has-previous) .wizard-action-next { flex: 1 1 100%; }
+.wizard-action-back:active { background: #f0f7f1; }
+.wizard-action-next:active { background: #246c2b; }
+/* Ionic buttons are inline-block by default. Override their host width/flex
+   to prevent Publish from filling its own row or pushing Back below. */
+.wizard-actions ion-button.wizard-publish-button {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  height: 48px;
+  min-height: 48px;
+  margin: 0;
+  --padding-start: 9px;
+  --padding-end: 9px;
+  --border-radius: 11px;
+  --background: #2e7d32;
+  --background-activated: #246c2b;
+  --color: #fff;
+  --box-shadow: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.wizard-publish-button ion-icon { font-size: 17px; margin-right: 4px; }
+.wizard-step-error { margin: 0; }
+@media (max-width: 400px) {
+  .post-adoption-container {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+  .wizard-panel { padding: 15px 13px; }
+  .wizard-review { padding: 14px 13px; }
+  .wizard-review-row { grid-template-columns: minmax(0, 35%) minmax(0, 1fr); gap: 9px; padding: 9px 0; }
+  .wizard-actions, .wizard-actions.has-previous, .wizard-actions.is-final-step { gap: 8px; }
+  .wizard-action, .wizard-actions ion-button.wizard-publish-button { height: 46px; min-height: 46px; font-size: 12px; }
+  .wizard-action-back { flex-basis: 32%; padding: 0 7px; }
+  .wizard-actions ion-button.wizard-publish-button { --padding-start: 6px; --padding-end: 6px; }
+}
+
+/* =========================================================
+   REPORT A PET VISUAL MATCH — ADOPTION WIZARD (STEPS 1–3)
+   Uses existing refined HTML; no form behavior changed.
+   ========================================================= */
+.post-adoption-content { --background: #f3faf4; }
+.post-adoption-container {
+  max-width: 650px;
+  padding: 18px 15px calc(100px + env(safe-area-inset-bottom, 0px));
+}
+.adoption-form { gap: 16px; }
+.wizard-progress {
+  background: #fff;
+  border: 1px solid #e1eae3;
+  border-radius: 18px;
+  padding: 17px 18px;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 12px rgba(25, 62, 37, .035);
+}
+.wizard-progress-track span.is-active { background: #2e8038; }
+.wizard-panel {
+  background: #fff;
+  border: 1px solid #dfe9e1;
+  border-radius: 20px;
+  padding: 22px 19px 23px;
+  box-shadow: 0 4px 15px rgba(31, 67, 40, .035);
+}
+.wizard-panel h2 { color: #1c422d; font-size: 19px; font-weight: 750; }
+.wizard-panel .section-description { color: #718078; font-size: 13px; line-height: 1.5; }
+.wizard-panel .form-group { margin-bottom: 19px; }
+.wizard-panel .form-group label { color: #244734; font-weight: 650; }
+.wizard-panel .form-group input,
+.wizard-panel .form-group select,
+.wizard-panel .form-group textarea {
+  border: 1px solid #c8dfcf;
+  border-radius: 13px;
+  background: #fff;
+  color: #203c2c;
+  box-shadow: none;
+}
+.wizard-panel .form-group input:focus,
+.wizard-panel .form-group select:focus,
+.wizard-panel .form-group textarea:focus {
+  outline: none;
+  border-color: #2e8038;
+  box-shadow: 0 0 0 3px rgba(46, 128, 56, .12);
+}
+.wizard-panel .form-group small { color: #829087; line-height: 1.5; }
+/* Review belongs visually to the same card system as the form. */
+.wizard-review {
+  background: #fff;
+  border: 1px solid #dfe9e1;
+  border-radius: 20px;
+  padding: 20px 19px;
+  box-shadow: 0 4px 15px rgba(31, 67, 40, .035);
+}
+.wizard-review-header { padding-bottom: 13px; }
+.wizard-review-header h3 { color: #1e432e; font-size: 18px; }
+.wizard-review-row {
+  display: grid;
+  grid-template-columns: minmax(0, 39%) minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  padding: 12px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.wizard-review-row span { color: #75827a; }
+.wizard-review-row strong { color: #234231; overflow-wrap: anywhere; font-weight: 650; }
+/* Reference screenshot: equal-height, equal-width outline/filled navigation. */
+.wizard-actions,
+.wizard-actions.has-previous,
+.wizard-actions.is-final-step {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin-top: 5px;
+  width: 100%;
+}
+.wizard-actions .wizard-action,
+.wizard-actions ion-button.wizard-publish-button {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+  height: 52px;
+  min-height: 52px;
+  margin: 0;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  box-shadow: none;
+}
+.wizard-actions .wizard-action-back {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1.5px solid #2e8038;
+  background: #fff;
+  color: #2e8038;
+}
+.wizard-actions .wizard-action-next {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1.5px solid #2e8038;
+  background: #2e8038;
+  color: #fff;
+}
+.wizard-actions:not(.has-previous) .wizard-action-next { flex: 1 1 100%; width: 100%; }
+.wizard-actions ion-button.wizard-publish-button {
+  display: block;
+  --background: #2e8038;
+  --background-activated: #256d30;
+  --color: #fff;
+  --border-radius: 13px;
+  --box-shadow: none;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  text-transform: none;
+}
+.wizard-actions ion-button.wizard-publish-button ion-icon { font-size: 17px; margin-right: 3px; }
+.wizard-actions .wizard-action:disabled { opacity: .55; }
+@media (max-width: 400px) {
+  .post-adoption-container { padding-left: 12px; padding-right: 12px; }
+  .wizard-panel { padding: 18px 15px 20px; }
+  .wizard-review { padding: 17px 15px; }
+  .wizard-review-row { grid-template-columns: minmax(0, 39%) minmax(0, 1fr); gap: 9px; font-size: 12px; }
+  .wizard-actions, .wizard-actions.has-previous, .wizard-actions.is-final-step { gap: 10px; }
+  .wizard-actions .wizard-action, .wizard-actions ion-button.wizard-publish-button { height: 50px; min-height: 50px; font-size: 12px; }
+}
+
+/* ==========================================================
+   FINAL REPORT-A-PET MATCH — ALL 3 STEPS / PHOTO REVIEW
+   Applies to the simplified wizard HTML. No TS changes.
+========================================================== */
+.post-adoption-content { --background: #f2f9f3; }
+.post-adoption-container { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+.wizard-progress {
+  padding: 17px 17px 16px;
+  border: 1px solid #dce9df;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(24, 66, 37, .025);
+  margin-bottom: 16px;
+}
+.wizard-progress-summary { margin-bottom: 14px; align-items: center; }
+.wizard-step-count { font-size: 15px; font-weight: 750; color: #257a35; }
+.wizard-progress-hint { font-size: 12px; color: #78877d; }
+.wizard-progress-track { gap: 7px; margin-bottom: 10px; }
+.wizard-progress-track span { height: 6px; }
+.wizard-progress-labels span { font-size: 11px; font-weight: 600; }
+.wizard-progress-labels span.is-current { color: #1c6530; font-weight: 750; }
+.wizard-panel {
+  border: 1px solid #dce9df;
+  border-radius: 21px;
+  background: #fff;
+  padding: 20px 18px 22px;
+  box-shadow: 0 3px 14px rgba(24, 66, 37, .03);
+}
+.wizard-panel h2 { font-size: 21px; color: #1b4332; margin-bottom: 7px; }
+.wizard-panel .section-description { font-size: 13px; color: #78877d; line-height: 1.55; }
+.wizard-panel .form-group label { font-weight: 650; color: #294c37; }
+.wizard-panel .form-group input,
+.wizard-panel .form-group select,
+.wizard-panel .form-group textarea {
+  border: 1px solid #badbc5;
+  border-radius: 13px;
+  background: #fff;
+}
+.wizard-panel .form-group input:focus,
+.wizard-panel .form-group select:focus,
+.wizard-panel .form-group textarea:focus {
+  outline: none;
+  border-color: #2c813b;
+  box-shadow: 0 0 0 3px rgba(44, 129, 59, .11);
+}
+/* Step 3 photo area: two equal dashed tiles like Report a Pet. */
+.wizard-panel .photo-section-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
+.wizard-panel .photo-section-header > div { min-width: 0; flex: 1; }
+.wizard-panel .photo-count {
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid #cce7d3;
+  background: #eaf7ee;
+  color: #245f38;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 9px;
+  white-space: nowrap;
+}
+.wizard-panel .photo-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 12px 0 10px; }
+.wizard-panel .photo-action-button {
+  min-width: 0;
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 7px;
+  border: 1.5px dashed #b6d9c2;
+  border-radius: 17px;
+  background: #eff9f3;
+  color: #2b813d;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: none;
+}
+.wizard-panel .photo-action-button ion-icon { font-size: 25px; color: #2b813d; }
+.wizard-panel .photo-action-button:disabled { opacity: .5; }
+.wizard-panel .photo-help { color: #829087; font-size: 12px; line-height: 1.6; margin: 10px 0 17px; }
+.wizard-panel .no-photos { padding: 12px; border-radius: 12px; background: #f7faf8; }
+/* Review is nested inside Step 3, not a separate white card. */
+.wizard-panel .wizard-review {
+  margin: 17px 0 0;
+  padding: 16px 15px;
+  border: 1px solid #dce9df;
+  border-radius: 17px;
+  background: #f3faf4;
+  box-shadow: none;
+}
+.wizard-panel .wizard-review-header { border-bottom: 1px solid #dce9df; padding-bottom: 13px; gap: 9px; }
+.wizard-panel .wizard-review-header ion-icon { font-size: 22px; color: #2c813b; }
+.wizard-panel .wizard-review-header h3 { font-size: 17px; font-weight: 750; color: #214c32; }
+.wizard-panel .wizard-review-row {
+  display: grid;
+  grid-template-columns: minmax(0, 43%) minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 0;
+  align-items: start;
+  border-bottom: 1px solid #dfeae1;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.wizard-panel .wizard-review-row:last-child { border-bottom: 0; padding-bottom: 2px; }
+.wizard-panel .wizard-review-row span { color: #718578; font-weight: 600; }
+.wizard-panel .wizard-review-row strong { color: #214532; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+/* Back / Next / Publish always share a row on steps 2 and 3. */
+.wizard-actions,
+.wizard-actions.has-previous,
+.wizard-actions.is-final-step {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 16px;
+  width: 100%;
+}
+.wizard-actions .wizard-action,
+.wizard-actions ion-button.wizard-publish-button {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  min-height: 50px;
+  height: 50px;
+  margin: 0;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 750;
+}
+.wizard-actions .wizard-action-back { border: 1.5px solid #2b813d; background: #fff; color: #2b813d; }
+.wizard-actions .wizard-action-next { border: 1.5px solid #2b813d; background: #2b813d; color: #fff; }
+.wizard-actions ion-button.wizard-publish-button {
+  --background: #2b813d;
+  --background-activated: #226c33;
+  --color: #fff;
+  --border-radius: 13px;
+  --box-shadow: none;
+  --padding-start: 6px;
+  --padding-end: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.wizard-actions:not(.has-previous) .wizard-action-next { flex: 1 1 100%; width: 100%; }
+@media (max-width: 400px) {
+  .post-adoption-container { padding-left: 12px; padding-right: 12px; }
+  .wizard-progress { padding: 14px 13px; }
+  .wizard-progress-hint { font-size: 10px; }
+  .wizard-progress-labels span { font-size: 10px; }
+  .wizard-panel { padding: 18px 15px 20px; }
+  .wizard-panel .photo-section-header { flex-wrap: wrap; }
+  .wizard-panel .photo-action-button { min-height: 96px; font-size: 11px; }
+  .wizard-panel .wizard-review { padding: 14px 12px; }
+  .wizard-panel .wizard-review-row { grid-template-columns: minmax(0, 43%) minmax(0, 1fr); gap: 8px; font-size: 11.5px; }
+  .wizard-actions .wizard-action,
+  .wizard-actions ion-button.wizard-publish-button { min-height: 49px; height: 49px; font-size: 12px; }
+}
+
+
+/* =========================================================
+   FINAL FIX — BOTTOM CONTENT MUST REMAIN SCROLLABLE
+   Ionic's scroll host owns scrolling. Keep a real spacer after
+   the last card/buttons, including on phones with gesture bars.
+   ========================================================= */
+:host {
+  display: block;
+  min-height: 0;
+}
+
+ion-content.post-adoption-content {
+  --background: #f3faf4;
+  --overflow: auto;
+  --padding-top: 0px;
+  --padding-bottom: 0px;
+}
+
+/* Do not set a fixed viewport height or hide overflow on this wrapper. */
+.post-adoption-container {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  box-sizing: border-box;
+  padding-bottom: 20px;
+}
+
+/* Real in-flow space survives Ionic shadow scrolling and Android
+   bottom gesture navigation; it is placed after all wizard actions. */
+.post-adoption-container::after {
+  content: '';
+  display: block;
+  height: calc(96px + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+  pointer-events: none;
+}
+
+.adoption-form,
+.wizard-panel,
+.wizard-actions {
+  max-height: none;
+  overflow: visible;
+}
+
+@media (max-width: 400px) {
+  .post-adoption-container {
+    padding-bottom: 20px;
+  }
+  .post-adoption-container::after {
+    height: calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+
+/* =========================================================
+   WIZARD NAVIGATION — INSIDE EACH WHITE STEP CARD
+   Matches Report a Pet. Step 3: Back 40%, Publish takes the remaining width.
+   ========================================================= */
+.adoption-form > .wizard-panel {
+  box-sizing: border-box;
+  overflow: visible;
+  padding-bottom: 24px;
+}
+
+/* Buttons are last children of their respective section/card. */
+.adoption-form > .wizard-panel > .wizard-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  max-width: 100%;
+  gap: 12px !important;
+  margin: 24px 0 0 !important;
+  padding: 0;
+  box-sizing: border-box;
+}
+.adoption-form > .wizard-panel > .wizard-actions .wizard-action,
+.adoption-form > .wizard-panel > .wizard-actions ion-button.wizard-publish-button {
+  box-sizing: border-box;
+  min-width: 0 !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  margin: 0 !important;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.adoption-form > .wizard-panel > .wizard-actions .wizard-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px;
+}
+/* Step 1: full-width Next. */
+.adoption-form > .wizard-panel > .wizard-actions:not(.has-previous) .wizard-action-next {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+}
+/* Step 2: equal Back and Next widths. */
+.adoption-form > .wizard-panel > .wizard-actions.has-previous:not(.is-final-step) > .wizard-action {
+  flex: 1 1 0 !important;
+  width: 0 !important;
+}
+/* Step 3: Back is narrower, Publish is wider (not 50/50). */
+.adoption-form > .wizard-panel > .wizard-actions.is-final-step > .wizard-action-back {
+  flex: 0 0 40% !important;
+  width: 40% !important;
+  max-width: 40%;
+}
+.adoption-form > .wizard-panel > .wizard-actions.is-final-step > ion-button.wizard-publish-button {
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  max-width: none;
+  --background: #2b813d;
+  --background-activated: #236d33;
+  --color: #ffffff;
+  --border-radius: 13px;
+  --box-shadow: none;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.adoption-form > .wizard-panel > .wizard-actions .wizard-action-back {
+  border: 1.5px solid #2b813d;
+  background: #ffffff;
+  color: #2b813d;
+}
+.adoption-form > .wizard-panel > .wizard-actions .wizard-action-next {
+  border: 1.5px solid #2b813d;
+  background: #2b813d;
+  color: #ffffff;
+}
+@media (max-width: 390px) {
+  .adoption-form > .wizard-panel > .wizard-actions { gap: 9px !important; }
+  .adoption-form > .wizard-panel > .wizard-actions .wizard-action,
+  .adoption-form > .wizard-panel > .wizard-actions ion-button.wizard-publish-button {
+    font-size: 12px;
+    height: 50px !important;
+    min-height: 50px !important;
+  }
+}
+
+/* =========================================================
+   SUCCESS SCREEN — AFTER PUBLISHING AN ADOPTION LISTING
+   Scoped to the existing success markup. No form/wizard changes.
+   ========================================================= */
+.post-adoption-container > .form-section:has(> .intro-card) {
+  width: 100%;
+  max-width: 520px;
+  margin: 20px auto 0;
+  padding: 26px 20px 22px;
+  box-sizing: border-box;
+  border: 1px solid #dcebdd;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(18, 73, 37, .06);
+  text-align: center;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .intro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 6px 16px;
+  margin: 0 0 14px;
+  background: transparent;
+  border-radius: 0;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .intro-card > ion-icon {
+  display: block;
+  width: 68px;
+  height: 68px;
+  padding: 13px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #e7f5ea;
+  color: #287b3c;
+  font-size: 42px;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .intro-card > div {
+  min-width: 0;
+  width: 100%;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .intro-card h2 {
+  margin: 0 0 8px;
+  color: #174b2e;
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .intro-card p {
+  margin: 0 auto;
+  max-width: 340px;
+  color: #5e7265;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .section-description {
+  display: table;
+  max-width: 100%;
+  margin: 0 auto 20px;
+  padding: 7px 13px;
+  border: 1px solid #e1ece3;
+  border-radius: 999px;
+  background: #f5faf6;
+  color: #477052;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Upload status and partial failures remain visible and readable. */
+.post-adoption-container > .form-section:has(> .intro-card) > .submission-progress,
+.post-adoption-container > .form-section:has(> .intro-card) > .message-box {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 18px;
+  text-align: left;
+  border-radius: 12px;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .submission-progress {
+  align-items: flex-start;
+  padding: 14px;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > .submission-progress > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > ion-button.my-adoptions-button,
+.post-adoption-container > .form-section:has(> .intro-card) > ion-button.cancel-button {
+  display: block;
+  width: 100%;
+  height: 49px;
+  min-height: 49px;
+  margin: 0 0 11px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  --border-radius: 12px;
+  --box-shadow: none;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > ion-button.my-adoptions-button {
+  --background: #2b813d;
+  --background-activated: #246d34;
+  --color: #ffffff;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > ion-button.my-adoptions-button[fill="outline"] {
+  --background: transparent;
+  --color: #2b813d;
+  --border-color: #2b813d;
+  --border-width: 1.5px;
+}
+
+.post-adoption-container > .form-section:has(> .intro-card) > ion-button.cancel-button {
+  margin-bottom: 0;
+  --background: #f2f8f3;
+  --color: #286c3a;
+  --border-radius: 12px;
+}
+
+@media (max-width: 400px) {
+  .post-adoption-container > .form-section:has(> .intro-card) {
+    margin-top: 12px;
+    padding: 24px 16px 18px;
+    border-radius: 16px;
+  }
+  .post-adoption-container > .form-section:has(> .intro-card) > .intro-card h2 {
+    font-size: 20px;
+  }
+}
