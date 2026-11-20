@@ -1,8 +1,8 @@
 <?php
 /**
- * PawRescue Community - Register the current resident's Android FCM token.
+ * PawConnect - Register the current resident or staff member's Android FCM token.
  *
- * Only authenticated residents may save a token. The server derives the user
+ * Only authenticated residents and staff may save a token. The server derives the user
  * ID from the Bearer token; the client cannot choose an account ID.
  *
  * This endpoint supports the OPTIONS preflight sent by an Ionic/Capacitor
@@ -16,13 +16,13 @@ header('Cache-Control: no-store, private');
 header('Pragma: no-cache');
 header('X-Content-Type-Options: nosniff');
 
-// Only explicitly trusted PawRescue development origins may read responses.
+// Only explicitly trusted PawConnect development origins may read responses.
 // Origin includes the scheme and port; the Ionic live-reload port is 8100.
 // Keep these in sync with the allowed origins in the project's main CORS file.
 $allowedOrigins = [
     'http://localhost:8100',
     'http://127.0.0.1:8100',
-    'http://192.168.0.146:8100',
+    'http://192.168.100.23:8100',
      "http://localhost:8101", //localhost
     'http://10.253.195.97:8100',
     'http://localhost',
@@ -122,15 +122,15 @@ if (
 require_once __DIR__ . '/../middleware/auth_middleware.php';
 
 try {
-    $auth = authenticate(['resident']);
+    $auth = authenticate(['resident', 'staff']);
     $conn = $auth['connection'] ?? null;
-    $residentId = (int) ($auth['user']['id'] ?? 0);
+    $userId = (int) ($auth['user']['id'] ?? 0);
 
-    if (!($conn instanceof PDO) || $residentId <= 0) {
-        throw new RuntimeException('Invalid authenticated resident session.');
+    if (!($conn instanceof PDO) || $userId <= 0) {
+        throw new RuntimeException('Invalid authenticated user session.');
     }
 
-    // One atomic upsert; reassign a token to the resident currently signed in
+    // One atomic upsert; reassign a token to the user currently signed in
     // on the device and refresh its last-seen timestamp without duplicating it.
     $stmt = $conn->prepare(
         'INSERT INTO user_push_tokens
@@ -145,7 +145,7 @@ try {
             updated_at = NOW()'
     );
     $stmt->execute([
-        ':user_id' => $residentId,
+        ':user_id' => $userId,
         ':device_token' => $deviceToken,
         ':platform' => 'android'
     ]);
@@ -158,7 +158,7 @@ try {
     ]);
 } catch (Throwable $e) {
     // Never log request bodies, authentication tokens, or FCM device tokens.
-    error_log('[PawRescue Push Token Save] ' . get_class($e));
+    error_log('[PawConnect Push Token Save] ' . get_class($e));
 
     sendDeviceTokenResponse(500, [
         'success' => false,

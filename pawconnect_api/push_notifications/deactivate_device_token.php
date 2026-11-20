@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * PawConnect - Deactivate the authenticated resident's or staff member's Android FCM token.
+ * Only the matching authenticated user/device registration can be deactivated.
+ */
 
 declare(strict_types=1);
 
@@ -7,6 +10,27 @@ header('Content-Type: application/json; charset=UTF-8');
 header('Cache-Control: no-store, private');
 header('Pragma: no-cache');
 header('X-Content-Type-Options: nosniff');
+
+// Keep this trusted-origin list aligned with save_device_token.php and CORS config.
+$allowedOrigins = [
+    'http://localhost:8100',
+    'http://127.0.0.1:8100',
+    'http://192.168.100.23:8100',
+    'http://localhost:8101',
+    'http://10.253.195.97:8100',
+    'http://localhost',
+    'https://localhost',
+];
+
+$origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
+$originAllowed = $origin !== '' && in_array($origin, $allowedOrigins, true);
+header('Vary: Origin');
+
+if ($originAllowed) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Access-Control-Allow-Methods: POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Authorization, Content-Type');
+}
 
 function sendDeactivateResponse(int $status, array $payload): void
 {
@@ -18,7 +42,17 @@ function sendDeactivateResponse(int $status, array $payload): void
     exit;
 }
 
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+$method = (string) ($_SERVER['REQUEST_METHOD'] ?? '');
+if ($method === 'OPTIONS') {
+    if (!$originAllowed) {
+        http_response_code(403);
+        exit;
+    }
+    http_response_code(204);
+    exit;
+}
+
+if ($method !== 'POST') {
     header('Allow: POST, OPTIONS');
     sendDeactivateResponse(405, [
         'success' => false,
@@ -75,17 +109,15 @@ if (
 require_once __DIR__ . '/../middleware/auth_middleware.php';
 
 try {
-    $auth = authenticate(['resident']);
+    $auth = authenticate(['resident', 'staff']);
     $conn = $auth['connection'] ?? null;
-    $residentId = (int) ($auth['user']['id'] ?? 0);
+    $userId = (int) ($auth['user']['id'] ?? 0);
 
-    if (!($conn instanceof PDO) || $residentId <= 0) {
-        throw new RuntimeException('Invalid authenticated resident session.');
+    if (!($conn instanceof PDO) || $userId <= 0) {
+        throw new RuntimeException('Invalid authenticated user session.');
     }
 
-    // The user_id condition is critical: never unlink another account's
-    // token if the phone was previously used by someone else.
-    // The unique token index makes this operation idempotent and atomic.
+    // Never unlink another account's token if this phone changed accounts.
     $stmt = $conn->prepare(
         'UPDATE user_push_tokens
          SET is_active = 0,
@@ -96,15 +128,14 @@ try {
            AND is_active = 1'
     );
     $stmt->execute([
-        ':user_id' => $residentId,
+        ':user_id' => $userId,
         ':device_token' => $deviceToken,
         ':platform' => 'android'
     ]);
 
     $deactivated = $stmt->rowCount() === 1;
 
-    // A missing or already-disabled token is safe to treat as a no-op;
-    // never disclose whether a token is associated with another account.
+    // Missing or already-disabled tokens are safe no-ops.
     sendDeactivateResponse(200, [
         'success' => true,
         'message' => $deactivated
@@ -113,8 +144,8 @@ try {
         'deactivated' => $deactivated
     ]);
 } catch (Throwable $e) {
-    // Do not print or log the FCM token, request body or Authorization header.
-    error_log('[PawRescue Push Token Deactivate] ' . get_class($e));
+    // Never log the FCM token, request body, or Authorization header.
+    error_log('[PawConnect Push Token Deactivate] ' . get_class($e));
 
     sendDeactivateResponse(500, [
         'success' => false,

@@ -1,9 +1,9 @@
 <?php
 /**
- * PawConnect — FCM sender
+ * PawConnect ΓÇö FCM sender
  * File: pawconnect_api/push_notifications/fcm_sender.php
  *
- * INTERNAL SERVER-SIDE HELPER ONLY — not a public API endpoint.
+ * INTERNAL SERVER-SIDE HELPER ONLY ΓÇö not a public API endpoint.
  *
  * Sends an Android push notification to ONE FCM device token using
  * Firebase Cloud Messaging HTTP v1 and a private service-account key.
@@ -295,7 +295,15 @@ function pawrescueSendFcmToToken(
         $message = [
             'token' => $deviceToken,
             'notification' => ['title' => $title, 'body' => $body],
-            'android' => ['priority' => 'HIGH'],
+            'android' => [
+                'priority' => 'HIGH',
+                'notification' => [
+                    // Must match the channel created by the Android app.
+                    'channel_id' => 'pawconnect_alerts_v1',
+                    'default_vibrate_timings' => true,
+                    'default_sound' => true,
+                ],
+            ],
         ];
         if ($safeData !== []) {
             $message['data'] = $safeData;

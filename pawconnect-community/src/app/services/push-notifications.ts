@@ -10,6 +10,7 @@ import {
 } from '@capacitor/push-notifications';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 import { getApiBaseUrl } from '../config/ip-config';
+import { HapticsService } from './haptics.service';
 
 interface SaveDeviceTokenResponse {
   success: boolean;
@@ -34,11 +35,16 @@ type TokenSaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
  * which uploads it to the authenticated PHP API.
  *
  * Diagnostics deliberately log only safe STATE information, NEVER Firebase
- * tokens, resident auth tokens, service-account credentials or message data.
+ * tokens, user auth tokens, service-account credentials or message data.
  */
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
+  // Keep this ID in sync with the PHP FCM sender's android.notification.channel_id.
+  // Use a new ID if changing vibration behavior on an existing installed channel.
+  private readonly notificationChannelId = 'pawconnect_alerts_v1';
+
   private readonly http = inject(HttpClient);
+  private readonly haptics = inject(HapticsService);
 
   // Shared XAMPP backend address used by PawConnect services.
   private readonly apiBaseUrl = getApiBaseUrl();
@@ -66,11 +72,11 @@ export class PushNotificationService {
   private listenersReady: Promise<void> | null = null;
   private readonly listenerHandles: PluginListenerHandle[] = [];
 
-  // AppComponent invokes registerForPush() only after a residentGuard-protected
+  // AppComponent invokes registerForPush() only after a authenticated, role-protected
   // route succeeds. Bind that registration to the current session so that a
-  // delayed Firebase callback cannot attach the token to a staff account.
+  // delayed Firebase callback cannot attach a token to a different session.
   // Never persist this marker or treat it as a substitute for PHP authorization.
-  private residentRegistrationSession: string | null = null;
+  private authorizedRegistrationSession: string | null = null;
 
   // Deduplicate successful token uploads within the current app process.
   private lastSavedFor: { session: string; deviceToken: string } | null = null;
@@ -135,6 +141,16 @@ export class PushNotificationService {
         (notification: PushNotificationSchema) => {
           // Foreground delivery is not the same as a system-tray notification.
           this.logStatus('Push received while PawConnect was in the foreground.');
+          // Haptics are best-effort and only run for the active registered session.
+          // Native Android notification channels handle background/closed vibration.
+          const session = this.getSessionToken();
+          if (
+            session &&
+            this.authorizedRegistrationSession === session &&
+            this.logoutSession !== session
+          ) {
+            void this.haptics.warning();
+          }
           this.receivedSubject.next(notification);
         }
       )
@@ -144,7 +160,7 @@ export class PushNotificationService {
       await PushNotifications.addListener(
         'pushNotificationActionPerformed',
         (action: ActionPerformed) => {
-          this.logStatus('Resident tapped a delivered push notification.');
+          this.logStatus('User tapped a delivered push notification.');
           this.openedSubject.next(action);
         }
       )
@@ -162,11 +178,11 @@ export class PushNotificationService {
       return 'not-native';
     }
 
-    // This method is called only from resident-protected navigation.
+    // Call this only after a resident or staff role-protected route succeeds.
     // Capture its session before async permission and native operations.
     const session = this.getSessionToken();
     if (!session) {
-      throw new Error('Resident push registration requires an active session.');
+      throw new Error('Push registration requires an active session.');
     }
 
     await this.ensureListeners();
@@ -188,13 +204,37 @@ export class PushNotificationService {
     }
 
     // The account may have changed while the Android permission prompt was
-    // open. Never authorize an old resident registration for a new session.
+    // open. Never authorize an old account registration for a new session.
     if (this.getSessionToken() !== session) {
       throw new Error('Session changed during push registration.');
     }
 
-    // Resident route authorization has already succeeded in the route guard.
-    this.residentRegistrationSession = session;
+    // Android 8+ notification channel: system notifications use this channel's
+    // vibration settings when the app is in the background or not running.
+    // Android users can override these settings in system notification settings.
+    try {
+      await PushNotifications.createChannel({
+        id: this.notificationChannelId,
+        name: 'PawConnect Alerts',
+        description: 'Updates about pet reports, claims, assistance, recoveries, and adoptions',
+        importance: 4,
+        visibility: 1,
+        vibration: true,
+        sound: 'default',
+      });
+      this.logStatus('Android notification channel is ready.');
+    } catch {
+      this.logWarning('Unable to create Android notification channel.');
+      this.errorSubject.next('Notification channel setup failed.');
+      throw new Error('Unable to configure Android notification channel.');
+    }
+
+    if (this.getSessionToken() !== session) {
+      throw new Error('Session changed during notification channel setup.');
+    }
+
+    // The caller must have already passed the appropriate role guard.
+    this.authorizedRegistrationSession = session;
 
     try {
       this.logStatus('Starting native FCM registration.');
@@ -214,7 +254,7 @@ export class PushNotificationService {
     }
   }
 
-  /** Save the FCM token under the currently authenticated resident. */
+  /** Save the FCM token under the currently authenticated user. */
   async syncTokenWithBackend(): Promise<boolean> {
     if (!this.isSupported()) {
       return false;
@@ -233,14 +273,14 @@ export class PushNotificationService {
     }
 
     if (!session) {
-      this.logWarning('No authenticated resident session; token upload skipped.');
+      this.logWarning('No authenticated session; token upload skipped.');
       return false;
     }
 
     // Token callbacks can arrive after switching accounts. Only upload while
-    // the same resident session that initiated native registration is active.
-    if (this.residentRegistrationSession !== session) {
-      this.logStatus('Skipping token upload for a session without resident push registration.');
+    // the same session that initiated native registration is active.
+    if (this.authorizedRegistrationSession !== session) {
+      this.logStatus('Skipping token upload for a session without authorized push registration.');
       return false;
     }
 
@@ -279,7 +319,7 @@ export class PushNotificationService {
   ): Promise<boolean> {
     if (
       this.getSessionToken() !== session ||
-      this.residentRegistrationSession !== session ||
+      this.authorizedRegistrationSession !== session ||
       this.logoutSession === session
     ) {
       return false;
@@ -341,11 +381,10 @@ export class PushNotificationService {
       return true;
     }
 
-    // Staff sessions never initiate resident Firebase registration. Do not
-    // call the resident-only deactivation endpoint during a staff logout.
-    // AuthService can proceed to auth/logout.php normally.
-    if (this.residentRegistrationSession !== session) {
-      this.logStatus('No resident push registration for this session; skipping deactivation.');
+    // Only deactivate if this session initiated push registration.
+    // Both resident and staff accounts use the same account-scoped endpoint.
+    if (this.authorizedRegistrationSession !== session) {
+      this.logStatus('No push registration for this session; skipping deactivation.');
       return true;
     }
 
@@ -432,10 +471,10 @@ export class PushNotificationService {
   resetAfterLogout(): void {
     this.logoutSession = null;
     this.lastSavedFor = null;
-    this.residentRegistrationSession = null;
+    this.authorizedRegistrationSession = null;
     this.tokenSaveStatusSubject.next('idle');
 
-    // Keep the token cached for another authenticated resident on this phone.
+    // Keep the token cached for another authenticated account on this phone.
   }
 
   /** For authenticated use only: never display or log the FCM token. */
