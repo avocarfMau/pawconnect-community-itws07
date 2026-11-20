@@ -9,7 +9,7 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
   IonContent,
@@ -36,6 +36,7 @@ import {
 
 import {
   firstValueFrom,
+  Subscription,
   timeout
 } from 'rxjs';
 
@@ -85,10 +86,15 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   private readonly adoption = inject(PetAdoptionService);
   private readonly router = inject(Router);
+<<<<<<< HEAD:pawconnect-community/src/app/pages/my-adoptions/my-adoptions.page.ts
+=======
+  private readonly activatedRoute = inject(ActivatedRoute);
+>>>>>>> af5cb12 (Update pet adoption request management):pawrescue-community/src/app/pages/my-adoptions/my-adoptions.page.ts
   private readonly haptics = inject(HapticsService);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
 
+  private tabRouteSubscription?: Subscription;
   private destroyed = false;
   private firstIonicEntrance = true;
   private sessionToken = this.getSessionToken();
@@ -282,6 +288,29 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.restoreSnapshot();
+<<<<<<< HEAD:pawconnect-community/src/app/pages/my-adoptions/my-adoptions.page.ts
+=======
+
+    // Handle both initial notification opens and subsequent taps while
+    // Ionic keeps this page alive. Invalid/missing tabs retain the default.
+    this.tabRouteSubscription = this.activatedRoute.queryParamMap.subscribe(params => {
+      const requestedTab = params.get('tab');
+      if (requestedTab !== 'sent' && requestedTab !== 'received') return;
+
+      this.ensureCurrentSession();
+      this.updateUI(() => {
+        this.selectedTab = requestedTab;
+        this.errorMessage = this.tabErrors[requestedTab];
+        this.successMessage = '';
+        this.updateLoading();
+      });
+
+      // A notification may refer to a newly changed request. Refresh even
+      // when a snapshot is already available, without blocking other tabs.
+      void this.loadTab(requestedTab, true);
+    });
+
+>>>>>>> af5cb12 (Update pet adoption request management):pawrescue-community/src/app/pages/my-adoptions/my-adoptions.page.ts
     void this.loadAll(false, false);
   }
 
@@ -1010,6 +1039,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.tabRouteSubscription?.unsubscribe();
     this.destroyed = true;
     this.requestVersions.posts++;
     this.requestVersions.received++;
