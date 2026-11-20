@@ -67,7 +67,9 @@ function notifyAdoptionApplicant(
                 'type' => $eventType,
                 'request_id' => (string) $requestId,
                 'adoption_id' => (string) $adoptionId,
-                'status' => $status
+                'status' => $status,
+                'route' => '/my-adoptions',
+                'adoptions_tab' => 'sent'
             ]
         );
 
