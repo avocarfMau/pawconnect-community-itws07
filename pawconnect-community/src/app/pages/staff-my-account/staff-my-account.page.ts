@@ -8,6 +8,8 @@ import {
   inject
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { Capacitor } from '@capacitor/core';
 import {
   HttpClient,
   HttpErrorResponse,
@@ -87,6 +89,17 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
 
   private readonly staffProfileUpdateUrl =
     `${getApiBaseUrl().replace(/\/$/, '')}/auth/update_staff_profile.php`;
+
+  // Native Android feedback only. Never block account actions if unavailable.
+  private hapticImpact(style: ImpactStyle = ImpactStyle.Light): void {
+    if (!Capacitor.isNativePlatform()) return;
+    void Haptics.impact({ style }).catch(() => undefined);
+  }
+
+  private hapticNotification(type: NotificationType): void {
+    if (!Capacitor.isNativePlatform()) return;
+    void Haptics.notification({ type }).catch(() => undefined);
+  }
 
   private destroyed = false;
   private requestVersion = 0;
@@ -289,6 +302,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
   // Retained for the "Try Again" button in the current HTML.
   // The separate Refresh button will be removed in the HTML update.
   refreshProfile(): void {
+    this.hapticImpact();
     void this.loadProfile();
   }
 
@@ -322,6 +336,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       return;
     }
 
+    this.hapticImpact();
     this.applyViewUpdate(() => {
       this.editForm = {
         first_name: current.first_name!.trim(),
@@ -341,6 +356,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       return;
     }
 
+    this.hapticImpact();
     this.applyViewUpdate(() => {
       this.editingProfile = false;
       this.editError = '';
@@ -398,6 +414,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
     if (!token || token !== this.profileToken) {
       this.applyViewUpdate(() => {
         this.editError = 'Your session has expired. Please log in again.';
+        this.hapticNotification(NotificationType.Error);
       });
       return;
     }
@@ -412,6 +429,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
 
     const validationError = this.validateEditForm(request);
     if (validationError) {
+      this.hapticNotification(NotificationType.Error);
       this.applyViewUpdate(() => {
         this.editError = validationError;
       });
@@ -434,6 +452,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       return;
     }
 
+    this.hapticImpact(ImpactStyle.Medium);
     this.applyViewUpdate(() => {
       this.savingProfile = true;
       this.editError = '';
@@ -472,6 +491,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
         throw new Error('The server did not confirm a valid staff profile update.');
       }
 
+      this.hapticNotification(NotificationType.Success);
       this.applyViewUpdate(() => {
         this.profile = updated;
         this.editingProfile = false;
@@ -491,6 +511,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       const httpError = error instanceof HttpErrorResponse ? error : null;
       const serverMessage: unknown = httpError?.error?.message;
 
+      this.hapticNotification(NotificationType.Error);
       this.applyViewUpdate(() => {
         // Keep the form and entries intact so staff can correct/retry.
         this.editingProfile = true;
@@ -543,12 +564,14 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
 
   goHome(): void {
     if (!this.loggingOut && !this.savingProfile) {
+      this.hapticImpact();
       void this.router.navigateByUrl('/staff-dashboard');
     }
   }
 
   goMyAssistedCases(): void {
     if (!this.loggingOut && !this.savingProfile) {
+      this.hapticImpact();
       void this.router.navigateByUrl('/staff-my-assisted-cases');
     }
   }
@@ -566,6 +589,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       return;
     }
 
+    this.hapticImpact(ImpactStyle.Medium);
     this.applyViewUpdate(() => {
       this.loggingOut = true;
       this.logoutError = '';
@@ -584,6 +608,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       }
 
       if (success !== true) {
+        this.hapticNotification(NotificationType.Error);
         this.applyViewUpdate(() => {
           this.logoutError = 'Unable to log out. Please try again.';
         });
@@ -597,12 +622,14 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
         this.editSuccess = '';
       });
 
+      this.hapticNotification(NotificationType.Success);
       await this.router.navigateByUrl('/login', { replaceUrl: true });
     } catch (error: unknown) {
       if (this.destroyed) {
         return;
       }
 
+      this.hapticNotification(NotificationType.Error);
       this.applyViewUpdate(() => {
         this.logoutError =
           error instanceof Error && error.name === 'TimeoutError'

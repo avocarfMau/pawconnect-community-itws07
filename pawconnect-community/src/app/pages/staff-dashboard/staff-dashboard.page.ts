@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
   ChangeDetectorRef,
   Component,
@@ -333,15 +334,24 @@ export class StaffDashboardPage implements OnInit, OnDestroy {
     });
   }
 
+  private tapFeedback(): void {
+    void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {
+      // Haptics may be unavailable on some devices; navigation still works.
+    });
+  }
+
   openAnimalAssistance(): void {
+    this.tapFeedback();
     void this.router.navigateByUrl('/staff-animal-assistance');
   }
 
   openMyAssistedCases(): void {
+    this.tapFeedback();
     void this.router.navigateByUrl('/staff-my-assisted-cases');
   }
 
   openMyAccount(): void {
+    this.tapFeedback();
     void this.router.navigateByUrl('/staff-my-account');
   }
 
