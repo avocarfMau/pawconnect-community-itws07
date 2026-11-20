@@ -7,6 +7,7 @@ import {
   HttpParams
 } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -417,12 +418,21 @@ export class StaffMyAssistedCasesPage implements OnInit, OnDestroy {
     return item.id;
   }
 
+  // Best-effort native feedback for user-initiated navigation only.
+  private tapFeedback(): void {
+    void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {
+      // Haptics may be unavailable in a browser or on some devices.
+    });
+  }
+
   goHome(): void {
+    this.tapFeedback();
     void this.router.navigateByUrl('/staff-dashboard');
   }
 
   // Stay within the staff-only account route.
   goAccount(): void {
+    this.tapFeedback();
     void this.router.navigateByUrl('/staff-my-account');
   }
 
@@ -430,6 +440,7 @@ export class StaffMyAssistedCasesPage implements OnInit, OnDestroy {
     if (!Number.isInteger(caseId) || caseId <= 0) {
       return;
     }
+    this.tapFeedback();
     void this.router.navigate(['/staff-animal-assistance', caseId]);
   }
 

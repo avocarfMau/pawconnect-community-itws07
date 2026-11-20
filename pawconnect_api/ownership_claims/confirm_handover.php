@@ -66,8 +66,8 @@ function notifyOwnershipHandoverParticipant(
         $body = $completed
             ? 'Both residents have confirmed the pet handover. The Found Pet report is now resolved.'
             : ($confirmedByFinder
-                ? 'The finder confirmed the pet handover. Please confirm in PawRescue only if the pet was actually handed over.'
-                : 'The claimant confirmed the pet handover. Please confirm in PawRescue only if the pet was actually handed over.');
+                ? 'The finder confirmed the pet handover. Please confirm in PawConnect only if the pet was actually handed over.'
+                : 'The claimant confirmed the pet handover. Please confirm in PawConnect only if the pet was actually handed over.');
 
         $result = pawrescueSendFcmToToken(
             $device['device_token'],
@@ -80,7 +80,9 @@ function notifyOwnershipHandoverParticipant(
                 'claim_id' => (string) $claimId,
                 'found_report_id' => (string) $foundReportId,
                 'confirmed_by' => $actor,
-                'status' => $completed ? 'completed' : 'pickup_scheduled'
+                'status' => $completed ? 'completed' : 'pickup_scheduled',
+                'route' => '/my-claims',
+                'claims_tab' => $confirmedByFinder ? 'sent' : 'received'
             ]
         );
 
@@ -105,13 +107,13 @@ function notifyOwnershipHandoverParticipant(
         }
 
         if (($result['success'] ?? false) !== true) {
-            error_log('[PawRescue Handover Push] Firebase did not accept the notice.');
+            error_log('[PawConnect Handover Push] Firebase did not accept the notice.');
         }
     } catch (Throwable $pushError) {
         // Push delivery must never roll back a committed handover.
         // Do not log tokens, proof, pickup details, or HTTP credentials.
         error_log(
-            '[PawRescue Handover Push] Notice unavailable (' .
+            '[PawConnect Handover Push] Notice unavailable (' .
             get_class($pushError) . ').'
         );
     }
@@ -547,7 +549,7 @@ try {
         $conn->rollBack();
     }
 
-    error_log('[PawRescue Ownership Handover] ' . $e->getMessage());
+    error_log('[PawConnect Ownership Handover] ' . $e->getMessage());
     respondHandover(500, [
         'success' => false,
         'message' => 'Unable to confirm the pet handover. Please try again.'

@@ -336,6 +336,68 @@ try {
 
     $conn->commit();
 
+    // Notify only the resident who submitted the linked Found Pet report.
+    // Run after commit: FCM failure must not undo a completed rescue.
+    // $isRescueCompletion is true only on the first transition to rescued,
+    // so subsequent assessment notes do not send duplicate rescue alerts.
+    if ($isRescueCompletion) {
+        try {
+            require_once __DIR__ . '/../push_notifications/fcm_sender.php';
+
+            $recipientStmt = $conn->prepare(
+                "SELECT DISTINCT upt.device_token
+                 FROM pet_reports p
+                 INNER JOIN users u ON u.id = p.user_id
+                 INNER JOIN user_push_tokens upt ON upt.user_id = u.id
+                 WHERE p.id = :report_id
+                   AND p.report_type = 'found'
+                   AND u.role = 'resident'
+                   AND u.status = 'active'
+                   AND upt.platform = 'android'
+                   AND upt.is_active = 1"
+            );
+            $recipientStmt->bindValue(':report_id', (int) $case['found_report_id'], PDO::PARAM_INT);
+            $recipientStmt->execute();
+
+            $sentCount = 0;
+            $failedCount = 0;
+            while (($deviceToken = $recipientStmt->fetchColumn()) !== false) {
+                $pushResult = pawrescueSendFcmToToken(
+                    (string) $deviceToken,
+                    'Animal Assistance Update',
+                    'The animal you reported has been successfully rescued by the Municipal Veterinary Office.',
+                    [
+                        'type' => 'animal_assistance_rescued',
+                        'route' => '/my-reports',
+                        'report_id' => (string) $case['found_report_id'],
+                        'assistance_case_id' => (string) $caseId,
+                        'status' => 'rescued',
+                    ]
+                );
+
+                if (!empty($pushResult['success'])) {
+                    $sentCount++;
+                } else {
+                    $failedCount++;
+                    error_log(
+                        '[PawConnect Rescue Resident Push] Send failed; case=' . $caseId .
+                        ' code=' . (string) ($pushResult['error_code'] ?? 'UNKNOWN')
+                    );
+                }
+            }
+            $recipientStmt->closeCursor();
+            error_log(
+                '[PawConnect Rescue Resident Push] case=' . $caseId .
+                ' sent=' . $sentCount . ' failed=' . $failedCount
+            );
+        } catch (Throwable $pushError) {
+            error_log(
+                '[PawConnect Rescue Resident Push] Dispatch error; case=' . $caseId .
+                ' message=' . $pushError->getMessage()
+            );
+        }
+    }
+
     sendCaseUpdateResponse(200, true, $isRescueCompletion
         ? 'Animal rescue recorded successfully.'
         : 'Animal assistance case updated successfully.', [

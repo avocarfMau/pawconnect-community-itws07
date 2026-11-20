@@ -13,6 +13,8 @@ import {
   documentTextOutline
 } from 'ionicons/icons';
 import { Subscription } from 'rxjs';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Capacitor } from '@capacitor/core';
 
 import { getApiBaseUrl } from '../../config/ip-config';
 import { AuthService } from '../../services/auth';
@@ -171,6 +173,13 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
     this.loadingMore = false;
   }
 
+  private lightHaptic(): void {
+    if (!Capacitor.isNativePlatform()) return;
+    void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {
+      // Haptics are optional; never interrupt staff actions.
+    });
+  }
+
   setFilter(filter: AssistanceFilter): void {
     if (this.destroyed) return;
 
@@ -180,6 +189,7 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
       return;
     }
 
+    this.lightHaptic();
     this.cancelPendingRequest();
     this.updateView(() => {
       this.selectedFilter = filter;
@@ -299,6 +309,7 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
     const numericId = Number(caseId);
     if (!Number.isSafeInteger(numericId) || numericId <= 0) return;
 
+    this.lightHaptic();
     this.cancelPendingRequest();
     // Matches app.routes.ts: staff-animal-assistance/:id.
     // Awaiting navigation lets us surface a navigation failure rather than
@@ -325,6 +336,7 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
   }
 
   backToDashboard(): void {
+    this.lightHaptic();
     void this.router.navigateByUrl('/staff-dashboard');
   }
 

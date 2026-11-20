@@ -818,6 +818,65 @@ try {
 
     $conn->commit();
 
+    // Notify authorized staff only after the report and case are committed.
+    // Push delivery is best-effort: it must never turn a saved report into an error.
+    if ($needsAssistance && $assistanceCaseId !== null) {
+        try {
+            require_once __DIR__ . '/../push_notifications/fcm_sender.php';
+
+            // Select devices belonging to active staff accounts only.
+            // DISTINCT avoids sending twice to the same registered token.
+            $staffTokenStmt = $conn->prepare(
+                "SELECT DISTINCT upt.device_token
+                 FROM user_push_tokens upt
+                 INNER JOIN users u ON u.id = upt.user_id
+                 WHERE u.role = 'staff'
+                   AND u.status = 'active'
+                   AND upt.is_active = 1
+                   AND upt.platform = 'android'"
+            );
+            $staffTokenStmt->execute();
+
+            $sentCount = 0;
+            $failedCount = 0;
+            while (($deviceToken = $staffTokenStmt->fetchColumn()) !== false) {
+                $result = pawrescueSendFcmToToken(
+                    (string) $deviceToken,
+                    'New Animal Assistance Request',
+                    'A Found Pet report needs animal assistance. Tap to review the case.',
+                    [
+                        'type' => 'animal_assistance',
+                        'route' => '/staff-animal-assistance/' . $assistanceCaseId,
+                        'assistance_case_id' => (string) $assistanceCaseId,
+                        'report_id' => (string) $reportId
+                    ]
+                );
+
+                if (!empty($result['success'])) {
+                    $sentCount++;
+                } else {
+                    $failedCount++;
+                    // Do not log device tokens or private FCM credentials.
+                    error_log(
+                        '[PawConnect Staff Assistance Push] Send failed; code=' .
+                        (string) ($result['error_code'] ?? 'UNKNOWN')
+                    );
+                }
+            }
+            $staffTokenStmt->closeCursor();
+            error_log(
+                '[PawConnect Staff Assistance Push] case=' . $assistanceCaseId .
+                ' sent=' . $sentCount . ' failed=' . $failedCount
+            );
+        } catch (Throwable $pushError) {
+            // The successful report transaction has already committed.
+            error_log(
+                '[PawConnect Staff Assistance Push] Dispatch error for case=' .
+                $assistanceCaseId . ': ' . $pushError->getMessage()
+            );
+        }
+    }
+
     logPerformance(
 
         "Database Insert",

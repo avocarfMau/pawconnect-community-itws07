@@ -5,7 +5,7 @@ header('Cache-Control: private, no-store, max-age=0');
 header('Pragma: no-cache');
 header('X-Content-Type-Options: nosniff');
 
-function sendRescheduleDecisionResponse(int $status, array $body): void
+function sendRescheduleResponse(int $status, array $body): void
 {
     http_response_code($status);
     echo json_encode($body, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
@@ -13,28 +13,28 @@ function sendRescheduleDecisionResponse(int $status, array $body): void
 }
 
 // ============================================================
-// BEST-EFFORT FCM NOTIFICATION FOR A PICKUP RESCHEDULE DECISION
+// NOTIFY THE OTHER RESIDENT OF A NEW PICKUP RESCHEDULE REQUEST
 // ============================================================
-// The recipient is derived from the authorized, saved reschedule
-// record, not from client input. Called only AFTER the DB commit.
-// One active Android registration is selected for that resident;
-// browser-only accounts can still check their claim in PawRescue.
-function notifyOwnershipRescheduleDecision(
+// Notify only the other participant: finder -> claimant or
+// claimant -> finder. IDs come from authenticated claim records.
+// Call AFTER committing the transaction, never while locks are held.
+// Push is best-effort and cannot undo an already-saved request.
+function notifyOwnershipRescheduleRequested(
     PDO $conn,
     int $recipientId,
     int $claimId,
     int $foundReportId,
     int $rescheduleId,
-    string $action
+    string $claimsTab
 ): void {
-    if (
-        $recipientId <= 0 || $claimId <= 0 || $foundReportId <= 0 ||
-        $rescheduleId <= 0 || !in_array($action, ['accept', 'reject'], true)
-    ) {
+    if ($recipientId <= 0 || $claimId <= 0 || $foundReportId <= 0 || $rescheduleId <= 0 ||
+        !in_array($claimsTab, ['sent', 'received'], true)) {
         return;
     }
 
     try {
+        // Select one currently active Android token owned by the
+        // specific recipient. Do not notify unrelated residents.
         $tokenStmt = $conn->prepare(
             "SELECT id, device_token
              FROM user_push_tokens
@@ -47,38 +47,34 @@ function notifyOwnershipRescheduleDecision(
         $tokenStmt->execute([':recipient_id' => $recipientId]);
         $device = $tokenStmt->fetch(PDO::FETCH_ASSOC);
 
-        if (
-            !is_array($device) ||
+        if (!is_array($device) ||
             !is_string($device['device_token'] ?? null) ||
-            $device['device_token'] === ''
-        ) {
+            $device['device_token'] === '') {
+            // Browser-only accounts don't have Android FCM tokens;
+            // they can still view the request in the authenticated app.
             return;
         }
 
         require_once __DIR__ . '/../push_notifications/fcm_sender.php';
 
-        $accepted = $action === 'accept';
         $result = pawrescueSendFcmToToken(
             $device['device_token'],
-            $accepted ? 'Pickup Reschedule Accepted' : 'Pickup Reschedule Rejected',
-            $accepted
-                ? 'Your pickup reschedule was accepted. Open PawRescue to review the updated arrangement.'
-                : 'Your pickup reschedule was rejected. The previous arrangement remains in place. Open PawRescue to review it.',
+            'Pickup Reschedule Requested',
+            'The other resident requested a change to your pet pickup arrangement. Open PawConnect to review it.',
             [
-                'type' => $accepted
-                    ? 'ownership_reschedule_accepted'
-                    : 'ownership_reschedule_rejected',
+                'type' => 'ownership_reschedule_requested',
+                'route' => '/my-claims',
+                'claims_tab' => $claimsTab,
                 'claim_id' => (string) $claimId,
                 'found_report_id' => (string) $foundReportId,
                 'reschedule_id' => (string) $rescheduleId,
-                'status' => 'pickup_scheduled',
-                'reschedule_status' => $accepted ? 'accepted' : 'rejected'
+                'status' => 'reschedule_requested'
             ]
         );
 
         if (($result['unregistered'] ?? false) === true) {
-            // Disable only this registration. Account/device ownership
-            // might have changed between selection and FCM response.
+            // A dead token can be disabled without changing the
+            // registration of any other user or reassigned token.
             $disableStmt = $conn->prepare(
                 'UPDATE user_push_tokens
                  SET is_active = 0, updated_at = NOW()
@@ -97,39 +93,38 @@ function notifyOwnershipRescheduleDecision(
         }
 
         if (($result['success'] ?? false) !== true) {
-            // Never include device tokens or private claim details in logs.
-            error_log('[PawRescue Reschedule Decision Push] Firebase did not accept the notice.');
+            // No tokens, credentials or private pickup details in logs.
+            error_log('[PawConnect Ownership Reschedule Push] Firebase did not accept the notice.');
         }
     } catch (Throwable $pushError) {
-        // An FCM error cannot undo the committed reschedule decision.
+        // The reschedule request is already committed. Sending a push
+        // must not change this API response into a failure.
         error_log(
-            '[PawRescue Reschedule Decision Push] Notice unavailable (' .
+            '[PawConnect Ownership Reschedule Push] Notice unavailable (' .
             get_class($pushError) . ').'
         );
     }
 }
 
-// ============================================================
-// METHOD AND REQUEST VALIDATION
-// ============================================================
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST, OPTIONS');
-    sendRescheduleDecisionResponse(405, [
+    sendRescheduleResponse(405, [
         'success' => false,
         'message' => 'Method not allowed.'
     ]);
 }
 
 if (stripos((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json') === false) {
-    sendRescheduleDecisionResponse(415, [
+    sendRescheduleResponse(415, [
         'success' => false,
         'message' => 'Content-Type must be application/json.'
     ]);
 }
 
+// Small JSON input only; evidence uploads use a different route.
 $raw = file_get_contents('php://input', false, null, 0, 8193);
 if ($raw === false || strlen($raw) > 8192) {
-    sendRescheduleDecisionResponse(413, [
+    sendRescheduleResponse(413, [
         'success' => false,
         'message' => 'Request is too large.'
     ]);
@@ -137,67 +132,131 @@ if ($raw === false || strlen($raw) > 8192) {
 
 $data = json_decode($raw, true);
 if (!is_array($data) || array_is_list($data)) {
-    sendRescheduleDecisionResponse(400, [
+    sendRescheduleResponse(400, [
         'success' => false,
         'message' => 'Invalid JSON request.'
     ]);
 }
 
-// Strict positive integer IDs; do not accept booleans/floats.
-function requiredPositiveRescheduleId(array $data, string $field): int
-{
-    $value = $data[$field] ?? null;
-    if (
-        !(is_int($value) || is_string($value)) ||
-        !preg_match('/^[1-9][0-9]*$/D', (string) $value)
-    ) {
-        sendRescheduleDecisionResponse(400, [
-            'success' => false,
-            'message' => 'A valid ' . $field . ' is required.'
-        ]);
-    }
-
-    $id = filter_var($value, FILTER_VALIDATE_INT, [
-        'options' => ['min_range' => 1]
-    ]);
-    if ($id === false) {
-        sendRescheduleDecisionResponse(400, [
-            'success' => false,
-            'message' => 'A valid ' . $field . ' is required.'
-        ]);
-    }
-    return (int) $id;
-}
-
-$claimId = requiredPositiveRescheduleId($data, 'claim_id');
-$rescheduleId = requiredPositiveRescheduleId($data, 'reschedule_id');
-$action = $data['action'] ?? null;
-
-if (!is_string($action) || !in_array($action, ['accept', 'reject'], true)) {
-    sendRescheduleDecisionResponse(400, [
+$claimId = filter_var(
+    $data['claim_id'] ?? null,
+    FILTER_VALIDATE_INT,
+    ['options' => ['min_range' => 1]]
+);
+if ($claimId === false || $claimId === null) {
+    sendRescheduleResponse(400, [
         'success' => false,
-        'message' => 'Action must be accept or reject.'
+        'message' => 'A valid claim ID is required.'
     ]);
 }
 
-$responseNote = null;
-if (array_key_exists('response_note', $data)) {
-    if ($data['response_note'] !== null && !is_string($data['response_note'])) {
-        sendRescheduleDecisionResponse(422, [
+// Validate supplied values BEFORE opening a database transaction.
+// Missing values mean "keep the current approved value".
+$locationInput = null;
+if (array_key_exists('pickup_location', $data)) {
+    if (!is_string($data['pickup_location'])) {
+        sendRescheduleResponse(422, [
             'success' => false,
-            'message' => 'Invalid response note.'
+            'message' => 'Invalid proposed pickup location.'
         ]);
     }
-    if (is_string($data['response_note'])) {
-        $responseNote = trim($data['response_note']);
-        if (mb_strlen($responseNote, 'UTF-8') > 1000) {
-            sendRescheduleDecisionResponse(422, [
+    $locationInput = trim($data['pickup_location']);
+    if (
+        strlen($locationInput) < 5 || strlen($locationInput) > 255 ||
+        preg_match('/[\x00-\x1F\x7F]/', $locationInput)
+    ) {
+        sendRescheduleResponse(422, [
+            'success' => false,
+            'message' => 'Pickup location must be one line, 5 to 255 bytes.'
+        ]);
+    }
+}
+
+$dateInput = null;
+if (array_key_exists('pickup_date', $data)) {
+    $dateInput = $data['pickup_date'];
+    if (!is_string($dateInput) ||
+        !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $dateInput)) {
+        sendRescheduleResponse(422, [
+            'success' => false,
+            'message' => 'Use a valid pickup date (YYYY-MM-DD).'
+        ]);
+    }
+    [$y, $m, $d] = array_map('intval', explode('-', $dateInput));
+    if (!checkdate($m, $d, $y)) {
+        sendRescheduleResponse(422, [
+            'success' => false,
+            'message' => 'The proposed pickup date does not exist.'
+        ]);
+    }
+}
+
+$timeInput = null;
+if (array_key_exists('pickup_time', $data)) {
+    $timeInput = $data['pickup_time'];
+    if (!is_string($timeInput) ||
+        !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/D', $timeInput)) {
+        sendRescheduleResponse(422, [
+            'success' => false,
+            'message' => 'Use a valid pickup time (HH:MM).'
+        ]);
+    }
+    if (strlen($timeInput) === 5) {
+        $timeInput .= ':00';
+    }
+}
+
+$coordinateFieldsPresent = array_key_exists('pickup_latitude', $data) ||
+    array_key_exists('pickup_longitude', $data);
+$inputLatitude = $data['pickup_latitude'] ?? null;
+$inputLongitude = $data['pickup_longitude'] ?? null;
+if ($coordinateFieldsPresent) {
+    if (!array_key_exists('pickup_latitude', $data) ||
+        !array_key_exists('pickup_longitude', $data) ||
+        (($inputLatitude === null) !== ($inputLongitude === null))) {
+        sendRescheduleResponse(422, [
+            'success' => false,
+            'message' => 'Provide both pickup coordinates or set both to null.'
+        ]);
+    }
+
+    if ($inputLatitude !== null) {
+        if (
+            (!is_float($inputLatitude) && !is_int($inputLatitude) && !is_string($inputLatitude)) ||
+            (!is_float($inputLongitude) && !is_int($inputLongitude) && !is_string($inputLongitude)) ||
+            !is_numeric($inputLatitude) || !is_numeric($inputLongitude) ||
+            !is_finite((float) $inputLatitude) || !is_finite((float) $inputLongitude) ||
+            (float) $inputLatitude < -90 || (float) $inputLatitude > 90 ||
+            (float) $inputLongitude < -180 || (float) $inputLongitude > 180
+        ) {
+            sendRescheduleResponse(422, [
                 'success' => false,
-                'message' => 'Response note must not exceed 1000 characters.'
+                'message' => 'Invalid proposed pickup coordinates.'
             ]);
         }
-        if ($responseNote === '') {
-            $responseNote = null;
+        $inputLatitude = (float) $inputLatitude;
+        $inputLongitude = (float) $inputLongitude;
+    }
+}
+
+$reason = null;
+if (array_key_exists('reason', $data)) {
+    if ($data['reason'] !== null && !is_string($data['reason'])) {
+        sendRescheduleResponse(422, [
+            'success' => false,
+            'message' => 'Invalid reschedule reason.'
+        ]);
+    }
+    if (is_string($data['reason'])) {
+        $reason = trim($data['reason']);
+        if (mb_strlen($reason, 'UTF-8') > 1000) {
+            sendRescheduleResponse(422, [
+                'success' => false,
+                'message' => 'Reason must not exceed 1000 characters.'
+            ]);
+        }
+        if ($reason === '') {
+            $reason = null;
         }
     }
 }
@@ -209,46 +268,40 @@ try {
     $auth = authenticate(['resident']);
     $conn = $auth['connection'] ?? null;
     $residentId = (int) ($auth['user']['id'] ?? 0);
-
     if (!($conn instanceof PDO) || $residentId <= 0) {
         throw new RuntimeException('Invalid authentication context.');
     }
 
-    // Preliminary ID lookup is ONLY for consistent locking order.
-    // Access is authorized after the report, claim and request
-    // are loaded inside the transaction.
+    // Lock order shared with approval and pickup confirmation:
+    // parent pet_reports row -> claim row -> reschedule records.
+    // This preliminary lookup is not authorization.
     $lookup = $conn->prepare(
-        'SELECT found_report_id
-         FROM pet_ownership_claims
+        'SELECT found_report_id FROM pet_ownership_claims
          WHERE id = :claim_id LIMIT 1'
     );
     $lookup->execute([':claim_id' => $claimId]);
     $foundReportId = $lookup->fetchColumn();
-
     if ($foundReportId === false) {
-        sendRescheduleDecisionResponse(404, [
+        sendRescheduleResponse(404, [
             'success' => false,
-            'message' => 'Reschedule request not found.'
+            'message' => 'Ownership claim not found.'
         ]);
     }
 
     $conn->beginTransaction();
 
-    // Lock order: pet_reports -> pet_ownership_claims ->
-    // pet_ownership_pickup_reschedules. Matches Steps 7 and 8.
     $reportStmt = $conn->prepare(
         'SELECT id, user_id, report_type, status, deleted_at
-         FROM pet_reports
-         WHERE id = :report_id LIMIT 1 FOR UPDATE'
+         FROM pet_reports WHERE id = :report_id
+         LIMIT 1 FOR UPDATE'
     );
     $reportStmt->execute([':report_id' => $foundReportId]);
     $report = $reportStmt->fetch(PDO::FETCH_ASSOC);
-
     if (!$report || $report['report_type'] !== 'found') {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(404, [
+        sendRescheduleResponse(404, [
             'success' => false,
-            'message' => 'Reschedule request not found.'
+            'message' => 'Ownership claim not found.'
         ]);
     }
 
@@ -256,8 +309,8 @@ try {
         'SELECT id, found_report_id, claimant_user_id, status,
                 pickup_location, pickup_latitude, pickup_longitude,
                 pickup_date, pickup_time, pickup_timezone,
-                pickup_confirmed_by_claimant_at,
-                finder_handover_confirmed_at, claimant_handover_confirmed_at
+                finder_handover_confirmed_at,
+                claimant_handover_confirmed_at
          FROM pet_ownership_claims
          WHERE id = :claim_id AND found_report_id = :report_id
          LIMIT 1 FOR UPDATE'
@@ -270,260 +323,212 @@ try {
 
     $finderId = (int) $report['user_id'];
     $claimantId = $claim ? (int) $claim['claimant_user_id'] : 0;
-
-    // Do not reveal private claims to nonparticipants.
     if (
         !$claim || $finderId === $claimantId ||
         ($residentId !== $finderId && $residentId !== $claimantId)
     ) {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(404, [
+        // Do not reveal another resident's private claim.
+        sendRescheduleResponse(404, [
             'success' => false,
-            'message' => 'Reschedule request not found.'
+            'message' => 'Ownership claim not found.'
         ]);
     }
 
-    $rescheduleStmt = $conn->prepare(
-        'SELECT id, claim_id, requested_by_user_id,
-                previous_location, previous_latitude, previous_longitude,
-                previous_date, previous_time,
-                proposed_location, proposed_latitude, proposed_longitude,
-                proposed_date, proposed_time, status
-         FROM pet_ownership_pickup_reschedules
-         WHERE id = :reschedule_id AND claim_id = :claim_id
-         LIMIT 1 FOR UPDATE'
-    );
-    $rescheduleStmt->execute([
-        ':reschedule_id' => $rescheduleId,
-        ':claim_id' => $claimId
-    ]);
-    $reschedule = $rescheduleStmt->fetch(PDO::FETCH_ASSOC);
-
-    // Only the OTHER participant may respond.
-    if (
-        !$reschedule ||
-        (int) $reschedule['requested_by_user_id'] === $residentId ||
-        !in_array((int) $reschedule['requested_by_user_id'], [$finderId, $claimantId], true)
-    ) {
-        $conn->rollBack();
-        sendRescheduleDecisionResponse(404, [
-            'success' => false,
-            'message' => 'Reschedule request not found or not assigned to you.'
-        ]);
-    }
-
-    // Archived reports retain their history but cannot process pickup changes.
+    // Archived reports remain in history but cannot start new pickup changes.
     if ($report['deleted_at'] !== null) {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(409, [
+        sendRescheduleResponse(409, [
             'success' => false,
-            'message' => 'This Found Pet report has been archived. Pickup reschedule decisions are unavailable.'
+            'message' => 'This Found Pet report has been archived. Pickup rescheduling is unavailable.'
         ]);
     }
 
     if (!in_array((string) $report['status'],
         ['pending', 'under_review', 'in_progress'], true)) {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(409, [
+        sendRescheduleResponse(409, [
             'success' => false,
-            'message' => 'The Found Pet report is no longer active.'
+            'message' => 'This Found Pet report is no longer active.'
         ]);
     }
 
-    if ($claim['status'] !== 'reschedule_requested' || $reschedule['status'] !== 'pending') {
+    if ((string) $claim['status'] !== 'pickup_scheduled') {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(409, [
+        sendRescheduleResponse(409, [
             'success' => false,
-            'message' => 'This reschedule request is no longer awaiting a response.',
-            'claim_status' => (string) $claim['status'],
-            'reschedule_status' => (string) $reschedule['status']
+            'message' => $claim['status'] === 'reschedule_requested'
+                ? 'A reschedule request is already pending a response.'
+                : 'A pickup arrangement must be approved before rescheduling.',
+            'status' => (string) $claim['status']
         ]);
     }
 
     if ($claim['finder_handover_confirmed_at'] !== null ||
         $claim['claimant_handover_confirmed_at'] !== null) {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(409, [
+        sendRescheduleResponse(409, [
             'success' => false,
-            'message' => 'Pet handover confirmation has already started.'
+            'message' => 'The handover confirmation process has started. Contact the other participant before changing pickup plans.'
         ]);
     }
 
     if (!$claim['pickup_location'] || !$claim['pickup_date'] || !$claim['pickup_time'] ||
         (string) $claim['pickup_timezone'] !== 'Asia/Manila') {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(409, [
+        sendRescheduleResponse(409, [
             'success' => false,
-            'message' => 'The current pickup arrangement is incomplete.'
+            'message' => 'The existing pickup arrangement is incomplete.'
         ]);
     }
 
-    // Detect stale proposals: the approved pickup must still be
-    // the same pickup that was recorded when Step 8 requested
-    // this change. Decimal values may be returned as strings.
-    $sameCoord = static function ($a, $b): bool {
-        if ($a === null || $b === null) {
-            return $a === null && $b === null;
-        }
-        return is_numeric($a) && is_numeric($b) &&
-            round((float) $a, 8) === round((float) $b, 8);
-    };
+    // The report lock serializes concurrent requests for this claim,
+    // but also check the reschedule table to catch stale or legacy states.
+    $pendingStmt = $conn->prepare(
+        "SELECT id FROM pet_ownership_pickup_reschedules
+         WHERE claim_id = :claim_id AND status = 'pending'
+         LIMIT 1"
+    );
+    $pendingStmt->execute([':claim_id' => $claimId]);
+    if ($pendingStmt->fetchColumn() !== false) {
+        $conn->rollBack();
+        sendRescheduleResponse(409, [
+            'success' => false,
+            'message' => 'A reschedule request is already pending.'
+        ]);
+    }
 
+    $previousLocation = (string) $claim['pickup_location'];
+    $previousLatitude = $claim['pickup_latitude'] === null
+        ? null : (float) $claim['pickup_latitude'];
+    $previousLongitude = $claim['pickup_longitude'] === null
+        ? null : (float) $claim['pickup_longitude'];
+    $previousDate = (string) $claim['pickup_date'];
+    $previousTime = (string) $claim['pickup_time'];
+
+    $proposedLocation = $locationInput ?? $previousLocation;
+    $proposedDate = $dateInput ?? $previousDate;
+    $proposedTime = $timeInput ?? $previousTime;
+
+    if ($coordinateFieldsPresent) {
+        $proposedLatitude = $inputLatitude;
+        $proposedLongitude = $inputLongitude;
+    } elseif ($proposedLocation !== $previousLocation) {
+        // A new place cannot retain the old place's GPS pin.
+        $proposedLatitude = null;
+        $proposedLongitude = null;
+    } else {
+        $proposedLatitude = $previousLatitude;
+        $proposedLongitude = $previousLongitude;
+    }
+
+    $localTime = DateTimeImmutable::createFromFormat(
+        '!Y-m-d H:i:s',
+        $proposedDate . ' ' . $proposedTime,
+        new DateTimeZone('Asia/Manila')
+    );
+    if (!$localTime || $localTime <= new DateTimeImmutable('now', new DateTimeZone('Asia/Manila'))) {
+        $conn->rollBack();
+        sendRescheduleResponse(422, [
+            'success' => false,
+            'message' => 'Proposed pickup date and time must be in the future (Philippine time).'
+        ]);
+    }
+
+    $sameLatitude = ($previousLatitude === null && $proposedLatitude === null) ||
+        ($previousLatitude !== null && $proposedLatitude !== null &&
+         round($previousLatitude, 8) === round((float) $proposedLatitude, 8));
+    $sameLongitude = ($previousLongitude === null && $proposedLongitude === null) ||
+        ($previousLongitude !== null && $proposedLongitude !== null &&
+         round($previousLongitude, 8) === round((float) $proposedLongitude, 8));
     if (
-        (string) $claim['pickup_location'] !== (string) $reschedule['previous_location'] ||
-        (string) $claim['pickup_date'] !== (string) $reschedule['previous_date'] ||
-        (string) $claim['pickup_time'] !== (string) $reschedule['previous_time'] ||
-        !$sameCoord($claim['pickup_latitude'], $reschedule['previous_latitude']) ||
-        !$sameCoord($claim['pickup_longitude'], $reschedule['previous_longitude'])
+        $proposedLocation === $previousLocation &&
+        $proposedDate === $previousDate &&
+        $proposedTime === $previousTime &&
+        $sameLatitude && $sameLongitude
     ) {
         $conn->rollBack();
-        sendRescheduleDecisionResponse(409, [
+        sendRescheduleResponse(422, [
             'success' => false,
-            'message' => 'The existing pickup arrangement has changed. Refresh the claim before responding.'
+            'message' => 'Please change the pickup location, date, or time before requesting rescheduling.'
         ]);
     }
 
-    if ($action === 'accept') {
-        // An accepted pickup must still be in the future.
-        $manila = new DateTimeZone('Asia/Manila');
-        $proposedAt = DateTimeImmutable::createFromFormat(
-            '!Y-m-d H:i:s',
-            (string) $reschedule['proposed_date'] . ' ' . (string) $reschedule['proposed_time'],
-            $manila
-        );
-
-        if (!$proposedAt || $proposedAt <= new DateTimeImmutable('now', $manila)) {
-            $conn->rollBack();
-            sendRescheduleDecisionResponse(422, [
-                'success' => false,
-                'message' => 'The proposed pickup time has passed. Ask the other resident to propose a future schedule.'
-            ]);
-        }
-
-        if (
-            !is_string($reschedule['proposed_location']) ||
-            trim($reschedule['proposed_location']) === '' ||
-            (($reschedule['proposed_latitude'] === null) !==
-             ($reschedule['proposed_longitude'] === null))
-        ) {
-            throw new RuntimeException('Invalid stored proposed pickup arrangement.');
-        }
-    }
-
-    // Store the response before changing the parent claim, all
-    // within one transaction: either everything succeeds or none.
-    $rescheduleUpdate = $conn->prepare(
-        'UPDATE pet_ownership_pickup_reschedules
-         SET status = :status, response_note = :response_note,
-             responded_at = NOW()
-         WHERE id = :reschedule_id AND claim_id = :claim_id
-           AND status = \'pending\''
+    // Store a permanent history entry; the agreed pickup in
+    // pet_ownership_claims remains unchanged until Step 9 ACCEPT.
+    $insert = $conn->prepare(
+        "INSERT INTO pet_ownership_pickup_reschedules (
+            claim_id, requested_by_user_id,
+            previous_location, previous_latitude, previous_longitude,
+            previous_date, previous_time,
+            proposed_location, proposed_latitude, proposed_longitude,
+            proposed_date, proposed_time, reason, status
+        ) VALUES (
+            :claim_id, :requester_id,
+            :previous_location, :previous_latitude, :previous_longitude,
+            :previous_date, :previous_time,
+            :proposed_location, :proposed_latitude, :proposed_longitude,
+            :proposed_date, :proposed_time, :reason, 'pending'
+        )"
     );
-    $rescheduleUpdate->execute([
-        ':status' => $action === 'accept' ? 'accepted' : 'rejected',
-        ':response_note' => $responseNote,
-        ':reschedule_id' => $rescheduleId,
-        ':claim_id' => $claimId
+    $insert->execute([
+        ':claim_id' => $claimId,
+        ':requester_id' => $residentId,
+        ':previous_location' => $previousLocation,
+        ':previous_latitude' => $previousLatitude,
+        ':previous_longitude' => $previousLongitude,
+        ':previous_date' => $previousDate,
+        ':previous_time' => $previousTime,
+        ':proposed_location' => $proposedLocation,
+        ':proposed_latitude' => $proposedLatitude,
+        ':proposed_longitude' => $proposedLongitude,
+        ':proposed_date' => $proposedDate,
+        ':proposed_time' => $proposedTime,
+        ':reason' => $reason
     ]);
+    $rescheduleId = (int) $conn->lastInsertId();
 
-    if ($rescheduleUpdate->rowCount() !== 1) {
-        throw new RuntimeException('Reschedule status changed unexpectedly.');
-    }
-
-    if ($action === 'accept') {
-        // Save the newly AGREED pickup. Resident B must confirm
-        // this updated schedule via confirm_pickup.php.
-        $claimUpdate = $conn->prepare(
-            'UPDATE pet_ownership_claims
-             SET pickup_location = :location,
-                 pickup_latitude = :latitude,
-                 pickup_longitude = :longitude,
-                 pickup_date = :pickup_date,
-                 pickup_time = :pickup_time,
-                 pickup_confirmed_by_claimant_at = NULL,
-                 status = \'pickup_scheduled\'
-             WHERE id = :claim_id AND status = \'reschedule_requested\''
-        );
-        $claimUpdate->execute([
-            ':location' => $reschedule['proposed_location'],
-            ':latitude' => $reschedule['proposed_latitude'],
-            ':longitude' => $reschedule['proposed_longitude'],
-            ':pickup_date' => $reschedule['proposed_date'],
-            ':pickup_time' => $reschedule['proposed_time'],
-            ':claim_id' => $claimId
-        ]);
-    } else {
-        // REJECT: preserve the original pickup. If B requested a
-        // change, any earlier B confirmation is no longer reliable;
-        // ask B to reconfirm the original arrangement.
-        $resetClaimantConfirmation = (int) $reschedule['requested_by_user_id'] === $claimantId;
-        $claimUpdate = $conn->prepare(
-            'UPDATE pet_ownership_claims
-             SET status = \'pickup_scheduled\',
-                 pickup_confirmed_by_claimant_at = CASE
-                     WHEN :reset_confirmation = 1 THEN NULL
-                     ELSE pickup_confirmed_by_claimant_at
-                 END
-             WHERE id = :claim_id AND status = \'reschedule_requested\''
-        );
-        $claimUpdate->bindValue(':reset_confirmation', $resetClaimantConfirmation ? 1 : 0, PDO::PARAM_INT);
-        $claimUpdate->bindValue(':claim_id', $claimId, PDO::PARAM_INT);
-        $claimUpdate->execute();
-    }
-
-    if ($claimUpdate->rowCount() !== 1) {
-        throw new RuntimeException('Claim status changed while responding to the reschedule.');
+    $update = $conn->prepare(
+        "UPDATE pet_ownership_claims
+         SET status = 'reschedule_requested'
+         WHERE id = :claim_id AND status = 'pickup_scheduled'"
+    );
+    $update->execute([':claim_id' => $claimId]);
+    if ($update->rowCount() !== 1) {
+        throw new RuntimeException('Claim status changed during rescheduling.');
     }
 
     $conn->commit();
 
-    $accepted = $action === 'accept';
-    $location = $accepted
-        ? (string) $reschedule['proposed_location']
-        : (string) $claim['pickup_location'];
-    $latitude = $accepted ? $reschedule['proposed_latitude'] : $claim['pickup_latitude'];
-    $longitude = $accepted ? $reschedule['proposed_longitude'] : $claim['pickup_longitude'];
-    $date = $accepted
-        ? (string) $reschedule['proposed_date']
-        : (string) $claim['pickup_date'];
-    $time = $accepted
-        ? (string) $reschedule['proposed_time']
-        : (string) $claim['pickup_time'];
-
-    $confirmationRequired = $accepted ||
-        (int) $reschedule['requested_by_user_id'] === $claimantId ||
-        $claim['pickup_confirmed_by_claimant_at'] === null;
-
-    // Notify only the resident who requested this change, not the
-    // person who just responded. A repeated decision is blocked by
-    // the pending-state checks above and will not resend a push.
-    // Notification delivery is best-effort and runs after commit.
-    notifyOwnershipRescheduleDecision(
+    // Only a newly submitted, successfully committed reschedule
+    // generates a push. Rejected/duplicate requests exit earlier.
+    // Notify the opposite participant, not the requester.
+    $awaitingUserId = $residentId === $finderId ? $claimantId : $finderId;
+    notifyOwnershipRescheduleRequested(
         $conn,
-        (int) $reschedule['requested_by_user_id'],
+        $awaitingUserId,
         $claimId,
         (int) $foundReportId,
         $rescheduleId,
-        $action
+        $awaitingUserId === $finderId ? 'received' : 'sent'
     );
 
-    sendRescheduleDecisionResponse(200, [
+    sendRescheduleResponse(201, [
         'success' => true,
-        'message' => $accepted
-            ? 'Reschedule accepted. The claimant must confirm the updated pickup arrangement.'
-            : 'Reschedule rejected. The previous pickup arrangement remains in place.',
+        'message' => 'Reschedule request submitted. The other resident must review it before the pickup changes.',
         'claim_id' => $claimId,
-        'reschedule_id' => $rescheduleId,
         'found_report_id' => (int) $foundReportId,
-        'status' => 'pickup_scheduled',
-        'reschedule_status' => $accepted ? 'accepted' : 'rejected',
-        'pickup_confirmation_required' => $confirmationRequired,
-        'pickup' => [
-            'location' => $location,
-            'latitude' => $latitude === null ? null : (float) $latitude,
-            'longitude' => $longitude === null ? null : (float) $longitude,
-            'date' => $date,
-            'time' => $time,
+        'reschedule_id' => $rescheduleId,
+        'requested_by_user_id' => $residentId,
+        'awaiting_user_id' => $awaitingUserId,
+        'status' => 'reschedule_requested',
+        'reschedule_status' => 'pending',
+        'proposed_pickup' => [
+            'location' => $proposedLocation,
+            'latitude' => $proposedLatitude,
+            'longitude' => $proposedLongitude,
+            'date' => $proposedDate,
+            'time' => $proposedTime,
             'timezone' => 'Asia/Manila'
         ]
     ]);
@@ -531,9 +536,9 @@ try {
     if ($conn instanceof PDO && $conn->inTransaction()) {
         $conn->rollBack();
     }
-    error_log('[PawRescue Ownership Reschedule Response] ' . $e->getMessage());
-    sendRescheduleDecisionResponse(500, [
+    error_log('[PawConnect Ownership Reschedule Request] ' . $e->getMessage());
+    sendRescheduleResponse(500, [
         'success' => false,
-        'message' => 'Unable to respond to the pickup reschedule. Please try again.'
+        'message' => 'Unable to request a pickup reschedule. Please try again.'
     ]);
 }

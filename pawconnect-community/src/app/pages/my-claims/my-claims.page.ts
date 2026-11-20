@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, inject } from 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 import * as L from 'leaflet';
@@ -59,6 +59,8 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   private reportsService = inject(PetReportsService);
   private haptics = inject(HapticsService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private claimsTabRouteSubscription?: Subscription;
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
   private sanitizer = inject(DomSanitizer);
@@ -1730,6 +1732,15 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Follow validated notification destinations, including query changes
+    // while Ionic reuses this page instance.
+    this.claimsTabRouteSubscription = this.route.queryParamMap.subscribe(params => {
+      const tab = params.get('tab');
+      if (tab === 'sent' || tab === 'received') {
+        this.changeClaimsTab(tab);
+      }
+    });
+
     // Load both once so status counts are ready when switching tabs.
     this.loadSentClaims();
     this.loadReceivedClaims();
@@ -1784,6 +1795,7 @@ export class MyClaimsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.claimsTabRouteSubscription?.unsubscribe();
     this.destroyed = true;
     this.cleanupClaimSubscriptionsAndEvidence();
   }

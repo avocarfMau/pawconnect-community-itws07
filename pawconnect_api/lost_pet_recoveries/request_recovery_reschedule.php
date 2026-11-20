@@ -108,6 +108,99 @@ function validFutureRecoveryPickup(string $date, string $time): bool
         $dt > new DateTimeImmutable('now', $tz);
 }
 
+// ============================================================
+// BEST-EFFORT FCM NOTICE TO THE SPECIFIC RESIDENT
+// ============================================================
+// This is an internal helper, never a public notification endpoint.
+// The caller supplies user IDs obtained from authorized recovery records,
+// not IDs supplied by the client. A browser-only account has no Android
+// FCM token; it can still check recovery status through get_recoveries.php.
+// IMPORTANT: Call only AFTER the recovery transaction commits.
+function notifyRecoveryActionResident(
+    PDO $conn,
+    int $recipientId,
+    string $title,
+    string $message,
+    string $type,
+    int $recoveryId,
+    int $lostReportId,
+    string $status,
+    string $tab
+): void {
+    if ($recipientId <= 0) {
+        return;
+    }
+
+    try {
+        // The most recently active device for THIS resident only.
+        // We intentionally do not send to other user accounts or
+        // broadcast to every device in the database.
+        $tokenStmt = $conn->prepare(
+            "SELECT id, device_token
+             FROM user_push_tokens
+             WHERE user_id = :recipient_id
+               AND platform = 'android'
+               AND is_active = 1
+             ORDER BY last_seen_at DESC, id DESC
+             LIMIT 1"
+        );
+        $tokenStmt->execute([':recipient_id' => $recipientId]);
+        $device = $tokenStmt->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($device) || !is_string($device['device_token'] ?? null)
+            || $device['device_token'] === '') {
+            return;
+        }
+
+        require_once __DIR__ . '/../push_notifications/fcm_sender.php';
+
+        $send = pawrescueSendFcmToToken(
+            $device['device_token'],
+            $title,
+            $message,
+            [
+                'type' => $type,
+                'route' => '/my-recoveries',
+                'recoveries_tab' => $tab,
+                'recovery_id' => (string) $recoveryId,
+                'lost_report_id' => (string) $lostReportId,
+                'status' => $status
+            ]
+        );
+
+        if (($send['unregistered'] ?? false) === true) {
+            // The device token is no longer recognized by Firebase.
+            // Deactivate exactly this registration, and do not touch
+            // an entry reassigned to a different resident meanwhile.
+            $disable = $conn->prepare(
+                'UPDATE user_push_tokens
+                 SET is_active = 0, updated_at = NOW()
+                 WHERE id = :token_id
+                   AND user_id = :recipient_id
+                   AND device_token = :device_token
+                   AND platform = :platform
+                   AND is_active = 1'
+            );
+            $disable->execute([
+                ':token_id' => (int) $device['id'],
+                ':recipient_id' => $recipientId,
+                ':device_token' => $device['device_token'],
+                ':platform' => 'android'
+            ]);
+        }
+
+        if (($send['success'] ?? false) !== true) {
+            // Do not log the FCM token, credentials, or private recovery data.
+            error_log('[PawConnect Recovery Action Push] Firebase did not accept a notice.');
+        }
+    } catch (Throwable $pushError) {
+        // A notification error must not invalidate an saved recovery action.
+        error_log(
+            '[PawConnect Recovery Action Push] Notice unavailable (' .
+            get_class($pushError) . ').'
+        );
+    }
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST, OPTIONS');
     sendRecoveryRescheduleResponse(405, [
@@ -488,6 +581,13 @@ try {
             }
 
             $conn->commit();
+            notifyRecoveryActionResident(
+                $conn, $isOwner ? $finderId : $ownerId,
+                'Pet Handover Confirmation',
+                'The other resident confirmed the physical pet handover. Please confirm yours in My Recoveries.',
+                'recovery_handover_confirmed', $recoveryId, (int) $lostReportId,
+                'pickup_scheduled', $isOwner ? 'sent' : 'received'
+            );
             sendRecoveryRescheduleResponse(200, [
                 'success' => true,
                 'message' => 'Your handover was recorded. Waiting for the other resident to confirm.',
@@ -555,6 +655,14 @@ try {
         }
 
         $conn->commit();
+        // The other resident already confirmed first; notify them of completion.
+        notifyRecoveryActionResident(
+            $conn, $isOwner ? $finderId : $ownerId,
+            'Lost Pet Recovery Completed',
+            'Both residents confirmed the physical handover. The Lost Pet recovery is now completed.',
+            'recovery_completed', $recoveryId, (int) $lostReportId,
+            'completed', $isOwner ? 'sent' : 'received'
+        );
         sendRecoveryRescheduleResponse(200, [
             'success' => true,
             'message' => 'Both residents confirmed the actual handover. The Lost Pet report is resolved.',
@@ -697,6 +805,13 @@ try {
         }
 
         $conn->commit();
+        notifyRecoveryActionResident(
+            $conn, $residentId === $ownerId ? $finderId : $ownerId,
+            'Recovery Pickup Reschedule Requested',
+            'The other resident requested a change to the pickup arrangement. Review it in My Recoveries.',
+            'recovery_reschedule_requested', $recoveryId, (int) $lostReportId,
+            'reschedule_requested', $residentId === $ownerId ? 'sent' : 'received'
+        );
         sendRecoveryRescheduleResponse(201, [
             'success' => true,
             'message' => 'Reschedule requested. The other resident must accept or reject it.',
@@ -841,6 +956,16 @@ try {
     }
 
     $conn->commit();
+    notifyRecoveryActionResident(
+        $conn, (int) $proposal['requested_by_user_id'],
+        $action === 'accept' ? 'Recovery Reschedule Accepted' : 'Recovery Reschedule Rejected',
+        $action === 'accept'
+            ? 'Your proposed pickup change was accepted. The finder must confirm the new arrangement.'
+            : 'Your proposed pickup change was rejected. The original arrangement remains in effect.',
+        $action === 'accept' ? 'recovery_reschedule_accepted' : 'recovery_reschedule_rejected',
+        $recoveryId, (int) $lostReportId, 'pickup_scheduled',
+        (int) $proposal['requested_by_user_id'] === $ownerId ? 'received' : 'sent'
+    );
 
     $accepted = $action === 'accept';
     $requiresFinderConfirmation = $accepted ||
