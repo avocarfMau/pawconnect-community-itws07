@@ -222,6 +222,8 @@ try {
                 'Someone submitted an adoption request for your pet. Open PawConnect to review it.',
                 [
                     'type' => 'adoption_request_received',
+                    'route' => '/my-adoptions',
+                    'adoptions_tab' => 'received',
                     'request_id' => (string) $requestId,
                     'adoption_id' => (string) $adoptionId
                 ]

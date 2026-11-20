@@ -52,6 +52,8 @@ function notifyCompletedAdoption(
             'The pet owner confirmed the handover. Your adoption is now complete. Open PawConnect to view it.',
             [
                 'type' => 'adoption_completed',
+                'route' => '/my-adoptions',
+                'adoptions_tab' => 'sent',
                 'request_id' => (string) $requestId,
                 'adoption_id' => (string) $adoptionId,
                 'status' => 'completed'

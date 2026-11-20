@@ -50,10 +50,7 @@ import {
   AdoptionRequestStatus
 } from '../../services/pet-adoption';
 
-// =====================================
-// PAWRESCUE COMMUNITY
-// ADOPTION DETAILS PAGE
-// =====================================
+
 
 @Component({
   selector: 'app-adoption-details',
