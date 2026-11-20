@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject } from 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { IonContent, IonHeader, IonIcon, IonSpinner } from '@ionic/angular';
@@ -89,6 +89,7 @@ type RecoveryPrivatePhoto = {
 export class MyRecoveriesPage implements OnInit, OnDestroy {
   private readonly reportsService = inject(PetReportsService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly haptics = inject(HapticsService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -105,6 +106,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
     sent: 0,
     received: 0
   };
+  private tabRouteSubscription?: Subscription;
   private detailRequest?: Subscription;
   private detailVersion = 0;
   private photoRequest?: Subscription;
@@ -880,6 +882,21 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   // LIFECYCLE AND PRIVATE PHOTO CLEANUP
   // =====================================
   ngOnInit(): void {
+    // Keep the selected tab in sync with notification navigation, including
+    // when Angular reuses this page for another notification tap.
+    this.tabRouteSubscription = this.route.queryParamMap.subscribe(params => {
+      const requestedTab = params.get('tab');
+      if (requestedTab !== 'sent' && requestedTab !== 'received') return;
+      if (this.activeTab !== requestedTab) {
+        if (this.selectedRecovery && !this.actionBusy) this.closeDetails();
+        this.activeTab = requestedTab;
+        this.cdr.markForCheck();
+      }
+      // Refresh the target list on notification navigation after initial load.
+      if (this.lists[requestedTab].loaded && !this.actionBusy) {
+        this.loadRecoveries(requestedTab);
+      }
+    });
     this.loadRecoveries('sent');
     this.loadRecoveries('received');
   }
@@ -919,6 +936,7 @@ export class MyRecoveriesPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.tabRouteSubscription?.unsubscribe();
     this.destroyed = true;
     this.cleanupRequests();
   }

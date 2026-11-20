@@ -58,6 +58,8 @@ function notifyFinderOfConfirmedPickup(
             'The claimant confirmed your proposed pickup arrangement. Open PawConnect to view the claim.',
             [
                 'type' => 'ownership_pickup_confirmed',
+                'route' => '/my-claims',
+                'claims_tab' => 'received',
                 'claim_id' => (string) $claimId,
                 'found_report_id' => (string) $foundReportId,
                 'status' => 'pickup_scheduled'

@@ -24,9 +24,11 @@ function notifyOwnershipRescheduleRequested(
     int $recipientId,
     int $claimId,
     int $foundReportId,
-    int $rescheduleId
+    int $rescheduleId,
+    string $claimsTab
 ): void {
-    if ($recipientId <= 0 || $claimId <= 0 || $foundReportId <= 0 || $rescheduleId <= 0) {
+    if ($recipientId <= 0 || $claimId <= 0 || $foundReportId <= 0 || $rescheduleId <= 0 ||
+        !in_array($claimsTab, ['sent', 'received'], true)) {
         return;
     }
 
@@ -58,9 +60,11 @@ function notifyOwnershipRescheduleRequested(
         $result = pawrescueSendFcmToToken(
             $device['device_token'],
             'Pickup Reschedule Requested',
-            'The other resident requested a change to your pet pickup arrangement. Open PawRescue to review it.',
+            'The other resident requested a change to your pet pickup arrangement. Open PawConnect to review it.',
             [
                 'type' => 'ownership_reschedule_requested',
+                'route' => '/my-claims',
+                'claims_tab' => $claimsTab,
                 'claim_id' => (string) $claimId,
                 'found_report_id' => (string) $foundReportId,
                 'reschedule_id' => (string) $rescheduleId,
@@ -90,13 +94,13 @@ function notifyOwnershipRescheduleRequested(
 
         if (($result['success'] ?? false) !== true) {
             // No tokens, credentials or private pickup details in logs.
-            error_log('[PawRescue Ownership Reschedule Push] Firebase did not accept the notice.');
+            error_log('[PawConnect Ownership Reschedule Push] Firebase did not accept the notice.');
         }
     } catch (Throwable $pushError) {
         // The reschedule request is already committed. Sending a push
         // must not change this API response into a failure.
         error_log(
-            '[PawRescue Ownership Reschedule Push] Notice unavailable (' .
+            '[PawConnect Ownership Reschedule Push] Notice unavailable (' .
             get_class($pushError) . ').'
         );
     }
@@ -505,7 +509,8 @@ try {
         $awaitingUserId,
         $claimId,
         (int) $foundReportId,
-        $rescheduleId
+        $rescheduleId,
+        $awaitingUserId === $finderId ? 'received' : 'sent'
     );
 
     sendRescheduleResponse(201, [
@@ -531,7 +536,7 @@ try {
     if ($conn instanceof PDO && $conn->inTransaction()) {
         $conn->rollBack();
     }
-    error_log('[PawRescue Ownership Reschedule Request] ' . $e->getMessage());
+    error_log('[PawConnect Ownership Reschedule Request] ' . $e->getMessage());
     sendRescheduleResponse(500, [
         'success' => false,
         'message' => 'Unable to request a pickup reschedule. Please try again.'

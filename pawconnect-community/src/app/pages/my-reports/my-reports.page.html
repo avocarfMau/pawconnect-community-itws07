@@ -20,15 +20,12 @@
 
 <ion-content [fullscreen]="false" class="pawrescue-my-reports">
   <main class="page-container">
-
     <!-- COMPACT STATUS DROPDOWN + LOST/FOUND FILTERS -->
     <section class="my-reports-overview-header" aria-label="Report filters">
       <div class="report-filter-toolbar">
         <label class="report-status-label" for="myReportStatus">Status</label>
         <div class="report-status-select-wrap">
-          <select
-            id="myReportStatus"
-            class="report-status-select"
+          <select id="myReportStatus" class="report-status-select"
             [value]="selectedStatusFilter"
             [disabled]="resolvingReportId !== null || deletingReportId !== null"
             (change)="changeStatusFilter($any($event.target).value)">
@@ -42,15 +39,11 @@
           </select>
         </div>
       </div>
-      <!-- Two compact side-by-side dropdowns for mobile browsing. -->
       <div class="report-filter-pair" role="group" aria-label="Filter reports by type and animal">
         <div class="report-filter-field">
           <label for="myReportType">Report Type</label>
           <div class="report-filter-select-wrap">
-            <select
-              id="myReportType"
-              class="report-filter-select"
-              [value]="selectedFilter"
+            <select id="myReportType" class="report-filter-select" [value]="selectedFilter"
               [disabled]="resolvingReportId !== null || deletingReportId !== null"
               (change)="changeFilter($any($event.target).value)">
               <option value="all">All Reports</option>
@@ -62,10 +55,7 @@
         <div class="report-filter-field">
           <label for="myReportAnimal">Paw Type</label>
           <div class="report-filter-select-wrap">
-            <select
-              id="myReportAnimal"
-              class="report-filter-select"
-              [value]="selectedAnimalFilter"
+            <select id="myReportAnimal" class="report-filter-select" [value]="selectedAnimalFilter"
               [disabled]="resolvingReportId !== null || deletingReportId !== null"
               (change)="changeAnimalFilter($any($event.target).value)">
               <option value="all">All Paw</option>
@@ -88,38 +78,26 @@
       <ion-button fill="outline" size="small" (click)="refreshReports()"
         [disabled]="loading || refreshing || resolvingReportId !== null || deletingReportId !== null">Try Again</ion-button>
     </div>
-
-    <!-- EMPTY STATE -->
-    <div
-      class="empty-state"
-      *ngIf="
-        !loading &&
-        !errorMessage &&
-        reports.length === 0
-      ">
+    <div class="empty-state" *ngIf="!loading && !errorMessage && reports.length === 0">
       <ion-icon name="paw-outline"></ion-icon>
       <h3>No matching reports</h3>
       <p>Try a different status, report type, or animal filter.</p>
     </div>
 
-    <!-- COMPACT REPORT PREVIEWS: FULL CONTENT IS IN REPORT DETAILS -->
+    <!-- COMPACT REPORT PREVIEWS -->
     <ng-container *ngIf="!loading">
-      <article
-        class="report-preview-card"
-        *ngFor="let report of reports; trackBy: trackReport">
-
+      <article class="report-preview-card" *ngFor="let report of reports; trackBy: trackReport">
         <div class="report-preview-main">
           <div class="report-preview-photo" aria-hidden="true">
             <ng-container *ngIf="getCurrentPhotoUrl(report) as previewPhoto; else previewPhotoMissing">
               <img class="report-preview-photo-blur" [src]="previewPhoto" alt="" loading="lazy">
               <img class="report-preview-photo-full" [src]="previewPhoto" alt="" loading="lazy"
-                   (error)="onPhotoLoadError(previewPhoto)">
+                (error)="onPhotoLoadError(previewPhoto)">
             </ng-container>
             <ng-template #previewPhotoMissing>
               <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
             </ng-template>
           </div>
-
           <div class="report-preview-body">
             <div class="report-preview-heading">
               <h3>{{ report.pet_name || 'Unnamed Pet' }}</h3>
@@ -129,7 +107,7 @@
             </div>
             <div class="report-preview-tags">
               <span class="report-preview-kind" [class.lost]="report.report_type === 'lost'"
-                    [class.found]="report.report_type === 'found'">
+                [class.found]="report.report_type === 'found'">
                 {{ report.report_type === 'lost' ? 'Lost Pet' : 'Found Pet' }}
               </span>
               <span class="report-preview-species">
@@ -151,10 +129,20 @@
           </div>
         </div>
 
+        <!-- Assistance is independent of Lost & Found report resolution. -->
+        <div *ngIf="report.report_type === 'found' && report.assistance_case_id != null"
+          class="report-assistance-summary"
+          style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:8px 0;border:1px solid #dce9df;border-radius:10px;background:#f5faf6;">
+          <span style="font-size:12px;font-weight:600;color:#315d42;">Animal Assistance</span>
+          <span class="status-badge" [attr.data-status]="report.assistance_status || 'pending'">
+            {{ getStatusLabel(report.assistance_status || 'pending') }}
+          </span>
+        </div>
+
         <div class="report-preview-bottom">
           <span class="report-preview-reference">Report #{{ report.id }}</span>
           <button type="button" class="report-preview-action" (click)="openReportDetails(report)"
-                  [attr.aria-label]="'View full details for ' + (report.pet_name || 'this pet')">
+            [attr.aria-label]="'View full details for ' + (report.pet_name || 'this pet')">
             View Details
             <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </button>
@@ -163,14 +151,13 @@
     </ng-container>
   </main>
 
-
-  <!-- FULL REPORT DETAILS: SEPARATE FROM THE COMPACT LIST -->
+  <!-- FULL REPORT DETAILS -->
   <div class="report-details-overlay" *ngIf="detailReport as report"
-       role="dialog" aria-modal="true" aria-labelledby="myReportDetailsTitle">
+    role="dialog" aria-modal="true" aria-labelledby="myReportDetailsTitle">
     <section class="report-details-sheet">
       <header class="report-details-header">
         <button type="button" class="report-details-back" (click)="closeReportDetails()"
-                aria-label="Back to My Reports">
+          aria-label="Back to My Reports">
           <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
         </button>
         <div class="report-details-title">
@@ -180,287 +167,163 @@
       </header>
       <div class="report-details-scroll">
         <article class="report-card report-expanded-card">
-        <!-- MULTIPLE PET PHOTOS: SWIPEABLE POST GALLERY -->
-        <ng-container
-          *ngIf="getCurrentPhotoUrl(report) as photoUrl">
-          <div
-            class="pet-photo-gallery"
-            (touchstart)="onPhotoTouchStart($event, report)"
-            (touchend)="onPhotoTouchEnd($event, report)">
-
-            <!-- CURRENT PHOTO: TAP TO ENLARGE -->
-            <div class="pet-photo">
-              <button
-                type="button"
-                class="pet-photo-view-button"
-                (click)="openPhotoViewer(report)"
-                [attr.aria-label]="'View ' +
-                  (report.pet_name || 'pet') +
-                  ' photo ' + (getCurrentPhotoIndex(report) + 1) +
-                  ' of ' + getReportPhotos(report).length +
-                  ' in full screen'">
-                <!-- Blurred copy fills unused space behind portrait and landscape images. -->
-                <img
-                  class="pet-photo-backdrop"
-                  [src]="photoUrl"
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  decoding="async">
-                <!-- Full, uncropped photo stays visible in front. -->
-                <img
-                  class="pet-photo-foreground"
-                  [src]="photoUrl"
-                  [alt]="(report.pet_name || 'Pet') +
-                    ' photo ' + (getCurrentPhotoIndex(report) + 1)"
-                  loading="lazy"
-                  (error)="onPhotoLoadError(photoUrl)">
-                <span class="pet-photo-expand" aria-hidden="true">
-                  <ion-icon name="expand-outline"></ion-icon>
+          <!-- MULTIPLE PET PHOTOS -->
+          <ng-container *ngIf="getCurrentPhotoUrl(report) as photoUrl">
+            <div class="pet-photo-gallery"
+              (touchstart)="onPhotoTouchStart($event, report)"
+              (touchend)="onPhotoTouchEnd($event, report)">
+              <div class="pet-photo">
+                <button type="button" class="pet-photo-view-button" (click)="openPhotoViewer(report)"
+                  [attr.aria-label]="'View ' + (report.pet_name || 'pet') + ' photo ' + (getCurrentPhotoIndex(report) + 1) + ' of ' + getReportPhotos(report).length + ' in full screen'">
+                  <img class="pet-photo-backdrop" [src]="photoUrl" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                  <img class="pet-photo-foreground" [src]="photoUrl"
+                    [alt]="(report.pet_name || 'Pet') + ' photo ' + (getCurrentPhotoIndex(report) + 1)"
+                    loading="lazy" (error)="onPhotoLoadError(photoUrl)">
+                  <span class="pet-photo-expand" aria-hidden="true"><ion-icon name="expand-outline"></ion-icon></span>
+                </button>
+                <span *ngIf="getReportPhotos(report).length > 1" class="pet-photo-counter" aria-live="polite">
+                  {{ getCurrentPhotoIndex(report) + 1 }} / {{ getReportPhotos(report).length }}
                 </span>
-              </button>
-
-              <!-- PHOTO COUNTER -->
-              <span
-                *ngIf="getReportPhotos(report).length > 1"
-                class="pet-photo-counter"
-                aria-live="polite">
-                {{ getCurrentPhotoIndex(report) + 1 }} /
-                {{ getReportPhotos(report).length }}
-              </span>
-
-              <!-- PREVIOUS AND NEXT PHOTO -->
-              <ng-container *ngIf="getReportPhotos(report).length > 1">
-                <button
-                  type="button"
-                  class="pet-photo-nav pet-photo-prev"
-                  (click)="changePhoto(report, -1)"
-                  aria-label="Previous pet photo">
-                  <ion-icon name="chevron-back-outline"></ion-icon>
-                </button>
-                <button
-                  type="button"
-                  class="pet-photo-nav pet-photo-next"
-                  (click)="changePhoto(report, 1)"
-                  aria-label="Next pet photo">
-                  <ion-icon name="chevron-forward-outline"></ion-icon>
-                </button>
-              </ng-container>
+                <ng-container *ngIf="getReportPhotos(report).length > 1">
+                  <button type="button" class="pet-photo-nav pet-photo-prev" (click)="changePhoto(report, -1)" aria-label="Previous pet photo">
+                    <ion-icon name="chevron-back-outline"></ion-icon>
+                  </button>
+                  <button type="button" class="pet-photo-nav pet-photo-next" (click)="changePhoto(report, 1)" aria-label="Next pet photo">
+                    <ion-icon name="chevron-forward-outline"></ion-icon>
+                  </button>
+                </ng-container>
+              </div>
             </div>
-
+          </ng-container>
+          <div class="no-photo" *ngIf="!getCurrentPhotoUrl(report)">
+            <ion-icon name="image-outline"></ion-icon><span>No Photo Available</span>
           </div>
-        </ng-container>
-        <div class="no-photo" *ngIf="!getCurrentPhotoUrl(report)">
-          <ion-icon name="image-outline"></ion-icon>
-          <span>No Photo Available</span>
-        </div>
 
-        <!-- COMPACT REPORT STATUS ROW -->
-        <div class="report-top minimal-report-status-row">
-          <span class="report-badge"
-            [class.lost]="report.report_type === 'lost'"
-            [class.found]="report.report_type === 'found'">
-            {{ report.report_type === 'lost' ? 'Lost Pet' : 'Found Pet' }}
-          </span>
-          <span class="status-badge" [attr.data-status]="report.status">
-            {{ getStatusLabel(report.status) }}
-          </span>
-        </div>
-
-        <!-- PET NAME -->
-        <h3>
-          {{ report.pet_name || 'Unnamed Pet' }}
-        </h3>
-
-        <!-- ANIMAL TYPE -->
-        <p class="animal-type">
-          {{ report.animal_type | titlecase }}
-        </p>
-
-        <!-- DESCRIPTION -->
-        <p class="description">
-          {{ report.description }}
-        </p>
-
-        <!-- REPORT DETAILS -->
-        <div class="report-details">
-
-          <!-- REPORTED LOCATION -->
-          <div>
-            <ion-icon name="location-outline"></ion-icon>
-            <span>
-              {{ report.location_address }}
+          <div class="report-top minimal-report-status-row">
+            <span class="report-badge" [class.lost]="report.report_type === 'lost'"
+              [class.found]="report.report_type === 'found'">
+              {{ report.report_type === 'lost' ? 'Lost Pet' : 'Found Pet' }}
+            </span>
+            <span class="status-badge" [attr.data-status]="report.status">
+              {{ getStatusLabel(report.status) }}
             </span>
           </div>
-
-          <!-- INCIDENT DATE -->
-          <div>
-            <ion-icon name="calendar-outline"></ion-icon>
-            <span>
-              {{ report.incident_date }}
-            </span>
+          <h3>{{ report.pet_name || 'Unnamed Pet' }}</h3>
+          <p class="animal-type">{{ report.animal_type | titlecase }}</p>
+          <p class="description">{{ report.description }}</p>
+          <div class="report-details">
+            <div><ion-icon name="location-outline"></ion-icon><span>{{ report.location_address }}</span></div>
+            <div><ion-icon name="calendar-outline"></ion-icon><span>{{ report.incident_date }}</span></div>
           </div>
-        </div>
 
-        <!-- VIEW LOCATION BUTTON -->
-        <button
-          *ngIf="hasLocation(report)"
-          type="button"
-          class="view-location-button"
-          (click)="viewLocation(report)">
-          <ion-icon name="map-outline"></ion-icon>
-          View Location
-        </button>
+          <!-- ANIMAL ASSISTANCE: only shown when the Found Pet report has a linked case. -->
+          <section *ngIf="report.report_type === 'found' && report.assistance_case_id != null"
+            class="report-assistance-details" aria-label="Animal Assistance status"
+            style="padding:14px;margin:14px 0;border:1px solid #dce9df;border-radius:12px;background:#f5faf6;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <strong style="font-size:14px;color:#174e30;">Animal Assistance</strong>
+              <span class="status-badge" [attr.data-status]="report.assistance_status || 'pending'">
+                {{ getStatusLabel(report.assistance_status || 'pending') }}
+              </span>
+            </div>
+            <p *ngIf="report.assistance_reason" style="margin:10px 0 0;font-size:13px;">
+              <strong>Reason:</strong> {{ getStatusLabel(report.assistance_reason) }}
+            </p>
+            <p *ngIf="report.assistance_details" style="margin:6px 0 0;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;">
+              <strong>Details:</strong> {{ report.assistance_details }}
+            </p>
+            <p *ngIf="report.assistance_status === 'rescued'" style="margin:10px 0 0;font-size:13px;color:#176b3a;">
+              <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+              Rescue completed by Municipal Veterinary Office Staff.
+            </p>
+            <p *ngIf="report.rescued_at" style="margin:6px 0 0;font-size:12px;">
+              <strong>Rescued on:</strong> {{ report.rescued_at | date:'medium' }}
+            </p>
+          </section>
 
-        <!-- Report resolution is handled by My Claims / My Recoveries. -->
-        <!-- Residents can still edit reports that have not been resolved. -->
-        <button
-          *ngIf="report.status === 'pending' || report.status === 'under_review' || report.status === 'in_progress'"
-          type="button"
-          class="edit-button report-edit-only"
-          (click)="editReport(report)"
-          [disabled]="loading || resolvingReportId !== null || deletingReportId !== null">
-          <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
-          Edit Report
-        </button>
-        <!-- Deletion is confirmed in TypeScript and authorized by the PHP API. -->
-        <button
-          *ngIf="report.status === 'pending' || report.status === 'under_review' || report.status === 'in_progress'"
-          type="button"
-          class="delete-button report-delete-only"
-          (click)="deleteReport(report)"
-          [disabled]="loading || refreshing || resolvingReportId !== null || deletingReportId !== null"
-          [attr.aria-label]="'Delete report ' + report.id">
-          <ion-spinner *ngIf="deletingReportId === report.id" name="crescent" aria-hidden="true"></ion-spinner>
-          <ion-icon *ngIf="deletingReportId !== report.id" name="trash-outline" aria-hidden="true"></ion-icon>
-          {{ deletingReportId === report.id ? 'Deleting Report...' : 'Delete Report' }}
-        </button>
-        <div class="resolved-info" *ngIf="report.status === 'resolved'">
-          <ion-icon name="checkmark-circle-outline"></ion-icon><span>Resolved</span>
-        </div>
-        <div class="closed-info" *ngIf="report.status === 'closed'">Closed</div>
-
-        <!-- REPORT FOOTER -->
-        <div class="report-footer">
-          <span>
-            Report #{{ report.id }} · {{ report.reporter_name }}
-          </span>
-        </div>
+          <button *ngIf="hasLocation(report)" type="button" class="view-location-button" (click)="viewLocation(report)">
+            <ion-icon name="map-outline"></ion-icon> View Location
+          </button>
+          <!-- Report resolution is handled by My Claims / My Recoveries. -->
+          <button *ngIf="report.status === 'pending' || report.status === 'under_review' || report.status === 'in_progress'"
+            type="button" class="edit-button report-edit-only" (click)="editReport(report)"
+            [disabled]="loading || resolvingReportId !== null || deletingReportId !== null">
+            <ion-icon name="create-outline" aria-hidden="true"></ion-icon> Edit Report
+          </button>
+          <button *ngIf="report.status === 'pending' || report.status === 'under_review' || report.status === 'in_progress'"
+            type="button" class="delete-button report-delete-only" (click)="deleteReport(report)"
+            [disabled]="loading || refreshing || resolvingReportId !== null || deletingReportId !== null"
+            [attr.aria-label]="'Delete report ' + report.id">
+            <ion-spinner *ngIf="deletingReportId === report.id" name="crescent" aria-hidden="true"></ion-spinner>
+            <ion-icon *ngIf="deletingReportId !== report.id" name="trash-outline" aria-hidden="true"></ion-icon>
+            {{ deletingReportId === report.id ? 'Deleting Report...' : 'Delete Report' }}
+          </button>
+          <div class="resolved-info" *ngIf="report.status === 'resolved'">
+            <ion-icon name="checkmark-circle-outline"></ion-icon><span>Resolved</span>
+          </div>
+          <div class="closed-info" *ngIf="report.status === 'closed'">Closed</div>
+          <div class="report-footer"><span>Report #{{ report.id }} · {{ report.reporter_name }}</span></div>
         </article>
       </div>
     </section>
   </div>
 
   <!-- DELETE REPORT CONFIRMATION MODAL -->
-  <div
-    *ngIf="pendingDeleteReport as pendingReport"
-    class="delete-confirm-overlay"
-    role="presentation"
-    (click)="cancelDeleteReport()">
-    <section
-      class="delete-confirm-dialog"
-      role="alertdialog"
-      aria-modal="true"
-      aria-labelledby="deleteConfirmTitle"
-      aria-describedby="deleteConfirmDescription"
+  <div *ngIf="pendingDeleteReport as pendingReport" class="delete-confirm-overlay"
+    role="presentation" (click)="cancelDeleteReport()">
+    <section class="delete-confirm-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="deleteConfirmTitle" aria-describedby="deleteConfirmDescription"
       (click)="$event.stopPropagation()">
-      <div class="delete-confirm-icon" aria-hidden="true">
-        <ion-icon name="trash-outline"></ion-icon>
-      </div>
+      <div class="delete-confirm-icon" aria-hidden="true"><ion-icon name="trash-outline"></ion-icon></div>
       <h2 id="deleteConfirmTitle">Delete Report?</h2>
       <p id="deleteConfirmDescription">
         Are you sure you want to permanently delete report #{{ pendingReport.id }}?
         This action cannot be undone.
       </p>
       <div class="delete-confirm-actions">
-        <button type="button" class="delete-confirm-cancel" (click)="cancelDeleteReport()">
-          Cancel
-        </button>
+        <button type="button" class="delete-confirm-cancel" (click)="cancelDeleteReport()">Cancel</button>
         <button type="button" class="delete-confirm-submit" (click)="confirmDeleteReport()">
-          <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
-          Delete Report
+          <ion-icon name="trash-outline" aria-hidden="true"></ion-icon> Delete Report
         </button>
       </div>
     </section>
   </div>
 
   <!-- FULL-SCREEN PET PHOTO VIEWER -->
-  <div
-    class="photo-viewer-overlay"
-    *ngIf="photoViewerReport as viewerReport"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="photoViewerTitle"
-    (click)="closePhotoViewer()">
-    <div
-      class="photo-viewer-modal"
-      (click)="$event.stopPropagation()">
-
-      <!-- PHOTO VIEWER HEADER -->
+  <div class="photo-viewer-overlay" *ngIf="photoViewerReport as viewerReport"
+    role="dialog" aria-modal="true" aria-labelledby="photoViewerTitle" (click)="closePhotoViewer()">
+    <div class="photo-viewer-modal" (click)="$event.stopPropagation()">
       <div class="photo-viewer-header">
         <div class="photo-viewer-heading">
-          <h2 id="photoViewerTitle">
-            {{ viewerReport.pet_name || 'Pet Photos' }}
-          </h2>
+          <h2 id="photoViewerTitle">{{ viewerReport.pet_name || 'Pet Photos' }}</h2>
           <p *ngIf="getReportPhotos(viewerReport).length > 0">
-            Photo {{ getCurrentPhotoIndex(viewerReport) + 1 }}
-            of {{ getReportPhotos(viewerReport).length }}
+            Photo {{ getCurrentPhotoIndex(viewerReport) + 1 }} of {{ getReportPhotos(viewerReport).length }}
           </p>
         </div>
-        <button
-          type="button"
-          class="photo-viewer-close"
-          (click)="closePhotoViewer()"
-          aria-label="Close photo viewer">
+        <button type="button" class="photo-viewer-close" (click)="closePhotoViewer()" aria-label="Close photo viewer">
           <ion-icon name="close-outline"></ion-icon>
         </button>
       </div>
-
-      <!-- LARGE PHOTO WITH SWIPE SUPPORT -->
-      <div
-        class="photo-viewer-stage"
-        (touchstart)="onPhotoTouchStart($event, viewerReport)"
+      <div class="photo-viewer-stage" (touchstart)="onPhotoTouchStart($event, viewerReport)"
         (touchend)="onPhotoTouchEnd($event, viewerReport)">
-        <ng-container
-          *ngIf="getCurrentPhotoUrl(viewerReport) as largePhotoUrl">
-          <img
-            class="photo-viewer-image"
-            [src]="largePhotoUrl"
-            [alt]="(viewerReport.pet_name || 'Pet') +
-              ' photo ' + (getCurrentPhotoIndex(viewerReport) + 1)"
+        <ng-container *ngIf="getCurrentPhotoUrl(viewerReport) as largePhotoUrl">
+          <img class="photo-viewer-image" [src]="largePhotoUrl"
+            [alt]="(viewerReport.pet_name || 'Pet') + ' photo ' + (getCurrentPhotoIndex(viewerReport) + 1)"
             (error)="onPhotoLoadError(largePhotoUrl)">
         </ng-container>
         <ng-container *ngIf="getReportPhotos(viewerReport).length > 1">
-          <button
-            type="button"
-            class="photo-viewer-nav photo-viewer-prev"
-            (click)="changePhoto(viewerReport, -1)"
-            aria-label="Previous full-size photo">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
-          <button
-            type="button"
-            class="photo-viewer-nav photo-viewer-next"
-            (click)="changePhoto(viewerReport, 1)"
-            aria-label="Next full-size photo">
-            <ion-icon name="chevron-forward-outline"></ion-icon>
-          </button>
+          <button type="button" class="photo-viewer-nav photo-viewer-prev" (click)="changePhoto(viewerReport, -1)"
+            aria-label="Previous full-size photo"><ion-icon name="chevron-back-outline"></ion-icon></button>
+          <button type="button" class="photo-viewer-nav photo-viewer-next" (click)="changePhoto(viewerReport, 1)"
+            aria-label="Next full-size photo"><ion-icon name="chevron-forward-outline"></ion-icon></button>
         </ng-container>
       </div>
-
-      <!-- PHOTO DOTS -->
-      <div
-        class="photo-viewer-dots"
-        *ngIf="getReportPhotos(viewerReport).length > 1">
-        <button
-          *ngFor="let photo of getReportPhotos(viewerReport); let i = index"
-          type="button"
-          class="photo-viewer-dot"
-          [class.active]="getCurrentPhotoIndex(viewerReport) === i"
+      <div class="photo-viewer-dots" *ngIf="getReportPhotos(viewerReport).length > 1">
+        <button *ngFor="let photo of getReportPhotos(viewerReport); let i = index"
+          type="button" class="photo-viewer-dot" [class.active]="getCurrentPhotoIndex(viewerReport) === i"
           [attr.aria-label]="'Show full-size photo ' + (i + 1)"
           [attr.aria-current]="getCurrentPhotoIndex(viewerReport) === i ? 'true' : null"
-          (click)="selectPhoto(viewerReport, i)">
-        </button>
+          (click)="selectPhoto(viewerReport, i)"></button>
       </div>
       <p class="photo-viewer-help" *ngIf="getReportPhotos(viewerReport).length > 1">
         Swipe left or right to see more pictures.
@@ -469,80 +332,35 @@
   </div>
 
   <!-- REPORT LOCATION MAP OVERLAY -->
-  <div
-    class="report-map-overlay"
-    *ngIf="showLocationMap && selectedReport"
-    role="presentation">
+  <div class="report-map-overlay" *ngIf="showLocationMap && selectedReport" role="presentation">
     <section class="report-map-modal" role="dialog" aria-modal="true" aria-labelledby="reportMapTitle">
-
-      <!-- MAP MODAL HEADER -->
       <header class="report-map-modal-header">
         <div>
-          <h2 id="reportMapTitle">
-            {{ selectedReport.pet_name || 'Pet' }} Location
-          </h2>
-          <p>
-            Saved lost / found location
-          </p>
+          <h2 id="reportMapTitle">{{ selectedReport.pet_name || 'Pet' }} Location</h2>
+          <p>Saved lost / found location</p>
         </div>
-        <button
-          type="button"
-          class="close-map-button"
-          (click)="closeLocationMap()"
-          aria-label="Close location map">
+        <button type="button" class="close-map-button" (click)="closeLocationMap()" aria-label="Close location map">
           <ion-icon name="close-outline"></ion-icon>
         </button>
       </header>
-
       <div class="report-map-modal-content">
-      <!-- PET LOCATION DETAILS -->
-      <p class="report-map-location-details">
-        <ion-icon name="location-outline"></ion-icon>
-        <span>
-          {{ selectedReport.location_address }}
-        </span>
-      </p>
-
-      <!-- INTERACTIVE MAP -->
-      <div class="report-map-container">
-        <div
-          #reportLocationMap
-          class="report-location-map"
-          aria-label="Map showing the reported pet location">
-        </div>
-      </div>
-
-      <!-- MAP INFORMATION -->
-      <div class="report-map-info">
-        <p>
-          The marker shows the location you saved for this report.
+        <p class="report-map-location-details">
+          <ion-icon name="location-outline"></ion-icon><span>{{ selectedReport.location_address }}</span>
         </p>
-        <div class="report-map-coordinates">
-          <span>
-            Latitude:
-            {{ selectedReport.latitude }}
-          </span>
-          <span>
-            Longitude:
-            {{ selectedReport.longitude }}
-          </span>
+        <div class="report-map-container">
+          <div #reportLocationMap class="report-location-map" aria-label="Map showing the reported pet location"></div>
+        </div>
+        <div class="report-map-info">
+          <p>The marker shows the location you saved for this report.</p>
+          <div class="report-map-coordinates">
+            <span>Latitude: {{ selectedReport.latitude }}</span>
+            <span>Longitude: {{ selectedReport.longitude }}</span>
+          </div>
         </div>
       </div>
-
-      </div>
-
-      <!-- CLOSE BUTTON -->
       <footer class="report-map-modal-footer">
-      <ion-button
-        expand="block"
-        class="close-map-action"
-        (click)="closeLocationMap()">
-        Close Map
-      </ion-button>
+        <ion-button expand="block" class="close-map-action" (click)="closeLocationMap()">Close Map</ion-button>
       </footer>
     </section>
   </div>
-
-
 </ion-content>
-

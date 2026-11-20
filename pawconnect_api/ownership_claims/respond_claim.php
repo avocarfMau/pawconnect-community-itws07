@@ -62,6 +62,8 @@ function notifyOwnershipClaimResident(
             $message,
             [
                 'type' => $type,
+                'route' => '/my-claims',
+                'claims_tab' => 'sent',
                 'claim_id' => (string) $claimId,
                 'found_report_id' => (string) $foundReportId,
                 'status' => $status
@@ -91,12 +93,12 @@ function notifyOwnershipClaimResident(
 
         if (($send['success'] ?? false) !== true) {
             // Do not log the FCM token, credentials, or private claim data.
-            error_log('[PawRescue Claim Decision Push] Firebase did not accept a notice.');
+            error_log('[PawConnect Claim Decision Push] Firebase did not accept a notice.');
         }
     } catch (Throwable $pushError) {
         // A notification error must not invalidate an approved/rejected claim.
         error_log(
-            '[PawRescue Claim Decision Push] Notice unavailable (' .
+            '[PawConnect Claim Decision Push] Notice unavailable (' .
             get_class($pushError) . ').'
         );
     }
@@ -499,7 +501,7 @@ try {
             $conn,
             (int) $claim['claimant_user_id'],
             'Ownership Claim Approved',
-            'Your ownership claim was approved. Open PawRescue to review the pickup arrangement.',
+            'Your ownership claim was approved. Open PawConnect to review the pickup arrangement.',
             'ownership_claim_approved',
             $claimId,
             (int) $foundReportId,
@@ -573,7 +575,7 @@ try {
         $conn,
         (int) $claim['claimant_user_id'],
         'Ownership Claim Update',
-        'Your ownership claim was not approved. Open PawRescue to view the result.',
+        'Your ownership claim was not approved. Open PawConnect to view the result.',
         'ownership_claim_rejected',
         $claimId,
         (int) $foundReportId,
@@ -593,7 +595,7 @@ try {
     if ($conn instanceof PDO && $conn->inTransaction()) {
         $conn->rollBack();
     }
-    error_log('[PawRescue Respond Ownership Claim] ' . $e->getMessage());
+    error_log('[PawConnect Respond Ownership Claim] ' . $e->getMessage());
     respondToClaim(500, [
         'success' => false,
         'message' => 'Unable to process the ownership claim. Please try again.'

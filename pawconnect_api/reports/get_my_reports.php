@@ -1,5 +1,4 @@
 <?php
-
 // =====================================
 // PAWCONNECT
 // GET LOGGED-IN RESIDENT'S PET REPORTS
@@ -15,15 +14,10 @@ header("Cache-Control: no-store");
 // JSON RESPONSE HELPER
 // =====================================
 
-function sendMyReportsResponse(
-    int $status,
-    array $data
-): void {
-
+function sendMyReportsResponse(int $status, array $data): void
+{
     http_response_code($status);
-
     echo json_encode($data);
-
     exit;
 }
 
@@ -34,9 +28,7 @@ function sendMyReportsResponse(
 // OPTIONS is handled by centralized cors.php.
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-
     header("Allow: GET, OPTIONS");
-
     sendMyReportsResponse(405, [
         "success" => false,
         "message" => "Method not allowed."
@@ -47,22 +39,17 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 // AUTHENTICATION MIDDLEWARE
 // =====================================
 
-require_once __DIR__ .
-    "/../middleware/auth_middleware.php";
+require_once __DIR__ . "/../middleware/auth_middleware.php";
 
 try {
-
     // =====================================
     // AUTHENTICATE RESIDENT ONLY
     // =====================================
 
     $auth = authenticate(["resident"]);
-
     $conn = $auth["connection"];
 
-    // Get the user ID from the verified token,
-    // never from the frontend request.
-
+    // Always use the authenticated user ID.
     $residentId = (int) $auth["user"]["id"];
 
     // =====================================
@@ -73,13 +60,8 @@ try {
 
     if (
         !is_string($reportType) ||
-        !in_array(
-            $reportType,
-            ["all", "lost", "found"],
-            true
-        )
+        !in_array($reportType, ["all", "lost", "found"], true)
     ) {
-
         sendMyReportsResponse(400, [
             "success" => false,
             "message" => "Invalid report filter."
@@ -88,7 +70,13 @@ try {
 
     // =====================================
     // RETRIEVE OWN LOST/FOUND REPORTS
+    // WITH OPTIONAL ANIMAL ASSISTANCE INFO
     // =====================================
+
+    // The Lost & Found status (p.status) remains unchanged.
+    // Assistance has its own independent status and lifecycle.
+    // LEFT JOIN retains reports without an assistance case.
+    // found_report_id is UNIQUE, so the join does not duplicate reports.
 
     $sql = "
         SELECT
@@ -104,10 +92,23 @@ try {
             p.longitude,
             p.status,
             p.created_at,
-            u.full_name AS reporter_name
+            u.full_name AS reporter_name,
+            a.id AS assistance_case_id,
+            a.assistance_reason,
+            a.assistance_details,
+            a.status AS assistance_status,
+            a.staff_notes AS assistance_staff_notes,
+            a.reviewed_at AS assistance_reviewed_at,
+            a.resolved_at AS assistance_resolved_at,
+            a.rescued_at,
+            a.rescue_note,
+            a.rescue_proof_path
         FROM pet_reports p
         INNER JOIN users u
             ON u.id = p.user_id
+        LEFT JOIN animal_assistance_cases a
+            ON a.found_report_id = p.id
+            AND p.report_type = 'found'
         WHERE p.user_id = :resident_id
           AND p.report_type IN ('lost', 'found')
           AND p.deleted_at IS NULL
@@ -122,11 +123,9 @@ try {
     // =====================================
 
     if ($reportType !== "all") {
-
         $sql .= "
             AND p.report_type = :report_type
         ";
-
         $params[":report_type"] = $reportType;
     }
 
@@ -141,35 +140,34 @@ try {
         LIMIT 100
     ";
 
-    // =====================================
-    // EXECUTE REPORT QUERY
-    // =====================================
-
     $stmt = $conn->prepare($sql);
-
     $stmt->execute($params);
-
-    $reports = $stmt->fetchAll(
-        PDO::FETCH_ASSOC
-    );
+    $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // =====================================
     // PREPARE MULTIPLE-PHOTO FIELDS
     // =====================================
 
-    // Keep the legacy photo_path field unchanged.
-    // The new photos array contains the records
-    // from pet_report_photos in display order.
+    // Keep legacy photo_path unchanged.
+    // The photos array is populated in display order.
 
     $reportIndexes = [];
     $reportIds = [];
 
     foreach ($reports as $index => $report) {
-
         $reportId = (int) $report["id"];
 
         $reports[$index]["photos"] = [];
         $reports[$index]["photo_count"] = 0;
+
+        // Expose a boolean without changing existing report fields.
+        $reports[$index]["needs_assistance"] =
+            $report["assistance_case_id"] !== null;
+
+        if ($report["assistance_case_id"] !== null) {
+            $reports[$index]["assistance_case_id"] =
+                (int) $report["assistance_case_id"];
+        }
 
         $reportIndexes[$reportId] = $index;
         $reportIds[] = $reportId;
@@ -179,11 +177,7 @@ try {
     // RETRIEVE ALL MATCHING REPORT PHOTOS
     // =====================================
 
-    // Use one batch query to prevent an extra
-    // database query for each individual report.
-
     if (!empty($reportIds)) {
-
         $placeholders = implode(
             ", ",
             array_fill(0, count($reportIds), "?")
@@ -207,7 +201,6 @@ try {
         $photoStmt = $conn->prepare($photoSql);
 
         foreach ($reportIds as $position => $reportId) {
-
             $photoStmt->bindValue(
                 $position + 1,
                 $reportId,
@@ -216,17 +209,13 @@ try {
         }
 
         $photoStmt->execute();
-
-        $photos = $photoStmt->fetchAll(
-            PDO::FETCH_ASSOC
-        );
+        $photos = $photoStmt->fetchAll(PDO::FETCH_ASSOC);
 
         // =====================================
         // ATTACH PHOTOS TO THEIR REPORTS
         // =====================================
 
         foreach ($photos as $photo) {
-
             $reportId = (int) $photo["report_id"];
 
             if (!isset($reportIndexes[$reportId])) {
@@ -258,7 +247,6 @@ try {
     ]);
 
 } catch (Throwable $e) {
-
     error_log(
         "[PawConnect Get My Reports Error] " .
         $e->getMessage()

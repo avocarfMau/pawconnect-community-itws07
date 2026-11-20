@@ -26,6 +26,7 @@ import {
 } from 'ionicons/icons';
 import { Subscription } from 'rxjs';
 import * as L from 'leaflet';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 
 import { getApiBaseUrl } from '../../config/ip-config';
 import { AuthService } from '../../services/auth';
@@ -182,9 +183,19 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
     });
   }
 
+  // Haptics are optional: unsupported devices must not block staff actions.
+  private hapticImpact(style: ImpactStyle = ImpactStyle.Light): void {
+    void Haptics.impact({ style }).catch(() => {});
+  }
+
+  private hapticNotification(type: NotificationType): void {
+    void Haptics.notification({ type }).catch(() => {});
+  }
+
   // A photo opens in a fitted on-page viewer, not as a raw image URL.
   openPhotoViewer(): void {
     if (this.photoUrl) {
+      this.hapticImpact();
       this.photoViewerOpen = true;
     }
   }
@@ -195,6 +206,7 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
 
   openRescueProofViewer(): void {
     if (this.rescueProofUrl) {
+      this.hapticImpact();
       this.rescueProofViewerOpen = true;
     }
   }
@@ -216,16 +228,19 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
       return;
     }
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      this.hapticNotification(NotificationType.Error);
       this.rescueProofErrorMessage = 'Select a JPG, PNG, or WEBP rescue photo.';
       if (input) input.value = '';
       return;
     }
     if (file.size <= 0 || file.size > this.maxRescueProofBytes) {
+      this.hapticNotification(NotificationType.Error);
       this.rescueProofErrorMessage = 'Rescue proof photo must be 5 MB or smaller.';
       if (input) input.value = '';
       return;
     }
 
+    this.hapticImpact(ImpactStyle.Light);
     this.rescueProofFile = file;
     this.rescueProofPreviewUrl = URL.createObjectURL(file);
   }
@@ -245,6 +260,7 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
   // The existing button calls this method; the map container is added to HTML
   // in the next one-file-at-a-time step.
   viewLocationOnMap(item: RescueAssistanceCase): void {
+    this.hapticImpact();
     this.mapErrorMessage = '';
 
     if (this.locationMapOpen) {
@@ -515,6 +531,7 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
   }
 
   refreshCase(): void {
+    this.hapticImpact();
     this.loadCase();
   }
 
@@ -522,6 +539,7 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
     if (this.saving) {
       return;
     }
+    this.hapticImpact();
 
     // The same details page is opened from two staff lists:
     // Animal Assistance Management and My Assisted Cases.
@@ -601,27 +619,33 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
     const changedStatus = this.selectedStatus !== item.status;
 
     if (!this.statusOptions.includes(this.selectedStatus)) {
+      this.hapticNotification(NotificationType.Error);
       this.updateErrorMessage = 'Please select a valid next case status.';
       return;
     }
     if (note.length > this.maxAssessmentNoteLength) {
+      this.hapticNotification(NotificationType.Error);
       this.updateErrorMessage = 'Assessment notes must be 2000 characters or fewer.';
       return;
     }
     if (!changedStatus && !note) {
+      this.hapticNotification(NotificationType.Error);
       this.updateErrorMessage = 'Enter an assessment note or select the next status.';
       return;
     }
     const completingRescue = changedStatus && this.selectedStatus === 'rescued';
     if (completingRescue && !note) {
+      this.hapticNotification(NotificationType.Error);
       this.updateErrorMessage = 'Describe the rescue or assistance before marking this case Rescued.';
       return;
     }
     if (completingRescue && !this.rescueProofFile) {
+      this.hapticNotification(NotificationType.Error);
       this.rescueProofErrorMessage = 'Attach one rescue proof photo before marking this case Rescued.';
       return;
     }
 
+    this.hapticImpact(ImpactStyle.Medium);
     this.saving = true;
     const requestedCaseId = this.caseId;
     const requestedVersion = this.requestVersion;
@@ -662,6 +686,7 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
           this.saving = false;
           const result = response?.case;
           if (!response?.success || !result || result.id !== requestedCaseId) {
+            this.hapticNotification(NotificationType.Error);
             this.updateErrorMessage = 'The server did not confirm this update. Refresh and try again.';
             return;
           }
@@ -683,6 +708,7 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
           this.lastUpdated = new Date();
           this.resetEditor(result.status);
           this.updateSuccessMessage = response.message || 'Case updated successfully.';
+          this.hapticNotification(NotificationType.Success);
         });
       },
       error: (error: HttpErrorResponse) => {
@@ -693,6 +719,7 @@ export class StaffAssistanceDetailsPage implements OnInit, OnDestroy {
 
         this.updateView(() => {
           this.saving = false;
+          this.hapticNotification(NotificationType.Error);
           // Do not throw away staff's unsaved notes or mask an API permission
           // problem by immediately navigating away to Login.
           if (error.status === 401) {

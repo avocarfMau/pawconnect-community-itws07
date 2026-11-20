@@ -28,6 +28,98 @@ function rejectRecoveryDecision(PDO $conn, int $status, string $message, array $
     ], $extra));
 }
 
+// ============================================================
+// BEST-EFFORT FCM NOTICE TO THE SPECIFIC RESIDENT
+// ============================================================
+// This is an internal helper, never a public notification endpoint.
+// The caller supplies user IDs obtained from authorized recovery records,
+// not IDs supplied by the client. A browser-only account has no Android
+// FCM token; it can still check recovery status through get_recoveries.php.
+// IMPORTANT: Call only AFTER the claim transaction commits.
+function notifyRecoveryResident(
+    PDO $conn,
+    int $recipientId,
+    string $title,
+    string $message,
+    string $type,
+    int $recoveryId,
+    int $lostReportId,
+    string $status
+): void {
+    if ($recipientId <= 0) {
+        return;
+    }
+
+    try {
+        // The most recently active device for THIS resident only.
+        // We intentionally do not send to other user accounts or
+        // broadcast to every device in the database.
+        $tokenStmt = $conn->prepare(
+            "SELECT id, device_token
+             FROM user_push_tokens
+             WHERE user_id = :recipient_id
+               AND platform = 'android'
+               AND is_active = 1
+             ORDER BY last_seen_at DESC, id DESC
+             LIMIT 1"
+        );
+        $tokenStmt->execute([':recipient_id' => $recipientId]);
+        $device = $tokenStmt->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($device) || !is_string($device['device_token'] ?? null)
+            || $device['device_token'] === '') {
+            return;
+        }
+
+        require_once __DIR__ . '/../push_notifications/fcm_sender.php';
+
+        $send = pawrescueSendFcmToToken(
+            $device['device_token'],
+            $title,
+            $message,
+            [
+                'type' => $type,
+                'route' => '/my-recoveries',
+                'recoveries_tab' => 'sent',
+                'recovery_id' => (string) $recoveryId,
+                'lost_report_id' => (string) $lostReportId,
+                'status' => $status
+            ]
+        );
+
+        if (($send['unregistered'] ?? false) === true) {
+            // The device token is no longer recognized by Firebase.
+            // Deactivate exactly this registration, and do not touch
+            // an entry reassigned to a different resident meanwhile.
+            $disable = $conn->prepare(
+                'UPDATE user_push_tokens
+                 SET is_active = 0, updated_at = NOW()
+                 WHERE id = :token_id
+                   AND user_id = :recipient_id
+                   AND device_token = :device_token
+                   AND platform = :platform
+                   AND is_active = 1'
+            );
+            $disable->execute([
+                ':token_id' => (int) $device['id'],
+                ':recipient_id' => $recipientId,
+                ':device_token' => $device['device_token'],
+                ':platform' => 'android'
+            ]);
+        }
+
+        if (($send['success'] ?? false) !== true) {
+            // Do not log the FCM token, credentials, or private recovery data.
+            error_log('[PawConnect Recovery Decision Push] Firebase did not accept a notice.');
+        }
+    } catch (Throwable $pushError) {
+        // A notification error must not invalidate an approved/rejected recovery.
+        error_log(
+            '[PawConnect Recovery Decision Push] Notice unavailable (' .
+            get_class($pushError) . ').'
+        );
+    }
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST, OPTIONS');
     sendRecoveryDecision(405, [
@@ -361,6 +453,22 @@ try {
             throw new RuntimeException('Recovery changed during approval.');
         }
 
+        // Capture the other pending finders before the atomic cancellation.
+        // These recipients are determined from the locked Lost Pet report,
+        // never from a client-supplied user ID.
+        $otherPendingStmt = $conn->prepare(
+            "SELECT id, finder_user_id
+             FROM pet_lost_recovery_reports
+             WHERE lost_report_id = :lost_report_id
+               AND id <> :approved_recovery_id
+               AND status = 'pending'"
+        );
+        $otherPendingStmt->execute([
+            ':lost_report_id' => $lostReportId,
+            ':approved_recovery_id' => $recoveryId
+        ]);
+        $otherPendingRecipients = $otherPendingStmt->fetchAll(PDO::FETCH_ASSOC);
+
         $closePending = $conn->prepare(
             "UPDATE pet_lost_recovery_reports
              SET status = 'cancelled',
@@ -380,6 +488,36 @@ try {
         $otherPendingClosed = $closePending->rowCount();
 
         $conn->commit();
+
+        notifyRecoveryResident(
+            $conn,
+            (int) $recovery['finder_user_id'],
+            'Lost Pet Recovery Approved',
+            'Your recovery submission was approved. Open PawConnect to review the pickup arrangement.',
+            'lost_recovery_approved',
+            $recoveryId,
+            (int) $lostReportId,
+            'pickup_scheduled'
+        );
+
+        foreach ($otherPendingRecipients as $otherRecovery) {
+            $otherRecoveryId = (int) ($otherRecovery['id'] ?? 0);
+            $otherFinderId = (int) ($otherRecovery['finder_user_id'] ?? 0);
+            if ($otherRecoveryId <= 0 || $otherFinderId <= 0) {
+                continue;
+            }
+            notifyRecoveryResident(
+                $conn,
+                $otherFinderId,
+                'Lost Pet Recovery Closed',
+                'Another finder was approved for this Lost Pet. Your recovery submission is no longer pending.',
+                'lost_recovery_cancelled',
+                $otherRecoveryId,
+                (int) $lostReportId,
+                'cancelled'
+            );
+        }
+
         sendRecoveryDecision(200, [
             'success' => true,
             'message' => 'Recovery approved. Waiting for the finder to confirm the proposed pickup.',
@@ -417,6 +555,18 @@ try {
     }
 
     $conn->commit();
+
+    notifyRecoveryResident(
+        $conn,
+        (int) $recovery['finder_user_id'],
+        'Lost Pet Recovery Update',
+        'Your recovery submission was not approved. Open PawConnect to view the result.',
+        'lost_recovery_rejected',
+        $recoveryId,
+        (int) $lostReportId,
+        'rejected'
+    );
+
     sendRecoveryDecision(200, [
         'success' => true,
         'message' => 'Recovery submission rejected. The Lost Pet report remains active.',

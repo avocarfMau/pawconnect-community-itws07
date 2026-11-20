@@ -337,6 +337,68 @@ try {
     }
 
     $conn->commit();
+
+    // =====================================================
+    // NOTIFY THE LOST PET OWNER ON THEIR REGISTERED ANDROID DEVICE
+    // =====================================================
+    // Best-effort after commit: a push failure must not undo the
+    // recovery submission or change the successful HTTP response.
+    try {
+        $ownerId = (int) $lostReport['user_id'];
+
+        $tokenStmt = $conn->prepare(
+            "SELECT device_token
+             FROM user_push_tokens
+             WHERE user_id = :owner_id
+               AND platform = 'android'
+               AND is_active = 1
+             ORDER BY last_seen_at DESC, id DESC
+             LIMIT 1"
+        );
+        $tokenStmt->execute([':owner_id' => $ownerId]);
+        $ownerDeviceToken = $tokenStmt->fetchColumn();
+
+        if (is_string($ownerDeviceToken) && $ownerDeviceToken !== '') {
+            require_once __DIR__ . '/../push_notifications/fcm_sender.php';
+
+            $pushResult = pawrescueSendFcmToToken(
+                $ownerDeviceToken,
+                'New Lost Pet Recovery',
+                'Someone submitted a recovery report for your Lost Pet. Open PawConnect to review it.',
+                [
+                    'type' => 'lost_recovery_received',
+                    'route' => '/my-recoveries',
+                    'recoveries_tab' => 'received',
+                    'recovery_id' => (string) $recoveryId,
+                    'lost_report_id' => (string) $lostReportId
+                ]
+            );
+
+            if (($pushResult['unregistered'] ?? false) === true) {
+                $disableStmt = $conn->prepare(
+                    'UPDATE user_push_tokens
+                     SET is_active = 0, updated_at = NOW()
+                     WHERE user_id = :owner_id
+                       AND device_token = :device_token
+                       AND is_active = 1'
+                );
+                $disableStmt->execute([
+                    ':owner_id' => $ownerId,
+                    ':device_token' => $ownerDeviceToken
+                ]);
+            }
+
+            if (($pushResult['success'] ?? false) !== true) {
+                error_log('[PawConnect Lost Pet Recovery Push] Firebase did not accept the notification.');
+            }
+        }
+    } catch (Throwable $pushError) {
+        error_log(
+            '[PawConnect Lost Pet Recovery Push] Notification unavailable (' .
+            get_class($pushError) . ').'
+        );
+    }
+
     sendRecoveryResponse(201, [
         'success' => true,
         'message' => 'Finding report submitted. The pet owner can review it before arranging a return.',

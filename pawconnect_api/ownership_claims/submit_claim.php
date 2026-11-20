@@ -335,11 +335,13 @@ try {
             $pushResult = pawrescueSendFcmToToken(
                 $finderDeviceToken,
                 'New Ownership Claim',
-                'Someone submitted an ownership claim for your Found Pet report. Open PawRescue to review it.',
+                'Someone submitted an ownership claim for your Found Pet report. Open PawConnect to review it.',
                 [
                     'type' => 'ownership_claim_received',
-                    'claim_id' => $claimId,
-                    'found_report_id' => $foundReportId
+                    'route' => '/my-claims',
+                    'claims_tab' => 'received',
+                    'claim_id' => (string) $claimId,
+                    'found_report_id' => (string) $foundReportId
                 ]
             );
 
