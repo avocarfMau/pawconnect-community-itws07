@@ -260,14 +260,24 @@
               name="contact_number"
               type="tel"
               [(ngModel)]="editForm.contact_number"
+              #staffContactModel="ngModel"
               required
-              maxlength="16"
-              pattern="\+?[0-9]{10,15}"
-              autocomplete="tel"
-              inputmode="tel"
+              minlength="11"
+              maxlength="11"
+              pattern="[0-9]{11}"
+              autocomplete="tel-national"
+              inputmode="numeric"
               [disabled]="savingProfile"
+              aria-describedby="staff-contact-help staff-contact-error"
               placeholder="e.g., 09123456789" />
-            <small>10–15 digits; an optional leading + is allowed.</small>
+            <small id="staff-contact-help">Enter exactly 11 digits (numbers only).</small>
+            <small
+              *ngIf="staffContactModel.invalid && (staffContactModel.dirty || staffContactModel.touched)"
+              id="staff-contact-error"
+              class="staff-account-edit-error"
+              role="alert">
+              Contact number must contain exactly 11 digits. Spaces and + are not allowed.
+            </small>
           </div>
 
           <div class="staff-account-edit-field">
@@ -289,6 +299,13 @@
           <div *ngIf="editError" class="staff-account-edit-error" role="alert">
             {{ editError }}
           </div>
+
+          <!-- Explain why Save Changes is disabled when a field is invalid. -->
+          <p *ngIf="staffProfileForm.invalid && !savingProfile"
+             class="staff-account-required-note"
+             role="status">
+            Complete all required fields correctly to enable Save Changes.
+          </p>
 
           <!-- ACTIONS -->
           <div class="staff-account-edit-actions">
@@ -384,3 +401,47 @@
     </div>
   </nav>
 </ion-content>
+
+<!-- BARANGAY STAFF — SAME CUSTOM LOGOUT CONFIRMATION AS RESIDENT MY ACCOUNT -->
+<div
+  *ngIf="showLogoutModal"
+  class="staff-account-logout-modal-backdrop"
+  (click)="cancelLogout()"
+  role="presentation">
+  <section
+    class="staff-account-logout-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="staff-account-logout-modal-title"
+    aria-describedby="staff-account-logout-modal-description"
+    (click)="$event.stopPropagation()">
+
+    <div class="staff-account-logout-modal-icon" aria-hidden="true">
+      <ion-icon name="log-out-outline"></ion-icon>
+    </div>
+
+    <h2 id="staff-account-logout-modal-title">Log out of PawConnect?</h2>
+    <p id="staff-account-logout-modal-description">
+      Are you sure you want to log out of your account? You will need to sign in again to continue.
+    </p>
+
+    <div class="staff-account-logout-modal-actions">
+      <button
+        type="button"
+        class="staff-account-logout-modal-cancel"
+        (click)="cancelLogout()"
+        [disabled]="loggingOut">
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="staff-account-logout-modal-confirm"
+        (click)="confirmLogout()"
+        [disabled]="loggingOut">
+        <ion-spinner *ngIf="loggingOut" name="crescent" aria-hidden="true"></ion-spinner>
+        <ion-icon *ngIf="!loggingOut" name="log-out-outline" aria-hidden="true"></ion-icon>
+        {{ loggingOut ? 'Logging out...' : 'Log Out' }}
+      </button>
+    </div>
+  </section>
+</div>

@@ -113,6 +113,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
 
   errorMessage = '';
   logoutError = '';
+  showLogoutModal = false;
   editError = '';
   editSuccess = '';
 
@@ -163,6 +164,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
     ++this.requestVersion;
     this.activeProfileLoad = null;
     this.editingProfile = false;
+    this.showLogoutModal = false;
     this.loading = false;
   }
 
@@ -391,8 +393,8 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       return 'Username must have 3–50 letters, numbers, or underscores.';
     }
 
-    if (!/^\+?[0-9]{10,15}$/.test(data.contact_number)) {
-      return 'Enter a contact number with 10–15 digits and an optional leading +.';
+    if (!/^[0-9]{11}$/.test(data.contact_number)) {
+      return 'Contact number must contain exactly 11 digits (numbers only).';
     }
 
     return null;
@@ -580,12 +582,34 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
   // SECURE LOGOUT — REUSE THE EXISTING AUTH SERVICE
   // ============================================================
 
-  async logout(): Promise<void> {
+  // First tap opens the same custom confirmation modal as Resident My Account.
+  logout(): void {
     if (this.destroyed || this.loggingOut || this.savingProfile) {
       return;
     }
 
-    if (!window.confirm('Log out of PawConnect Staff Portal?')) {
+    this.hapticImpact();
+    this.applyViewUpdate(() => {
+      this.logoutError = '';
+      this.showLogoutModal = true;
+    });
+  }
+
+  cancelLogout(): void {
+    if (this.destroyed || this.loggingOut) {
+      return;
+    }
+
+    this.hapticImpact();
+    this.applyViewUpdate(() => {
+      this.showLogoutModal = false;
+    });
+  }
+
+  // Only the confirm button logs out. Reuse the existing staff auth service
+  // to preserve token revocation and push-token cleanup behavior.
+  async confirmLogout(): Promise<void> {
+    if (this.destroyed || this.loggingOut || this.savingProfile || !this.showLogoutModal) {
       return;
     }
 
@@ -610,12 +634,14 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
       if (success !== true) {
         this.hapticNotification(NotificationType.Error);
         this.applyViewUpdate(() => {
+          this.showLogoutModal = false;
           this.logoutError = 'Unable to log out. Please try again.';
         });
         return;
       }
 
       this.applyViewUpdate(() => {
+        this.showLogoutModal = false;
         this.clearProfile();
         this.editingProfile = false;
         this.editError = '';
@@ -631,6 +657,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
 
       this.hapticNotification(NotificationType.Error);
       this.applyViewUpdate(() => {
+        this.showLogoutModal = false;
         this.logoutError =
           error instanceof Error && error.name === 'TimeoutError'
             ? 'Logout took too long. Check your connection and try again.'
@@ -657,6 +684,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.showLogoutModal = false;
     this.destroyed = true;
     ++this.requestVersion;
     this.activeProfileLoad = null;
