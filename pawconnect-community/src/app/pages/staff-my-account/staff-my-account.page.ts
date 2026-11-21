@@ -45,7 +45,7 @@ import {
 import { getApiBaseUrl } from '../../config/ip-config';
 
 // ============================================================
-// PAWCONNECT — MUNICIPAL VETERINARY OFFICE — MY ACCOUNT
+// PAWCONNECT — BARANGAY STAFF — MY ACCOUNT
 //
 // This screen is completely separate from the resident My Account.
 // Profile details load AUTOMATICALLY on first entry and on return.
@@ -249,7 +249,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
         this.applyViewUpdate(() => {
           this.clearProfile();
           this.errorMessage =
-            'This account does not have permission to access the MVO Staff profile.';
+            'This account does not have permission to access the Barangay Staff profile.';
         });
         return;
       }
@@ -539,7 +539,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
   }
 
   get displayName(): string {
-    return this.profile?.full_name?.trim() || 'MVO Staff';
+    return this.profile?.full_name?.trim() || 'Barangay Staff';
   }
 
   get initials(): string {
@@ -549,7 +549,7 @@ export class StaffMyAccountPage implements OnInit, OnDestroy {
   getInitials(): string {
     const name = this.profile?.full_name?.trim() || '';
     if (!name) {
-      return 'MV';
+      return 'BS';
     }
 
     return name.split(/\s+/)

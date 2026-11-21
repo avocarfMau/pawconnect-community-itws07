@@ -1,5 +1,5 @@
 <!-- =====================================================
-     PAWCONNECT — MUNICIPAL VETERINARY OFFICE
+     PAWCONNECT — BARANGAY STAFF
      Staff Dashboard (mobile-first)
 
      Companion files:
@@ -23,7 +23,7 @@
         </span>
         <div class="staff-brand-copy">
           <p class="staff-brand-name">PawConnect</p>
-          <p class="staff-brand-subtitle">Municipal Veterinary Office</p>
+          <p class="staff-brand-subtitle">Barangay Staff</p>
         </div>
       </div>
       <span class="staff-role-tag">Staff Portal</span>
@@ -64,6 +64,7 @@
       </div>
     </div>
 
+
     <!-- Three overview cards: Total, Pending, and Rescued. -->
     <section class="staff-stats-grid" aria-label="Animal assistance case statistics">
       <div class="staff-stat-card total">
@@ -75,6 +76,7 @@
         </strong>
         <span class="staff-stat-label">Total Cases</span>
       </div>
+      
 
       <div class="staff-stat-card pending">
         <span class="staff-stat-icon" aria-hidden="true">
@@ -85,6 +87,8 @@
         </strong>
         <span class="staff-stat-label">Pending</span>
       </div>
+
+
 
       <!-- Keep the existing resolved style for the completed/rescued statistic. -->
       <div class="staff-stat-card resolved rescued">
@@ -98,13 +102,12 @@
       </div>
 
     </section>
-
-    <p class="staff-update-note" *ngIf="loading" role="status" aria-live="polite">
-      Loading the latest assistance cases...
-    </p>
-    <p class="staff-update-note" *ngIf="lastUpdated && !loading">
-      Last updated {{ lastUpdated | date:'MMM d, y, h:mm a' }}
-    </p>
+          <p class="staff-update-note" *ngIf="loading" role="status" aria-live="polite">
+            Loading the latest assistance cases...
+          </p>
+          <p class="staff-update-note" *ngIf="lastUpdated && !loading">
+            Last updated {{ lastUpdated | date:'MMM d, y, h:mm a' }}
+          </p>
 
     <!-- Entry point to the staff-only case management section -->
     <section class="staff-management-section" aria-labelledby="staffManagementTitle">
@@ -138,7 +141,7 @@
 
     <footer class="staff-dashboard-footer">
       <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-      PawConnect · Municipal Veterinary Office
+      PawConnect · Barangay Staff
     </footer>
   </main>
 
