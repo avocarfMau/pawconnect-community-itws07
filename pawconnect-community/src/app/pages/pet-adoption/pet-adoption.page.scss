@@ -1,270 +1,401 @@
-
-
+/* PawConnect — Pet Adoption
+   Visual alignment with Lost & Found; compatible with redesigned HTML.
+   UI styles only: existing Angular actions and adoption states are preserved.
+*/
 
 :host {
   display: block;
+  --adoption-green: #2d8038;
+  --adoption-green-hover: #276f31;
+  --adoption-green-pressed: #24672d;
+  --adoption-deep: #1b4332;
+  --adoption-bg: #f5f9f6;
+  --adoption-border: #e0eae3;
+  --adoption-muted: #64776b;
 }
 
-.adoption-content {
-  --background: #f5f7f5;
-}
+ion-header.adoption-fixed-header {
+  display: block;
+  position: relative;
+  z-index: 20;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
+  background: var(--adoption-bg);
+  border-bottom: 1px solid var(--adoption-border);
+  box-shadow: 0 2px 9px rgba(19, 55, 33, 0.04);
 
-.adoption-container {
-  max-width: 650px;
-  margin: 0 auto;
-  padding: 16px 14px 40px;
+  &::after { display: none; }
 }
-
-/* =====================================
-   HEADER
-===================================== */
 
 .adoption-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 13px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 10px 20px 14px;
+  box-sizing: border-box;
 }
 
 .header-title {
   flex: 1;
+  min-width: 0;
 
   h1 {
-    margin: 0;
-    font-size: 21px;
-    font-weight: 700;
-    color: #1b4332;
+    margin: 0 0 5px;
+    color: var(--adoption-deep);
+    font-size: 23px;
+    font-weight: 750;
+    letter-spacing: -0.45px;
+    line-height: 1.25;
   }
 
   p {
-    margin: 4px 0 0;
+    margin: 0;
+    color: #718176;
     font-size: 12px;
-    color: #777;
+    line-height: 1.5;
   }
 }
 
 .back-button,
 .refresh-button {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #e5f2e8;
-  color: #247a45;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-}
-
-.refresh-button:disabled {
-  opacity: 0.5;
-}
-
-/* =====================================
-   INTRODUCTION
-===================================== */
-
-.adoption-intro {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #e6f4ea;
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 16px;
-}
-
-.intro-icon {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  background: #2e7d32;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  padding: 0;
+  border: 1px solid #d9eae0;
   border-radius: 12px;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
+  background: #e5f4ea;
+  color: #2d8038;
+  cursor: pointer;
+
+  ion-icon { font-size: 22px; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid var(--adoption-green); outline-offset: 2px; }
 }
 
-.intro-text {
-  h2 {
-    margin: 0 0 6px;
-    font-size: 17px;
-    font-weight: 700;
-    color: #1b4332;
-  }
+.back-button { border-radius: 50%; }
 
-  p {
-    margin: 0;
-    font-size: 13px;
-    color: #526b58;
-    line-height: 1.5;
-  }
+ion-content.adoption-content {
+  --background: var(--adoption-bg);
 }
 
-/* =====================================
-   ACTION BUTTONS
-===================================== */
+.adoption-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 20px max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
+}
 
+ion-content.adoption-content::part(scroll) {
+  scroll-padding-bottom: max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
+}
+
+/* Primary actions */
 .adoption-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-bottom: 25px;
+  margin-bottom: 24px;
 
   ion-button {
+    display: block;
+    min-width: 0;
+    height: 50px;
+    min-height: 50px;
     margin: 0;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: none;
-    --border-radius: 10px;
-    min-height: 42px;
+    letter-spacing: 0;
+    --border-radius: 11px;
+    --box-shadow: none;
+    --padding-start: 8px;
+    --padding-end: 8px;
   }
+
+  ion-icon { font-size: 19px; }
 }
 
 .post-adoption-button {
-  --background: #2e7d32;
-  --color: white;
+  --background: var(--adoption-green);
+  --background-hover: var(--adoption-green-hover);
+  --background-activated: var(--adoption-green-pressed);
+  --color: #fff;
+  --box-shadow: 0 2px 6px rgba(26, 91, 42, 0.13);
 }
 
 .my-adoptions-button {
-  --color: #2e7d32;
-  --border-color: #2e7d32;
+  --color: var(--adoption-green);
+  --border-color: var(--adoption-green);
+  --border-width: 2px;
+  --border-style: solid;
+  --background: #fff;
+  --background-hover: #f7fcf8;
+  --background-activated: #eaf7ee;
+  --box-shadow: none;
 }
 
-/* =====================================
-   COMMUNITY FEED
-===================================== */
-
+/* Section title and refresh */
 .feed-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 14px;
 
+  > div { flex: 1; min-width: 0; }
+
   h2 {
-    margin: 0 0 5px;
+    margin: 0 0 4px;
+    color: var(--adoption-deep);
     font-size: 18px;
-    font-weight: 700;
-    color: #222;
+    font-weight: 750;
+    line-height: 1.35;
   }
 
   p {
     margin: 0;
-    font-size: 13px;
-    color: #777;
+    color: var(--adoption-muted);
+    font-size: 12px;
+    line-height: 1.5;
   }
 }
 
-/* =====================================
-   FILTERS
-===================================== */
+/* Compact filter panel */
+.adoption-filter-panel {
+  padding: 14px;
+  margin-bottom: 18px;
+  border: 1px solid var(--adoption-border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 9px rgba(24, 64, 37, 0.03);
+}
+
+.adoption-filter-heading {
+  margin: 0 0 11px;
+  color: var(--adoption-deep);
+  font-size: 13px;
+  font-weight: 750;
+}
 
 .adoption-filters {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .filter-button {
-  padding: 10px 20px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #666;
+  min-width: 0;
+  min-height: 39px;
+  padding: 8px 7px;
+  border: 1px solid #dce8df;
+  border-radius: 10px;
+  background: #f8fbf9;
+  color: #536b5b;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &.active {
+    border-color: var(--adoption-green);
+    background: var(--adoption-green);
+    color: #fff;
+  }
+
+  &:focus-visible { outline: 2px solid var(--adoption-green); outline-offset: 2px; }
 }
 
-.filter-button.active {
-  background: #2e7d32;
-  color: white;
-  border-color: #2e7d32;
+.adoption-filter-hint {
+  margin: 11px 0 0;
+  color: var(--adoption-muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
-/* =====================================
-   LOADING / EMPTY / ERROR
-===================================== */
-
+/* Feedback states */
 .loading-state,
 .empty-state,
 .error-state {
-  background: white;
+  margin-top: 14px;
+  padding: 34px 20px;
+  border: 1px solid var(--adoption-border);
   border-radius: 14px;
-  padding: 40px 20px;
+  background: #fff;
   text-align: center;
-  margin-top: 15px;
 
-  h3 {
-    font-size: 17px;
-    color: #333;
-    margin: 12px 0 8px;
-  }
-
-  p {
-    font-size: 13px;
-    color: #777;
-    line-height: 1.5;
-  }
-
-  ion-icon {
-    font-size: 40px;
-    color: #2e7d32;
-  }
-
-  ion-spinner {
-    color: #2e7d32;
-  }
-
+  h3 { margin: 12px 0 7px; color: var(--adoption-deep); font-size: 16px; }
+  p { margin: 0; color: var(--adoption-muted); font-size: 12px; line-height: 1.6; }
+  ion-icon { font-size: 40px; color: var(--adoption-green); }
+  ion-spinner { color: var(--adoption-green); }
   ion-button {
-    margin-top: 12px;
-    --background: #2e7d32;
-    --color: white;
+    margin-top: 15px;
+    --background: var(--adoption-green);
+    --color: #fff;
     --border-radius: 10px;
     text-transform: none;
   }
 }
 
-.empty-icon {
-  margin-bottom: 10px;
-}
+.empty-icon { margin-bottom: 8px; }
 
-/* =====================================
-   ADOPTION CARDS
-===================================== */
-
+/* Adoption feed and cards */
 .adoption-feed {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .adoption-card {
   overflow: hidden;
-  background: white;
-  border-radius: 14px;
-  border: 1px solid #e5e9e5;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--adoption-border);
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(20, 62, 34, 0.05);
 }
 
-/* POST HEADER */
+/* Photos fill the gallery edge-to-edge; fullscreen viewer keeps the complete image visible. */
+.pet-gallery {
+  position: relative;
+  overflow: hidden;
+  background: #e8eee9;
+}
 
+.gallery-image-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: clamp(230px, 64vw, 290px);
+  padding: 0;
+  border: 0;
+  background: linear-gradient(135deg, #e3ebe5, #f2f5f2);
+  cursor: zoom-in;
+}
+
+.gallery-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.no-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: clamp(230px, 64vw, 290px);
+  color: #829589;
+
+  ion-icon { font-size: 40px; }
+  p { margin: 8px 0 0; font-size: 12px; }
+}
+
+.photo-counter {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  z-index: 2;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: rgba(24, 36, 28, 0.72);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.expand-indicator {
+  position: absolute;
+  right: 11px;
+  bottom: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(24, 36, 28, 0.66);
+  color: #fff;
+  font-size: 17px;
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: rgba(23, 41, 29, 0.65);
+  color: #fff;
+  font-size: 21px;
+  cursor: pointer;
+
+  &.previous { left: 10px; }
+  &.next { right: 10px; }
+}
+
+.gallery-dots,
+.viewer-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 10px 12px;
+}
+
+.gallery-dots { border-bottom: 1px solid #edf1ed; }
+
+.gallery-dot,
+.viewer-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #cad7ce;
+  cursor: pointer;
+
+  &.active {
+    width: 17px;
+    border-radius: 7px;
+    background: var(--adoption-green);
+  }
+}
+
+/* Owner, pet details, location */
 .post-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px;
+  padding: 12px 15px 8px;
 }
 
 .owner-avatar {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e6f4ea;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  color: #2e7d32;
-  font-size: 22px;
+  background: #e9f5ed;
+  color: var(--adoption-green);
+  font-size: 19px;
 }
 
 .owner-information {
@@ -272,38 +403,42 @@
   min-width: 0;
 
   h3 {
-    margin: 0 0 4px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #222;
+    overflow: hidden;
+    margin: 0 0 3px;
+    color: #2b4836;
+    font-size: 12px;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  p {
-    margin: 0;
-    font-size: 12px;
-    color: #888;
-  }
+  p { margin: 0; color: #7c8b80; font-size: 11px; }
 }
 
 .adoption-badge {
-  padding: 6px 10px;
+  flex: 0 0 auto;
+  max-width: 42%;
+  padding: 6px 9px;
+  border: 1px solid #cbe5d3;
   border-radius: 20px;
-  background: #e6f4ea;
-  color: #2e7d32;
-  font-size: 11px;
-  font-weight: 700;
+  background: #eaf7ee;
+  color: #247749;
+  font-size: 10px;
+  font-weight: 750;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
-/* PET INFORMATION */
-
 .post-information {
-  padding: 0 14px 14px;
+  padding: 2px 15px 11px;
 
   h2 {
-    margin: 0 0 10px;
+    margin: 0 0 8px;
+    color: var(--adoption-deep);
     font-size: 19px;
-    font-weight: 700;
-    color: #222;
+    font-weight: 750;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -311,234 +446,113 @@
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  margin-bottom: 12px;
+  margin-bottom: 9px;
 }
 
 .pet-tag {
-  background: #f0f5f1;
-  color: #39734b;
   padding: 6px 9px;
+  border: 1px solid #e0ebe3;
   border-radius: 7px;
+  background: #f1f7f3;
+  color: #416c50;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .pet-description {
   margin: 0;
-  font-size: 13px;
-  color: #555;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-  white-space: pre-line;
-}
-
-/* =====================================
-   PHOTO GALLERY
-===================================== */
-
-.pet-gallery {
-  position: relative;
-  width: 100%;
-  background: #eef1ee;
-  overflow: hidden;
-}
-
-.gallery-image-button {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-
-.gallery-image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-.no-photo {
-  height: 240px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-
-  ion-icon {
-    font-size: 42px;
-  }
-
-  p {
-    font-size: 13px;
-  }
-}
-
-.photo-counter {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 6px 10px;
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.65);
-  color: white;
+  color: #596a5f;
   font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
-
-.expand-indicator {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 30px;
-  height: 30px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gallery-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.gallery-arrow.previous {
-  left: 10px;
-}
-
-.gallery-arrow.next {
-  right: 10px;
-}
-
-/* GALLERY DOTS */
-
-.gallery-dots,
-.viewer-dots {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px;
-}
-
-.gallery-dot,
-.viewer-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  padding: 0;
-  background: #ccc;
-}
-
-.gallery-dot.active {
-  background: #2e7d32;
-  width: 16px;
-  border-radius: 5px;
-}
-
-/* =====================================
-   LOCATION & FOOTER
-===================================== */
 
 .post-location {
   display: flex;
   align-items: flex-start;
-  gap: 7px;
-  padding: 12px 14px;
-  border-top: 1px solid #f0f0f0;
-  color: #666;
+  gap: 8px;
+  padding: 10px 15px;
+  border-top: 1px solid #edf2ee;
+  color: #63766a;
   font-size: 12px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 
-  ion-icon {
-    color: #2e7d32;
-    font-size: 17px;
-    flex-shrink: 0;
-  }
+  ion-icon { flex-shrink: 0; margin-top: 1px; color: var(--adoption-green); font-size: 17px; }
 }
 
-.post-footer {
-  padding: 0 14px 14px;
-}
+.post-footer { padding: 0 15px 13px; }
 
 .view-details-button {
+  display: block;
+  height: 44px;
+  min-height: 44px;
   margin: 0;
-  --background: #2e7d32;
-  --color: white;
+  --background: var(--adoption-green);
+  --background-hover: var(--adoption-green-hover);
+  --background-activated: var(--adoption-green-pressed);
+  --color: #fff;
+  --box-shadow: 0 2px 6px rgba(26, 91, 42, 0.13);
   --border-radius: 10px;
+  --box-shadow: none;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
   text-transform: none;
-  font-size: 13px;
-  font-weight: 600;
 }
 
-/* =====================================
-   FULLSCREEN PHOTO VIEWER
-===================================== */
-
+/* Fullscreen photo viewer */
 .photo-viewer {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.96);
   display: flex;
   flex-direction: column;
-  color: white;
+  background: rgba(9, 17, 12, 0.97);
+  color: #fff;
 }
 
 .viewer-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(16px + env(safe-area-inset-top)) 18px 16px;
+  gap: 12px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 18px 16px;
 }
 
 .viewer-title {
-  h3 {
-    margin: 0 0 4px;
-    font-size: 16px;
-  }
+  min-width: 0;
 
-  p {
-    margin: 0;
-    color: #bbb;
-    font-size: 12px;
-  }
+  h3 { margin: 0 0 4px; font-size: 16px; overflow-wrap: anywhere; }
+  p { margin: 0; color: #c1ccc4; font-size: 12px; }
 }
 
 .viewer-close {
-  width: 36px;
-  height: 36px;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
-  background: #333;
-  color: white;
+  background: #334037;
+  color: #fff;
   font-size: 22px;
 }
 
 .viewer-body {
   position: relative;
+  display: flex;
   flex: 1;
   min-height: 0;
-  display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .viewer-image {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -547,198 +561,119 @@
 .viewer-arrow {
   position: absolute;
   top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
+  border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
-  color: white;
+  color: #fff;
   font-size: 21px;
+
+  &.previous { left: 10px; }
+  &.next { right: 10px; }
 }
 
-.viewer-arrow.previous {
-  left: 10px;
-}
+.viewer-dot { background: #68776d; }
+.viewer-dot.active { background: #fff; }
+.viewer-dots { padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px)); }
 
-.viewer-arrow.next {
-  right: 10px;
-}
-
-.viewer-dot {
-  background: #555;
-}
-
-.viewer-dot.active {
-  width: 16px;
-  border-radius: 5px;
-  background: white;
-}
-
-.viewer-dots {
-  padding-bottom: calc(15px + env(safe-area-inset-bottom));
-}
-
-/* =====================================
-   SMALL SCREEN ADJUSTMENTS
-===================================== */
-
-@media (max-width: 360px) {
-  .adoption-container {
-    padding: 12px 10px 30px;
-  }
-
-  .adoption-intro {
-    padding: 14px;
-  }
-
-  .intro-text h2 {
-    font-size: 15px;
-  }
-
-  .adoption-actions {
-    gap: 6px;
-  }
-
-  .adoption-actions ion-button {
-    font-size: 11px;
-  }
-
-  .filter-button {
-    padding: 9px 14px;
-  }
-}
-
-/* ================================================================
-   PAWCONNECT — PET ADOPTION / LOST & FOUND VISUAL CONSISTENCY
-   Native Ionic fixed header, matching dimensions and scroll space.
-   Photo viewer stays fullscreen for readability.
-   ================================================================ */
-
-ion-header.adoption-fixed-header {
-  display: block;
-  position: relative;
-  z-index: 20;
-  box-sizing: border-box;
-  padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
-  background: #f5f9f6;
-  border-bottom: 1px solid #e1ebe5;
-  box-shadow: 0 2px 9px rgba(19, 55, 33, 0.04);
-
-  &::after { display: none; }
-
-  .adoption-header {
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 10px 20px 14px;
-    gap: 13px;
-    min-height: 0;
-  }
-
-  .header-title {
-    flex: 1 1 auto;
-    min-width: 0;
-
-    h1 {
-      margin: 0 0 5px;
-      color: #1b4332;
-      font-size: 23px;
-      font-weight: 750;
-      line-height: 1.25;
-      letter-spacing: -0.45px;
-    }
-
-    p {
-      margin: 0;
-      color: #718176;
-      font-size: 12px;
-      line-height: 1.5;
-    }
-  }
-
-  .back-button,
-  .refresh-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 43px;
-    width: 43px;
-    height: 43px;
-    padding: 0;
-    border: 0;
-    background: #e5f4ea;
-    color: #2d8038;
-    cursor: pointer;
-  }
-
-  .back-button { border-radius: 50%; }
-  .refresh-button {
-    border: 1px solid #d9eae0;
-    border-radius: 12px;
-  }
-
-  .back-button ion-icon,
-  .refresh-button ion-icon { font-size: 23px; }
-}
-
-ion-content.adoption-content {
-  --background: #f5f9f6;
-}
-
-ion-content.adoption-content .adoption-container {
-  width: 100%;
-  max-width: 760px;
-  box-sizing: border-box;
-  padding: 20px 20px max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
-}
-
-ion-content.adoption-content::part(scroll) {
-  scroll-padding-bottom: max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
-}
-
-/* Keep the full-screen photo viewer over the native Ionic header.
-   Do not replace its dark photo-viewing background with the lighter
-   backdrop used by form/detail modals in Lost & Found. */
 :host:has(.photo-viewer) ion-header.adoption-fixed-header {
   filter: brightness(0.75);
   pointer-events: none;
 }
 
 @media (max-width: 400px) {
-  ion-header.adoption-fixed-header .adoption-header {
-    padding: 9px 14px 12px;
-    gap: 12px;
-  }
-
-  ion-content.adoption-content .adoption-container {
+  .adoption-header { padding: 9px 14px 12px; gap: 12px; }
+  .adoption-container {
     padding: 18px 14px max(160px, calc(env(safe-area-inset-bottom, 0px) + 130px));
   }
 }
 
 @media (max-width: 360px) {
-  ion-content.adoption-content .adoption-container {
-    padding-left: 14px;
-    padding-right: 14px;
+  .header-title h1 { font-size: 21px; }
+  .adoption-actions { gap: 7px; }
+  .adoption-actions ion-button { font-size: 11px; }
+  .adoption-filter-panel { padding: 12px; }
+  .filter-button { font-size: 11px; }
+  .post-header { padding-left: 12px; padding-right: 12px; }
+  .post-information, .post-location { padding-left: 12px; padding-right: 12px; }
+  .post-footer { padding-left: 12px; padding-right: 12px; }
+}
+
+
+/* ==========================================================
+   FINAL ACTION BUTTON MATCH — Lost & Found (10).scss
+   The reference uses --lf-green: #2d8038 in its final action
+   rules. These selectors override earlier Ionic button styles.
+   ========================================================== */
+:host .adoption-actions ion-button.post-adoption-button {
+  --background: #2d8038;
+  --background-hover: #277232;
+  --background-activated: #23692e;
+  --color: #ffffff;
+  --border-color: #2d8038;
+  --border-width: 0;
+  --border-style: solid;
+  --border-radius: 11px;
+  --box-shadow: 0 2px 6px rgba(26, 91, 42, 0.13);
+}
+
+:host .adoption-actions ion-button.my-adoptions-button {
+  --background: #ffffff;
+  --background-hover: #f7fcf8;
+  --background-activated: #e2f4e9;
+  --color: #2d8038;
+  --border-color: #2d8038;
+  --border-width: 2px;
+  --border-style: solid;
+  --border-radius: 11px;
+  --box-shadow: none;
+}
+
+/* Ionic uses a shadow DOM native button; apply the exact
+   visual values to that part as well to avoid theme overrides. */
+:host .adoption-actions ion-button.post-adoption-button::part(native) {
+  background: #2d8038;
+  color: #ffffff;
+  border: 0;
+  border-radius: 11px;
+}
+:host .adoption-actions ion-button.my-adoptions-button::part(native) {
+  background: #ffffff;
+  color: #2d8038;
+  border: 2px solid #2d8038;
+  border-radius: 11px;
+}
+:host .adoption-actions ion-button.post-adoption-button.ion-activated::part(native) {
+  background: #23692e;
+}
+
+/* Compact mobile adoption cards — gallery photos fill the frame. */
+@media (max-width: 480px) {
+  .gallery-image-button,
+  .no-photo {
+    height: 250px;
   }
+
+  .post-header {
+    padding-top: 12px;
+    padding-bottom: 7px;
+  }
+
+  .post-information {
+    padding-top: 2px;
+    padding-bottom: 10px;
+  }
+
+  .pet-tags { margin-bottom: 9px; }
 }
 
-/* PET ADOPTION — match Lost & Found button heights */
-.adoption-actions ion-button {
-  height: 50px;
-  min-height: 50px;
-  --min-height: 50px;
-}
-
-/* Match the compact "I Found This Pet" action in Lost & Found. */
-.view-details-button {
-  height: 44px;
-  min-height: 44px;
-  --min-height: 44px;
-  --padding-top: 9px;
-  --padding-bottom: 9px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --border-radius: 10px;
-  font-size: 12px;
+@media (max-width: 360px) {
+  .gallery-image-button,
+  .no-photo { height: 230px; }
 }
