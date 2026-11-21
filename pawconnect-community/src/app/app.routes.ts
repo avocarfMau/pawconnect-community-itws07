@@ -113,7 +113,7 @@ export const routes: Routes = [
   },
 
   // =====================================
-  // MUNICIPAL VETERINARY OFFICE — STAFF ONLY
+  // BARANGAY STAFF — STAFF ONLY
   // =====================================
   {
     path: 'staff-dashboard',

@@ -1,5 +1,5 @@
 // =====================================================
-// PAWCONNECT — MUNICIPAL VETERINARY OFFICE
+// PAWCONNECT — BARANGAY STAFF
 // Staff Dashboard: mobile-first responsive styling
 // Companion files: staff-dashboard.page.ts / .html
 // =====================================================
@@ -46,26 +46,27 @@ ion-content.staff-dashboard-content {
   min-width: 0;
   gap: 12px;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .staff-brand {
   min-width: 0;
-  gap: 10px;
+  gap: 12px;
 }
 
+// Match the resident Home's larger, soft-green paw logo.
 .staff-brand-icon {
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
+  flex: 0 0 60px;
+  width: 60px;
+  height: 60px;
   display: grid;
   place-items: center;
-  border-radius: 13px;
-  color: #fff;
-  background: var(--staff-green-700);
-  box-shadow: 0 4px 12px rgba(32, 117, 81, 0.16);
+  border-radius: 18px;
+  color: #157b50;
+  background: #e1f2e8;
+  box-shadow: none;
 
-  ion-icon { font-size: 24px; }
+  ion-icon { font-size: 34px; }
 }
 
 .staff-brand-copy { min-width: 0; }
@@ -78,43 +79,58 @@ ion-content.staff-dashboard-content {
 .staff-brand-name {
   color: var(--staff-green-950);
   font-weight: 800;
-  letter-spacing: -0.025em;
-  font-size: 17px;
-  line-height: 1.3;
+  letter-spacing: -0.035em;
+  font-size: 22px;
+  line-height: 1.25;
 }
 
 .staff-brand-subtitle {
   color: var(--staff-muted);
-  font-size: 10px;
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .staff-role-tag {
   flex: 0 0 auto;
-  padding: 7px 9px;
-  border: 1px solid #d9ebde;
+  padding: 8px 10px;
+  border: 1px solid #d7e9dc;
   border-radius: 999px;
   color: var(--staff-green-700);
-  background: #eaf6ed;
+  background: #ecf7ef;
   font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
 }
 
-// Intro / welcome hero
+// Intro / welcome hero: retain the existing text and decorative heart.
 .staff-welcome-card {
   position: relative;
   isolation: isolate;
   display: flex;
   align-items: center;
-  min-height: 150px;
-  padding: 20px;
-  margin-bottom: 24px;
+  min-height: 156px;
+  padding: 22px 20px;
+  margin-bottom: 22px;
   overflow: hidden;
   border-radius: 20px;
+  box-sizing: border-box;
   color: #fff;
-  background: linear-gradient(120deg, #1d6348 0%, #21845d 100%);
-  box-shadow: 0 9px 25px rgba(26, 107, 77, 0.13);
+  background: linear-gradient(115deg, #146846 0%, #1d8158 100%);
+  box-shadow: 0 10px 24px rgba(24, 100, 68, 0.13);
+}
+
+// Subtle organic shapes echo the resident welcome card.
+.staff-welcome-card::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: -110px;
+  right: -95px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.055);
+  pointer-events: none;
 }
 
 .staff-welcome-content {
@@ -126,43 +142,44 @@ ion-content.staff-dashboard-content {
 .staff-welcome-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 11px;
-  color: #dcf3e6;
+  gap: 7px;
+  margin-bottom: 13px;
+  color: #e3f5ea;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.025em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 
-  ion-icon { font-size: 15px; }
+  ion-icon { font-size: 16px; }
 }
 
 .staff-welcome-card h1 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: #fff;
-  font-size: clamp(22px, 5vw, 29px);
+  font-size: clamp(22px, 5.5vw, 28px);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.18;
   letter-spacing: -0.035em;
 }
 
 .staff-welcome-card p {
   margin: 0;
-  max-width: 340px;
-  color: #edf8f1;
-  font-size: 12px;
-  line-height: 1.55;
+  max-width: 380px;
+  color: #eef9f2;
+  font-size: 13px;
+  line-height: 1.52;
 }
 
 .staff-welcome-decoration {
   position: absolute;
   z-index: 0;
-  right: -16px;
-  bottom: -44px;
+  right: -12px;
+  bottom: -47px;
   opacity: 0.09;
   transform: rotate(-18deg);
   pointer-events: none;
 
-  ion-icon { font-size: 180px; }
+  ion-icon { font-size: 185px; }
 }
 
 // Shared headings and compact action controls
@@ -188,6 +205,18 @@ ion-content.staff-dashboard-content {
     font-size: 11px;
     line-height: 1.45;
   }
+}
+
+// Scope the larger heading to the statistics area only.
+.staff-overview-heading {
+  margin-bottom: 15px;
+
+  h2 {
+    font-size: 21px;
+    letter-spacing: -0.035em;
+  }
+
+  p { font-size: 12px; }
 }
 
 .staff-icon-action,
@@ -236,11 +265,11 @@ ion-content.staff-dashboard-content {
   p { margin: 3px 0 0; font-size: 11px; line-height: 1.45; }
 }
 
-// Status counters — always two columns on mobile
+// All three statistics stay on one row: Total / Pending / Rescued.
 .staff-stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 11px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
 }
 
 .staff-stat-card {
@@ -248,24 +277,24 @@ ion-content.staff-dashboard-content {
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
-  min-height: 133px;
-  padding: 15px;
+  min-height: 132px;
+  padding: 13px 12px;
   border: 1px solid var(--staff-outline);
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--staff-surface);
-  box-shadow: 0 2px 9px rgba(19, 55, 38, 0.035);
+  box-shadow: 0 3px 12px rgba(19, 55, 38, 0.045);
   box-sizing: border-box;
 }
 
 .staff-stat-icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
-  margin-bottom: 9px;
-  border-radius: 10px;
+  margin-bottom: 12px;
+  border-radius: 11px;
 
-  ion-icon { font-size: 19px; }
+  ion-icon { font-size: 21px; }
 }
 
 .staff-stat-card.total .staff-stat-icon {
@@ -286,9 +315,9 @@ ion-content.staff-dashboard-content {
 }
 
 .staff-stat-number {
-  margin-bottom: 3px;
-  color: var(--staff-text);
-  font-size: 25px;
+  margin-bottom: 5px;
+  color: var(--staff-green-950);
+  font-size: 28px;
   font-weight: 800;
   line-height: 1.08;
   font-variant-numeric: tabular-nums;
@@ -297,8 +326,8 @@ ion-content.staff-dashboard-content {
 .staff-stat-label {
   color: var(--staff-muted);
   font-size: 11px;
-  font-weight: 600;
-  line-height: 1.4;
+  font-weight: 650;
+  line-height: 1.35;
 }
 
 .staff-update-note {
@@ -582,7 +611,7 @@ ion-content.staff-dashboard-content {
   }
 
   .staff-stats-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
   }
 
@@ -591,19 +620,30 @@ ion-content.staff-dashboard-content {
     padding: 18px;
   }
 
-  .staff-brand-name { font-size: 19px; }
-  .staff-brand-subtitle { font-size: 11px; }
+  .staff-brand-name { font-size: 24px; }
+  .staff-brand-subtitle { font-size: 13px; }
   .staff-section-heading h2 { font-size: 19px; }
+  .staff-overview-heading h2 { font-size: 22px; }
 }
 
 @media (max-width: 360px) {
   .staff-dashboard-shell { padding-inline: 12px; }
-  .staff-brand-icon { flex-basis: 37px; width: 37px; height: 37px; }
-  .staff-brand-name { font-size: 15px; }
-  .staff-brand-subtitle { font-size: 9px; }
+  .staff-brand-icon {
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+
+    ion-icon { font-size: 30px; }
+  }
+  .staff-brand-name { font-size: 18px; }
+  .staff-brand-subtitle { font-size: 10px; }
   .staff-role-tag { font-size: 9px; padding: 6px 7px; }
   .staff-welcome-card { padding: 18px; }
-  .staff-stat-card { min-height: 128px; padding: 12px; }
+  .staff-stat-card { min-height: 125px; padding: 11px 9px; }
+  .staff-stat-icon { width: 32px; height: 32px; margin-bottom: 10px; }
+  .staff-stat-number { font-size: 24px; }
+  .staff-stat-label { font-size: 10px; }
   .staff-case-card { padding: 12px; }
   .staff-case-status { padding: 5px 6px; font-size: 8px; }
 }
