@@ -13,8 +13,6 @@ import {
   documentTextOutline
 } from 'ionicons/icons';
 import { Subscription } from 'rxjs';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { Capacitor } from '@capacitor/core';
 
 import { getApiBaseUrl } from '../../config/ip-config';
 import { AuthService } from '../../services/auth';
@@ -99,7 +97,8 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  private readonly endpoint = `${getApiBaseUrl()}/animal_assistance/get_cases.php`;
+  private readonly apiBaseUrl = getApiBaseUrl().replace(/\/$/, '');
+  private readonly endpoint = `${this.apiBaseUrl}/animal_assistance/get_cases.php`;
   private readonly pageSize = 20; // The PHP API accepts 1-50 per request.
 
   private requestSubscription?: Subscription;
@@ -173,13 +172,6 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
     this.loadingMore = false;
   }
 
-  private lightHaptic(): void {
-    if (!Capacitor.isNativePlatform()) return;
-    void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {
-      // Haptics are optional; never interrupt staff actions.
-    });
-  }
-
   setFilter(filter: AssistanceFilter): void {
     if (this.destroyed) return;
 
@@ -189,7 +181,6 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
       return;
     }
 
-    this.lightHaptic();
     this.cancelPendingRequest();
     this.updateView(() => {
       this.selectedFilter = filter;
@@ -266,7 +257,13 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
           }
 
           // Each API item includes the numeric case ID used by View Details.
-          const incoming = response.cases;
+          // The database may store legacy /pawrescue_api/uploads/pets/... paths.
+          // A Capacitor WebView cannot resolve those paths against the PHP API.
+          // Normalize to the configured API URL before the existing HTML binds [src].
+          const incoming = response.cases.map((item) => ({
+            ...item,
+            photo_path: this.resolveCasePhotoUrl(item.photo_path)
+          }));
           if (append) {
             const existingIds = new Set(this.cases.map(item => item.id));
             this.cases = [
@@ -309,7 +306,6 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
     const numericId = Number(caseId);
     if (!Number.isSafeInteger(numericId) || numericId <= 0) return;
 
-    this.lightHaptic();
     this.cancelPendingRequest();
     // Matches app.routes.ts: staff-animal-assistance/:id.
     // Awaiting navigation lets us surface a navigation failure rather than
@@ -336,8 +332,20 @@ export class StaffAnimalAssistancePage implements OnInit, OnDestroy {
   }
 
   backToDashboard(): void {
-    this.lightHaptic();
     void this.router.navigateByUrl('/staff-dashboard');
+  }
+
+  // Rebuild only expected pet-upload URLs against the API base. Accept
+  // historical pawrescue_api and current pawconnect_api path prefixes while
+  // refusing arbitrary external URLs or unexpected file locations.
+  private resolveCasePhotoUrl(rawPath: string | null): string | null {
+    if (typeof rawPath !== 'string' || !rawPath.trim()) return null;
+
+    const normalized = rawPath.trim().replace(/\\/g, '/');
+    const match = normalized.match(
+      /(?:^|\/)uploads\/pets\/([a-f0-9]{32}\.(?:jpg|jpeg|png|webp))$/i
+    );
+    return match ? `${this.apiBaseUrl}/uploads/pets/${match[1]}` : null;
   }
 
   getCaseName(item: StaffAssistanceCase): string {

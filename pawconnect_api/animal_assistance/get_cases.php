@@ -1,9 +1,9 @@
 <?php
 
 // =====================================
-// PAWRESCUE COMMUNITY
+// PAWCONNECT
 // ANIMAL ASSISTANCE MANAGEMENT
-// GET CASES - MUNICIPAL VETERINARY OFFICE STAFF ONLY
+// GET CASES - BARANGAY STAFF ONLY
 // =====================================
 //
 // Cases are created by the backend when a resident marks a
@@ -115,6 +115,8 @@ try {
               ON p.id = a.found_report_id
           INNER JOIN users u
               ON u.id = p.user_id
+          LEFT JOIN users rescued_staff
+              ON rescued_staff.id = a.rescued_by_user_id
           WHERE p.report_type = 'found'";
 
     if ($status !== 'all') {
@@ -160,6 +162,7 @@ try {
             a.rescue_note,
             a.rescued_at,
             a.rescued_by_user_id,
+            rescued_staff.full_name AS rescued_by_name,
             a.created_at,
             a.updated_at,
 

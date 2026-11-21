@@ -77,7 +77,7 @@ try {
 
     $staffName = trim((string) ($auth['user']['full_name'] ?? ''));
     if ($staffName === '') {
-        $staffName = 'Municipal Veterinary Office Staff';
+        $staffName = 'Barangay Staff';
     }
 
     $staffUserId = filter_var(
@@ -365,7 +365,7 @@ try {
                 $pushResult = pawrescueSendFcmToToken(
                     (string) $deviceToken,
                     'Animal Assistance Update',
-                    'The animal you reported has been successfully rescued by the Municipal Veterinary Office.',
+                    'The animal you reported has been successfully rescued by Barangay Staff.',
                     [
                         'type' => 'animal_assistance_rescued',
                         'route' => '/my-reports',

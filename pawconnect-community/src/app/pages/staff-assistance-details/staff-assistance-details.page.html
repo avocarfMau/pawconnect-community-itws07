@@ -1,38 +1,36 @@
 <!-- ============================================================
-     PAWCONNECT — MUNICIPAL VETERINARY OFFICE
+     PAWCONNECT — BARANGAY STAFF
      Animal Assistance Case Details (STAFF ONLY)
 
      Route: /staff-animal-assistance/:id (staffGuard)
      Paired with: staff-assistance-details.page.ts / .scss
 
-     COMPACT SINGLE-PAGE LAYOUT
+     APPROVED MINIMALIST MOBILE LAYOUT
      - All essential animal, assistance, location and reporter details
        stay on this page.
-     - Full timeline and previously saved staff notes are expandable.
+     - Reported By remains visible; redundant Case History is removed.
+     - Completed By displays the staff name returned by the case API.
      - Rescue completion requires a proof photo and assistance note.
      - Show assistance case status without relabeling the resident report status.
      ============================================================ -->
 
 <ion-content [fullscreen]="true" class="staff-details-content">
+  <!-- Ionic fixed slot: this header remains visible while Case Details scrolls. -->
+  <header slot="fixed" class="details-topbar">
+    <button
+      type="button"
+      class="details-back-button"
+      (click)="backToCases()"
+      [disabled]="saving"
+      aria-label="Back to previous case list">
+      <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+    </button>
+    <div class="details-header-copy">
+      <h1>Case Details</h1>
+    </div>
+  </header>
+
   <main class="staff-details-shell details-compact-shell">
-
-    <!-- Case data loads automatically on page entry; no manual refresh needed. -->
-    <header class="details-topbar">
-      <button
-        type="button"
-        class="details-back-button"
-        (click)="backToCases()"
-        [disabled]="saving"
-        aria-label="Back to previous case list">
-        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
-      </button>
-
-      <div class="details-header-copy">
-        <p class="details-eyebrow">PawConnect · Staff Portal</p>
-        <h1>Case Details</h1>
-      </div>
-
-    </header>
 
     <!-- Existing request and network feedback. -->
     <section
@@ -66,27 +64,20 @@
 
     <ng-container *ngIf="assistanceCase as item">
 
-      <!-- 1. Compact case summary: case identity, concern, status. -->
+      <!-- 1. Compact mint summary; all information comes from the actual API case. -->
       <section class="details-summary-card details-compact-summary" aria-labelledby="detailsCaseTitle">
         <div class="details-summary-heading">
-          <span class="details-summary-icon" aria-hidden="true">
-            <ion-icon name="paw-outline"></ion-icon>
-          </span>
-
           <div class="details-summary-title">
             <p class="details-case-number">
               Case #{{ item.id }} · Found Pet Report #{{ item.found_report_id }}
             </p>
             <h2 id="detailsCaseTitle">{{ getAnimalName(item) }}</h2>
             <p class="details-report-reference">
-              {{ getReasonLabel(item.assistance_reason) }}
-              <ng-container *ngIf="item.incident_date">
-                · {{ item.incident_date | date:'MMM d, y' }}
-              </ng-container>
+              <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+              {{ item.incident_date ? (item.incident_date | date:'MMM d, y') : 'Date not provided' }}
             </p>
           </div>
         </div>
-
         <div class="details-summary-meta">
           <span class="details-status-badge" [ngClass]="'status-' + item.status">
             {{ getStatusLabel(item.status) }}
@@ -94,206 +85,146 @@
         </div>
       </section>
 
-      <!-- 2. Animal and assistance details are combined to avoid duplicate cards. -->
-      <section class="details-section details-compact-section" aria-labelledby="detailsAnimalTitle">
-        <div class="details-section-heading">
-          <span class="details-heading-icon" aria-hidden="true">
-            <ion-icon name="paw-outline"></ion-icon>
-          </span>
-          <h2 id="detailsAnimalTitle">Animal &amp; Assistance Details</h2>
-        </div>
-
-        <div class="details-animal-overview">
-          <ng-container *ngIf="photoUrl; else noPetPhoto">
-            <!-- This image path has already been validated by the TypeScript. -->
-            <button
-              type="button"
-              class="details-animal-thumbnail-link"
-              (click)="openPhotoViewer()"
-              [attr.aria-label]="'View full photo for ' + getAnimalName(item)"
-              style="padding: 0; cursor: pointer;">
-              <img
-                class="details-animal-thumbnail"
-                [src]="photoUrl"
-                [alt]="'Photo from Found Pet report for ' + getAnimalName(item)"
-                width="96"
-                height="96"
-                loading="lazy" />
-            </button>
-          </ng-container>
-          <ng-template #noPetPhoto>
-            <div class="details-animal-thumbnail-placeholder" aria-label="No animal photo attached">
-              <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
-            </div>
-          </ng-template>
-
-          <div class="details-animal-main">
-            <p class="details-animal-name">
-              <strong>{{ getAnimalType(item) }}</strong>
-              <span> · {{ item.pet_name || 'Name not specified' }}</span>
-            </p>
-            <p class="details-paragraph details-animal-description">
-              {{ item.description || 'No description provided.' }}
-            </p>
-            <p class="details-animal-assistance-reason">
-              <strong>Needs Assistance:</strong> {{ getReasonLabel(item.assistance_reason) }}
-            </p>
-            <p class="details-photo-hint" *ngIf="photoUrl">Tap the photo to view full size.</p>
+      <!-- 2. Large, tappable report photo. The API currently supplies one primary
+           photo; do not display fake gallery controls or additional images. -->
+      <section class="details-case-photo" aria-label="Found pet photograph">
+        <ng-container *ngIf="photoUrl; else noPetPhoto">
+          <button
+            type="button"
+            class="details-animal-thumbnail-link details-photo-main-button"
+            (click)="openPhotoViewer()"
+            [attr.aria-label]="'View full photo for ' + getAnimalName(item)">
+            <img
+              class="details-animal-thumbnail details-photo-main-image"
+              [src]="photoUrl"
+              [alt]="'Found pet report photo for ' + getAnimalName(item)"
+              loading="lazy" />
+            <span class="details-photo-expand-hint" aria-hidden="true">
+              <ion-icon name="image-outline"></ion-icon>
+            </span>
+          </button>
+        </ng-container>
+        <ng-template #noPetPhoto>
+          <div class="details-animal-thumbnail-placeholder details-photo-main-placeholder"
+               role="img" aria-label="No animal photo attached to this report">
+            <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
+            <span>No photo available</span>
           </div>
-        </div>
-
-        <dl class="details-info-list details-compact-info-list">
-          <div class="details-info-row" *ngIf="item.assistance_details">
-            <dt>Additional Assistance Details</dt>
-            <dd class="details-paragraph">{{ item.assistance_details }}</dd>
-          </div>
-          <div class="details-info-row" *ngIf="!item.assistance_details">
-            <dt>Additional Assistance Details</dt>
-            <dd>No additional details provided.</dd>
-          </div>
-          <!-- Reflect the MVO rescue workflow, not the separate Found Pet report status. -->
-          <div class="details-info-row">
-            <dt>Animal Assistance Status</dt>
-            <dd>{{ getStatusLabel(item.status) }}</dd>
-          </div>
-        </dl>
-
+        </ng-template>
       </section>
 
-      <!-- 3. Keep actual location and coordinates visible. -->
-      <section class="details-section details-compact-section" aria-labelledby="detailsLocationTitle">
-        <div class="details-section-heading">
-          <span class="details-heading-icon" aria-hidden="true">
-            <ion-icon name="location-outline"></ion-icon>
-          </span>
-          <h2 id="detailsLocationTitle">Reported Location</h2>
+      <!-- 3. Four actual facts. Gender and age are intentionally not invented. -->
+      <section class="details-quick-facts" aria-label="Animal assistance quick facts">
+        <div class="details-quick-fact">
+          <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+          <span>Animal Type</span>
+          <strong>{{ getAnimalType(item) }}</strong>
         </div>
+        <div class="details-quick-fact">
+          <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+          <span>Needs Assistance</span>
+          <strong>{{ getReasonLabel(item.assistance_reason) }}</strong>
+        </div>
+        <div class="details-quick-fact">
+          <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+          <span>Date Found</span>
+          <strong>{{ item.incident_date ? (item.incident_date | date:'MMM d, y') : 'Not provided' }}</strong>
+        </div>
+        <div class="details-quick-fact">
+          <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+          <span>Case Status</span>
+          <strong>{{ getStatusLabel(item.status) }}</strong>
+        </div>
+      </section>
 
-        <p class="details-location-address">
-          {{ item.location_address || 'No location address provided.' }}
-        </p>
-        <p class="details-coordinates" *ngIf="hasCoordinates(item)">
-          Latitude: {{ item.latitude }} · Longitude: {{ item.longitude }}
-        </p>
-        <p class="details-inline-note" *ngIf="!hasCoordinates(item)">
-          No GPS coordinates are available for this report.
-        </p>
-        <!-- Interactive Leaflet map, displayed in this page (no Google Maps). -->
-        <button
-          *ngIf="hasCoordinates(item)"
-          type="button"
-          class="details-location-map-link"
-          (click)="viewLocationOnMap(item)"
-          [disabled]="loading || saving"
-          [attr.aria-expanded]="locationMapOpen"
-          aria-controls="assistanceLocationMap"
-          style="border: 0; background: none; cursor: pointer;">
-          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-          {{ locationMapOpen ? 'Hide Location Map' : 'View Location on Map' }}
-        </button>
+      <!-- 4. Reporter card. The API exposes name and resident ID, not phone/email. -->
+      <section class="details-section details-compact-section details-mini-card details-reporter-card"
+               aria-labelledby="detailsReporterTitle">
+        <div class="details-mini-card-icon" aria-hidden="true">
+          <ion-icon name="person-outline"></ion-icon>
+        </div>
+        <div class="details-mini-card-body">
+          <h2 id="detailsReporterTitle">Reported By</h2>
+          <p class="details-mini-card-primary">{{ item.reporter_name || 'Not available' }}</p>
+          <p class="details-mini-card-secondary">Resident #{{ item.reporter_user_id }}</p>
+        </div>
+      </section>
 
-        <!-- Keep the container in the DOM only when the map is open.
-             The matching @ViewChild('leafletLocationMap') in the TypeScript
-             initializes Leaflet after Angular renders this element. -->
-        <div
-          *ngIf="locationMapOpen && hasCoordinates(item)"
-          id="assistanceLocationMap"
-          class="details-location-map-panel"
-          style="margin-top: 14px; overflow: hidden; border: 1px solid #d9e8de; border-radius: 14px; background: #f4f8f5;">
-          <div
-            #leafletLocationMap
-            class="details-leaflet-map"
-            role="region"
-            aria-label="Interactive OpenStreetMap showing the reported animal location"
-            style="display: block; width: 100%; height: 280px; min-height: 280px; background: #e8eee8;">
-          </div>
-          <div
-            class="details-location-map-caption"
-            style="display: flex; align-items: center; gap: 7px; padding: 10px 12px; color: #526b5b; font-size: 12px; line-height: 1.4;">
+      <!-- 5. Location card; keep Leaflet, GPS, error feedback and handlers. -->
+      <section class="details-section details-compact-section details-mini-card details-location-card"
+               aria-labelledby="detailsLocationTitle">
+        <div class="details-mini-card-icon" aria-hidden="true">
+          <ion-icon name="location-outline"></ion-icon>
+        </div>
+        <div class="details-mini-card-body">
+          <h2 id="detailsLocationTitle">Location</h2>
+          <p class="details-location-address">
+            {{ item.location_address || 'No location address provided.' }}
+          </p>
+          <p class="details-coordinates" *ngIf="hasCoordinates(item)">
+            Latitude: {{ item.latitude }} · Longitude: {{ item.longitude }}
+          </p>
+          <p class="details-inline-note" *ngIf="!hasCoordinates(item)">
+            No GPS coordinates are available for this report.
+          </p>
+          <button
+            *ngIf="hasCoordinates(item)"
+            type="button"
+            class="details-location-map-link"
+            (click)="viewLocationOnMap(item)"
+            [disabled]="loading || saving"
+            [attr.aria-expanded]="locationMapOpen"
+            aria-controls="assistanceLocationMap">
             <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-            Reported location ({{ item.latitude }}, {{ item.longitude }})
-          </div>
-        </div>
-
-        <p
-          *ngIf="mapErrorMessage"
-          class="details-update-feedback details-update-error"
-          role="alert">
-          {{ mapErrorMessage }}
-        </p>
-      </section>
-
-      <!-- 4. Reporter information and main dates visible; full history is optional. -->
-      <section class="details-section details-compact-section" aria-labelledby="detailsHistoryTitle">
-        <div class="details-section-heading">
-          <span class="details-heading-icon" aria-hidden="true">
-            <ion-icon name="person-outline"></ion-icon>
-          </span>
-          <h2 id="detailsHistoryTitle">Reporter &amp; Case History</h2>
-        </div>
-
-        <dl class="details-info-list details-compact-info-list">
-          <div class="details-info-row">
-            <dt>Reported By</dt>
-            <dd>{{ item.reporter_name || 'Not available' }}</dd>
-          </div>
-          <div class="details-info-row">
-            <dt>Resident Reference</dt>
-            <dd>#{{ item.reporter_user_id }}</dd>
-          </div>
-          <div class="details-info-row">
-            <dt>Date Found</dt>
-            <dd>{{ item.incident_date ? (item.incident_date | date:'MMM d, y') : 'Not provided' }}</dd>
-          </div>
-          <div class="details-info-row">
-            <dt>Report Submitted</dt>
-            <dd>{{ item.report_created_at | date:'MMM d, y, h:mm a' }}</dd>
-          </div>
-          <div class="details-info-row">
-            <dt>Last Case Update</dt>
-            <dd>{{ item.updated_at | date:'MMM d, y, h:mm a' }}</dd>
-          </div>
-        </dl>
-
-        <!-- Native details/summary expands without a TypeScript change. -->
-        <details class="details-history-collapse">
-          <summary class="details-history-toggle">
-            View Complete Case History &amp; Notes
-          </summary>
-
-          <div class="details-history-body">
-            <dl class="details-info-list details-compact-info-list">
-              <div class="details-info-row">
-                <dt>Assistance Case Created</dt>
-                <dd>{{ item.created_at | date:'MMM d, y, h:mm a' }}</dd>
-              </div>
-              <div class="details-info-row" *ngIf="item.reviewed_at">
-                <dt>Reviewed At</dt>
-                <dd>{{ item.reviewed_at | date:'MMM d, y, h:mm a' }}</dd>
-              </div>
-              <div class="details-info-row" *ngIf="item.resolved_at">
-                <dt>Resolved At</dt>
-                <dd>{{ item.resolved_at | date:'MMM d, y, h:mm a' }}</dd>
-              </div>
-            </dl>
-
-            <div class="details-history-notes">
-              <h3>Staff Assessment Notes</h3>
-              <p *ngIf="item.staff_notes; else noAssessmentNotes" class="details-notes-text">
-                {{ item.staff_notes }}
-              </p>
-              <ng-template #noAssessmentNotes>
-                <p class="details-muted-text">No staff assessment notes recorded yet.</p>
-              </ng-template>
-              <p class="details-inline-note">
-                Earlier notes are preserved when new assessments or status updates are saved.
-              </p>
+            {{ locationMapOpen ? 'Hide Location Map' : 'View on Map' }}
+          </button>
+          <div
+            *ngIf="locationMapOpen && hasCoordinates(item)"
+            id="assistanceLocationMap"
+            class="details-location-map-panel">
+            <div
+              #leafletLocationMap
+              class="details-leaflet-map"
+              role="region"
+              aria-label="Interactive OpenStreetMap showing the reported animal location"
+              style="display: block; width: 100%; height: 280px; min-height: 280px; background: #e8eee8;">
+            </div>
+            <div class="details-location-map-caption">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              Reported location ({{ item.latitude }}, {{ item.longitude }})
             </div>
           </div>
-        </details>
+          <p *ngIf="mapErrorMessage" class="details-update-feedback details-update-error" role="alert">
+            {{ mapErrorMessage }}
+          </p>
+        </div>
       </section>
 
-      <!-- 5. Rescue evidence remains visible on completed assistance cases. -->
+      <!-- 6. Compact description section; open by default, collapsible by tap. -->
+      <section class="details-section details-compact-section details-mini-card details-description-card"
+               aria-label="Case description">
+        <div class="details-mini-card-icon" aria-hidden="true">
+          <ion-icon name="document-text-outline"></ion-icon>
+        </div>
+        <div class="details-mini-card-body">
+          <details class="details-content-collapse" open>
+            <summary class="details-content-toggle">
+              <h2>Case Description</h2>
+            </summary>
+            <div class="details-content-body">
+              <p class="details-paragraph">{{ item.description || 'No description provided.' }}</p>
+              <div class="details-description-extra">
+                <strong>Assistance needed:</strong> {{ getReasonLabel(item.assistance_reason) }}
+                <ng-container *ngIf="item.assistance_details">
+                  <p class="details-paragraph"><strong>Additional details:</strong> {{ item.assistance_details }}</p>
+                </ng-container>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Rescue documentation is the single completion record shown to staff. -->
       <section
         *ngIf="item.status === 'rescued'"
         class="details-section details-compact-section details-rescue-record"
@@ -316,8 +247,8 @@
             <dd>{{ item.rescued_at ? (item.rescued_at | date:'MMM d, y, h:mm a') : 'Not available' }}</dd>
           </div>
           <div class="details-info-row">
-            <dt>Completed By (Staff ID)</dt>
-            <dd>{{ item.rescued_by_user_id != null ? ('#' + item.rescued_by_user_id) : 'Not available' }}</dd>
+            <dt>Completed By</dt>
+            <dd>{{ $any(item).rescued_by_name || 'Not available' }}</dd>
           </div>
           <div class="details-info-row">
             <dt>Rescue / Assistance Note</dt>
@@ -565,7 +496,7 @@
 
     <footer class="details-footer">
       <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-      PawConnect · Municipal Veterinary Office
+      PawConnect · Barangay Staff
     </footer>
   </main>
 </ion-content>

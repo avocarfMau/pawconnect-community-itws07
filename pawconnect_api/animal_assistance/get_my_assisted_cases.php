@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// PAWCONNECT — MUNICIPAL VETERINARY OFFICE (STAFF ONLY)
+// PAWCONNECT — BARANGAY STAFF (STAFF ONLY)
 // MY ASSISTED CASES API
 //
 // Place this file in the SAME folder as the working get_cases.php:
