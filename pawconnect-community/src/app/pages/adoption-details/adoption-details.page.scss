@@ -1563,3 +1563,423 @@ ion-header.adoption-details-ion-header::before {
 ion-toolbar.adoption-details-toolbar {
   box-shadow: none !important;
 }
+
+/* ============================================================
+   PAWCONNECT | ADOPTION DETAILS — FINAL VISUAL REFINEMENTS
+   Matches the Pet Adoption feed while preserving existing
+   Angular/Ionic classes, gallery behavior, and request states.
+   ============================================================ */
+:host {
+  --adoption-primary: #2d8038;
+  --adoption-primary-hover: #277232;
+  --adoption-primary-active: #23692e;
+  --adoption-ink: #1f4230;
+  --adoption-muted: #68796d;
+  --adoption-line: #dce9df;
+}
+
+ion-content.adoption-details-content {
+  --background: #f5f9f6;
+}
+
+.details-container.redesigned-details {
+  max-width: 680px;
+  padding-top: 18px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+}
+
+/* The updated HTML has a single header in ion-header. */
+.adoption-details-toolbar .back-button {
+  color: var(--adoption-primary);
+}
+
+.pet-hero-card,
+.info-panel,
+.adoption-action-panel,
+.adoption-result-panel {
+  border: 1px solid var(--adoption-line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 14px rgba(24, 68, 39, 0.045);
+}
+
+.pet-hero-card {
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+/* Fill the gallery edge-to-edge; fullscreen viewer still shows the entire photo. */
+.pet-hero-gallery,
+.pet-hero-gallery .gallery-photo-button {
+  background: #e8f0e9;
+}
+
+.pet-hero-gallery .gallery-photo {
+  display: block;
+  width: 100%;
+  height: 265px;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: center;
+}
+
+.pet-hero-card .gallery-dots {
+  background: #fff;
+}
+
+.pet-hero-card .gallery-dot.active {
+  background: var(--adoption-primary);
+}
+
+.pet-profile-summary {
+  padding: 18px;
+}
+
+.pet-profile-summary .pet-title-row {
+  gap: 10px;
+  align-items: center;
+}
+
+.pet-profile-summary .pet-title-row h2 {
+  color: var(--adoption-ink);
+  line-height: 1.2;
+}
+
+.pet-profile-tags {
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.pet-profile-tags .pet-tag {
+  background: #f0f6f1;
+  border: 1px solid #dce9df;
+  color: #365f43;
+}
+
+.pet-profile-summary .profile-meta-row {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-color: #e8eee9;
+}
+
+.pet-profile-summary .profile-meta-row strong,
+.details-section-heading h2 {
+  color: var(--adoption-ink);
+}
+
+.info-panel,
+.adoption-action-panel,
+.adoption-result-panel {
+  margin-bottom: 14px;
+  padding: 18px;
+}
+
+.info-panel .description-text,
+.adoption-action-panel p,
+.adoption-result-panel p {
+  color: var(--adoption-muted);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.details-section-heading > ion-icon,
+.adoption-request-heading > ion-icon,
+.location-detail-card > ion-icon {
+  color: var(--adoption-primary);
+}
+
+.location-detail-card {
+  border-color: #e0ece3;
+  background: #f6faf7;
+}
+
+.adoption-request-form .form-group textarea {
+  border: 1px solid #d5e5d9;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--adoption-ink);
+}
+
+.adoption-request-form .form-group textarea:focus {
+  border-color: var(--adoption-primary);
+  outline: 2px solid rgba(45, 128, 56, .12);
+  outline-offset: 0;
+}
+
+.adoption-action-panel .request-button,
+.adoption-result-panel .my-adoptions-button,
+.adoption-details-content .my-adoptions-button {
+  --background: var(--adoption-primary);
+  --background-hover: var(--adoption-primary-hover);
+  --background-activated: var(--adoption-primary-active);
+  --color: #fff;
+  --border-radius: 12px;
+  --box-shadow: none;
+  min-height: 48px;
+  font-weight: 700;
+}
+
+/* Ionic outline buttons remain outlined rather than filled. */
+.adoption-details-content ion-button[fill='outline'] {
+  --background: transparent;
+  --color: var(--adoption-primary);
+  --border-color: var(--adoption-primary);
+  --border-width: 1.5px;
+  --border-style: solid;
+  --border-radius: 12px;
+  --box-shadow: none;
+}
+
+@media (max-width: 400px) {
+  .details-container.redesigned-details {
+    padding: 14px 12px calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .pet-hero-gallery .gallery-photo {
+    height: 250px;
+  }
+
+  .pet-profile-summary,
+  .info-panel,
+  .adoption-action-panel,
+  .adoption-result-panel {
+    padding: 16px 14px;
+  }
+}
+
+@media (min-width: 600px) {
+  .pet-hero-gallery .gallery-photo {
+    height: 340px;
+  }
+}
+
+
+/* ============================================================
+   COMPACT MOBILE PET DETAILS + SUBMITTED REQUEST
+   Matches adoption_details_compact_request_updated.html.txt.
+   Layout only: no changes to Angular behavior or request states.
+   ============================================================ */
+
+/* Keep separate information cards but reduce vertical whitespace. */
+.details-container.redesigned-details {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+.pet-profile-summary {
+  padding: 16px;
+}
+.pet-profile-summary .pet-title-row {
+  margin-bottom: 8px;
+}
+.pet-profile-tags {
+  margin: 10px 0 12px;
+}
+.pet-profile-summary .profile-meta-row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.info-panel {
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.info-panel .details-section-heading {
+  margin-bottom: 9px;
+}
+.info-panel .description-text {
+  margin: 0;
+  line-height: 1.5;
+}
+.info-panel .details-section-heading > ion-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  font-size: 21px;
+  color: #2d8038;
+}
+
+/* Compact confirmation card, replacing the tall centered layout. */
+.adoption-result-panel.compact-request-result {
+  padding: 16px;
+  margin-top: 0;
+  margin-bottom: 12px;
+  text-align: left;
+  display: block;
+  min-height: 0;
+}
+.compact-request-result .compact-request-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  margin: 0 0 9px;
+}
+.compact-request-result .compact-request-heading > ion-icon {
+  display: block;
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  margin: 1px 0 0;
+  font-size: 25px;
+  color: #2d8038;
+}
+.compact-request-result .compact-request-copy {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+.compact-request-result .compact-request-copy h2 {
+  margin: 0 0 7px;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  text-align: left;
+}
+.compact-request-result .compact-request-copy .adoption-status {
+  display: inline-flex;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.adoption-result-panel.compact-request-result .compact-request-message {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+.adoption-result-panel.compact-request-result .compact-request-button {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  height: 42px;
+  margin: 0;
+  font-size: 13px;
+  --min-height: 42px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --border-radius: 10px;
+}
+
+@media (max-width: 400px) {
+  .details-container.redesigned-details {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+  .pet-profile-summary,
+  .info-panel {
+    padding: 14px;
+  }
+  .adoption-result-panel.compact-request-result {
+    padding: 14px;
+  }
+  .compact-request-result .compact-request-copy h2 {
+    font-size: 15px;
+  }
+}
+
+
+/* ================================================
+   FINAL FIX: KEEP LAST CARD ABOVE PHONE NAVIGATION
+   Ionic scroll viewport + Android gesture safe area
+   ================================================ */
+ion-content.adoption-details-content {
+  --padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  --offset-bottom: 0px;
+}
+
+/* Make the scrollable content itself taller than the last card.
+   This avoids a clipped CTA on devices with a gesture bar. */
+ion-content.adoption-details-content::part(scroll) {
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  box-sizing: border-box;
+}
+
+.adoption-details-content .details-container.redesigned-details {
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Leave a visible area after the final card even if parent padding
+   is overridden by another Ionic/mobile style. */
+.adoption-details-content .details-container.redesigned-details::after {
+  content: '';
+  display: block;
+  height: 24px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   PAWCONNECT — SMALLER SUBMITTED REQUEST CARD (VISUAL ONLY)
+   Keep all existing headings, status labels, messages and CTA text.
+   Scoped to submitted state; does not affect other information cards.
+   ============================================================ */
+.adoption-details-content .adoption-result-panel.submitted-section {
+  padding: 12px 14px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  min-height: 0;
+}
+
+.adoption-details-content .adoption-result-panel.submitted-section.compact-request-result {
+  text-align: left;
+}
+
+.adoption-details-content .compact-request-result .compact-request-heading {
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: flex-start;
+}
+
+.adoption-details-content .compact-request-result .compact-request-heading > ion-icon {
+  flex-basis: 22px;
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+  margin-top: 1px;
+}
+
+.adoption-details-content .compact-request-result .compact-request-copy h2 {
+  font-size: 15px;
+  line-height: 1.25;
+  margin: 0 0 5px;
+}
+
+.adoption-details-content .compact-request-result .compact-request-copy .adoption-status {
+  padding: 4px 9px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.adoption-details-content .adoption-result-panel.compact-request-result .compact-request-message {
+  margin: 0 0 9px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.adoption-details-content .adoption-result-panel.compact-request-result .compact-request-button,
+.adoption-details-content .adoption-result-panel.compact-request-result .my-adoptions-button {
+  min-height: 40px;
+  height: 40px;
+  margin: 0;
+  --min-height: 40px;
+  --border-radius: 10px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  font-size: 12px;
+}
+
+/* Fallback for a submitted card without the compact-request-result class. */
+.adoption-details-content .adoption-result-panel.submitted-section:not(.compact-request-result) > ion-icon {
+  font-size: 27px;
+  margin-bottom: 5px;
+}
+.adoption-details-content .adoption-result-panel.submitted-section:not(.compact-request-result) h2 {
+  margin-bottom: 6px;
+  font-size: 16px;
+  line-height: 1.3;
+}
+.adoption-details-content .adoption-result-panel.submitted-section:not(.compact-request-result) p {
+  margin-bottom: 9px;
+  line-height: 1.4;
+}

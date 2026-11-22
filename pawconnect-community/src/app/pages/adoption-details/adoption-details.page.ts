@@ -115,6 +115,11 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
   message = '';
 
+  // Adoption application and final confirmation dialogs.
+  adoptionModalOpen = false;
+  adoptionConfirmationOpen = false;
+  responsibilityAccepted = false;
+
   submitting = false;
 
   requested = false;
@@ -180,6 +185,9 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
       this.existingRequestStatus = null;
       this.requestUncertain = false;
       this.message = '';
+      this.responsibilityAccepted = false;
+      this.adoptionModalOpen = false;
+      this.adoptionConfirmationOpen = false;
       this.successMessage = '';
       void this.load();
     });
@@ -199,6 +207,10 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
   ionViewDidLeave(): void {
     this.viewerOpen = false;
+    if (!this.submitting) {
+      this.adoptionModalOpen = false;
+      this.adoptionConfirmationOpen = false;
+    }
   }
 
   // =====================================
@@ -267,6 +279,10 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
       if (!samePet) {
         this.post = null;
+        this.adoptionModalOpen = false;
+        this.adoptionConfirmationOpen = false;
+        this.responsibilityAccepted = false;
+        this.message = '';
         this.photoIndex = 0;
         this.viewerOpen = false;
         this.requested = false;
@@ -364,6 +380,8 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
         this.updateUI(() => {
           if (!this.requested) {
             this.requestUncertain = true;
+            this.adoptionConfirmationOpen = false;
+            this.adoptionModalOpen = false;
             this.errorMessage =
               'Unable to check your existing adoption requests. ' +
               'Please view My Adoptions before submitting a new request.';
@@ -517,6 +535,59 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
   }
 
   // =====================================
+  // ADOPTION REQUEST MODAL FLOW
+  // =====================================
+
+  private canApply(): boolean {
+    const pet = this.post;
+    return !!pet && !pet.is_owner && pet.status === 'available' &&
+      !this.submitting && !this.loading && !this.requested &&
+      !this.requestUncertain && !this.destroyed;
+  }
+
+  openAdoptionRequestModal(): void {
+    if (!this.canApply()) return;
+    void this.haptics.light();
+    this.errorMessage = '';
+    this.adoptionConfirmationOpen = false;
+    this.adoptionModalOpen = true;
+  }
+
+  closeAdoptionRequestModal(): void {
+    if (this.submitting) return;
+    void this.haptics.light();
+    this.adoptionConfirmationOpen = false;
+    this.adoptionModalOpen = false;
+  }
+
+  prepareAdoptionRequest(): void {
+    if (!this.canApply() || !this.adoptionModalOpen) return;
+    const length = this.message.trim().length;
+    if (length < 10 || length > 2000 || !this.responsibilityAccepted) {
+      void this.haptics.error();
+      this.errorMessage = 'Enter a message of 10–2,000 characters and accept the responsibility acknowledgment.';
+      return;
+    }
+    void this.haptics.light();
+    this.errorMessage = '';
+    this.adoptionConfirmationOpen = true;
+  }
+
+  cancelAdoptionConfirmation(): void {
+    if (this.submitting) return;
+    void this.haptics.light();
+    this.adoptionConfirmationOpen = false;
+    // Return to the application form with the message and checkbox intact.
+    this.adoptionModalOpen = true;
+  }
+
+  confirmAdoptionSubmission(): void {
+    if (!this.adoptionModalOpen || !this.adoptionConfirmationOpen ||
+        !this.responsibilityAccepted || !this.canApply()) return;
+    void this.sendRequest();
+  }
+
+  // =====================================
   // SUBMIT ADOPTION REQUEST
   // =====================================
 
@@ -534,6 +605,9 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
       this.loading ||
       this.requested ||
       this.requestUncertain ||
+      !this.adoptionModalOpen ||
+      !this.adoptionConfirmationOpen ||
+      !this.responsibilityAccepted ||
       this.destroyed
     ) {
       return;
@@ -550,15 +624,7 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
       return;
     }
 
-    // Confirm before sending to prevent accidental applications.
-    const confirmed = window.confirm(
-      `Are you sure you want to submit an adoption request for ${pet.pet_name}?`
-    );
-
-    if (!confirmed || this.destroyed) {
-      return;
-    }
-
+    // The user already confirmed in our custom modal. No native alert.
     void this.haptics.medium();
 
     const adoptionId = Number(pet.id);
@@ -592,12 +658,16 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
         if (response.success) {
           void this.haptics.success();
           this.requested = true;
+          this.adoptionConfirmationOpen = false;
+          this.adoptionModalOpen = false;
+          this.responsibilityAccepted = false;
           this.existingRequestStatus = 'pending';
           this.requestUncertain = false;
           this.successMessage =
             'Adoption request submitted successfully! You can track your application in My Adoptions.';
         } else {
           void this.haptics.error();
+          this.adoptionConfirmationOpen = false;
           this.errorMessage =
             response.message || 'Unable to submit adoption request.';
         }
@@ -614,6 +684,7 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
       void this.haptics.error();
       this.updateUI(() => {
+        this.adoptionConfirmationOpen = false;
         const status = error?.status;
         const serverMessage = String(error?.error?.message || '').trim();
         const lowerMessage = serverMessage.toLowerCase();
@@ -632,12 +703,16 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
           if (unavailableStatus && this.post) {
             this.post = { ...this.post, status: unavailableStatus };
+            this.adoptionConfirmationOpen = false;
+            this.adoptionModalOpen = false;
             this.requestUncertain = false;
             this.errorMessage = serverMessage;
           } else if (lowerMessage.includes('already requested')) {
             // Server confirms a previous request exists. Do not treat
             // a known duplicate as an uncertain submission.
             this.requested = true;
+            this.adoptionConfirmationOpen = false;
+            this.adoptionModalOpen = false;
             this.requestUncertain = false;
             this.successMessage =
               'You have already submitted an adoption request for this pet. ' +
@@ -645,6 +720,8 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
             this.errorMessage = '';
           } else {
             this.requestUncertain = true;
+            this.adoptionConfirmationOpen = false;
+            this.adoptionModalOpen = false;
             this.errorMessage =
               serverMessage || 'Please check My Adoptions before trying again.';
           }
@@ -704,9 +781,11 @@ export class AdoptionDetailsPage implements OnInit, OnDestroy {
 
     void this.haptics.light();
 
-    this.router.navigateByUrl(
-      '/my-adoptions'
-    );
+    // Pet owners should land on My Posts. Applicants should land
+    // directly on Sent Requests to track their application.
+    this.router.navigate(['/my-adoptions'], {
+      queryParams: this.post?.is_owner ? {} : { tab: 'sent' }
+    });
 
   }
 

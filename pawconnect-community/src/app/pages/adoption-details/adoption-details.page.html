@@ -6,7 +6,7 @@
 
 <ion-header class="adoption-details-ion-header" mode="md">
   <ion-toolbar class="adoption-details-toolbar">
-      <div class="page-header details-page-header">
+    <div class="page-header details-page-header">
   
         <button
           type="button"
@@ -24,7 +24,7 @@
           <p>Meet your potential new companion</p>
         </div>
   
-      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -35,29 +35,7 @@
 
   <div class="details-container redesigned-details">
 
-    <!-- =====================================
-         PAGE HEADER
-    ===================================== -->
-
-    <header class="page-header details-page-header">
-
-      <button
-        type="button"
-        class="back-button"
-        (click)="goBack()"
-        aria-label="Go back"
-      >
-        <ion-icon
-          name="arrow-back-outline"
-        ></ion-icon>
-      </button>
-
-      <div class="header-text">
-        <h1>Pet Details</h1>
-        <p>Meet your potential new companion</p>
-      </div>
-
-    </header>
+    <!-- Single fixed header lives in ion-header above. -->
 
     <!-- =====================================
          LOADING STATE
@@ -335,7 +313,7 @@
         <div class="details-section-heading"><ion-icon name="paw-outline" aria-hidden="true"></ion-icon><h2>About This Pet</h2></div>
 
         <p class="description-text">
-          {{ pet.description }}
+          {{ pet.description || 'No description provided.' }}
         </p>
 
       </section>
@@ -423,128 +401,102 @@
 
       </section>
 
-      <!-- =====================================
-           ADOPTION REQUEST FORM
-      ===================================== -->
+             <!-- =====================================
+            ADOPTION REQUEST ENTRY (COMPACT)
+       ===================================== -->
+       <section class="details-section request-section adoption-action-panel"
+         *ngIf="!loading && !pet.is_owner && pet.status === 'available' && !requested && !requestUncertain">
+         <div class="request-header adoption-request-heading">
+           <ion-icon name="heart-outline"></ion-icon>
+           <div>
+             <h2>Interested in Adopting?</h2>
+             <p>Give this pet a loving home. Tell the owner why you'd like to adopt.</p>
+           </div>
+         </div>
+         <ion-button type="button" expand="block" class="request-button"
+           (click)="openAdoptionRequestModal()" [disabled]="submitting">
+           <ion-icon name="heart-outline" slot="start"></ion-icon>
+           Submit Adoption Request
+         </ion-button>
+       </section>
 
-      <section
-        class="details-section request-section adoption-action-panel"
-        *ngIf="
-          !loading &&
-          !pet.is_owner &&
-          pet.status === 'available' &&
-          !requested &&
-          !requestUncertain
-        "
-      >
+       <!-- =====================================
+            ADOPTION REQUEST MODAL
+            Submit opens confirmation; no API request until final approval.
+       ===================================== -->
+       <div *ngIf="adoptionModalOpen" role="presentation"
+         (click)="closeAdoptionRequestModal()"
+         style="position:fixed; inset:0; z-index:10010; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(11,29,18,.68);">
+         <section role="dialog" aria-modal="true" aria-labelledby="adoption-modal-title"
+           (click)="$event.stopPropagation()"
+           style="box-sizing:border-box; width:100%; max-width:480px; max-height:88dvh; overflow-y:auto; overscroll-behavior:contain; padding:20px; border-radius:17px; background:#fff; box-shadow:0 18px 60px rgba(0,0,0,.22);">
+           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;">
+             <div>
+               <h2 id="adoption-modal-title" style="margin:0 0 5px; font-size:20px; color:#1b4332;">Adoption Request</h2>
+               <p style="margin:0; font-size:12px; color:#637368; line-height:1.5;">Apply to adopt {{ pet.pet_name || 'this pet' }}.</p>
+             </div>
+             <button type="button" aria-label="Close adoption request" [disabled]="submitting"
+               (click)="closeAdoptionRequestModal()"
+               style="display:grid; place-items:center; flex-shrink:0; width:34px; height:34px; border:0; border-radius:9px; background:#f0f4f1; color:#315640;">
+               <ion-icon name="close-outline" style="font-size:21px;"></ion-icon>
+             </button>
+           </div>
+           <form #requestForm="ngForm" (ngSubmit)="prepareAdoptionRequest()">
+             <div class="form-group" style="margin-top:18px;">
+               <label for="adoptionMessage">Adoption Message <span class="required">*</span></label>
+               <textarea id="adoptionMessage" name="adoptionMessage" [(ngModel)]="message"
+                 rows="5" minlength="10" maxlength="2000" required [disabled]="submitting"
+                 placeholder="Introduce yourself and explain why you would like to adopt this pet..."></textarea>
+               <small>Minimum 10 characters. Maximum 2,000 characters.</small>
+             </div>
+             <label style="display:flex; align-items:flex-start; gap:10px; margin:16px 0; font-size:12px; line-height:1.6; color:#415449; cursor:pointer;">
+               <input type="checkbox" name="responsibilityAccepted" [(ngModel)]="responsibilityAccepted"
+                 [disabled]="submitting" required
+                 style="flex-shrink:0; width:18px; height:18px; margin:2px 0 0; accent-color:#2d8038;" />
+               <span>I understand that adopting a pet is a long-term responsibility and that my request is subject to the pet owner's approval.</span>
+             </label>
+             <div class="adoption-reminder">
+               <ion-icon name="information-circle-outline"></ion-icon>
+               <p>Submitting a request does not automatically approve the adoption. The pet owner will review your application before deciding.</p>
+             </div>
+             <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:18px;">
+               <ion-button type="button" fill="outline" [disabled]="submitting"
+                 (click)="closeAdoptionRequestModal()"
+                 style="margin:0; min-height:50px; --color:#2d8038; --border-color:#2d8038; --border-width:1px; --border-style:solid; --border-radius:10px; text-transform:none;">Cancel</ion-button>
+               <ion-button type="submit" class="request-button"
+                 [disabled]="submitting || !requestForm.valid || message.trim().length < 10 || !responsibilityAccepted"
+                 style="margin:0; min-height:50px; --border-radius:10px; text-transform:none; font-size:13px;">
+                 Continue
+               </ion-button>
+             </div>
+           </form>
+         </section>
+       </div>
 
-        <div class="request-header adoption-request-heading">
+       <!-- FINAL SUBMISSION CONFIRMATION -->
+       <div *ngIf="adoptionConfirmationOpen" role="presentation"
+         (click)="cancelAdoptionConfirmation()"
+         style="position:fixed; inset:0; z-index:10011; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(11,29,18,.72);">
+         <section role="dialog" aria-modal="true" aria-labelledby="adoption-confirm-title"
+           (click)="$event.stopPropagation()"
+           style="box-sizing:border-box; width:100%; max-width:420px; padding:22px; border-radius:17px; background:white; box-shadow:0 18px 60px rgba(0,0,0,.22);">
+           <h2 id="adoption-confirm-title" style="margin:0 0 10px; font-size:19px; color:#1b4332;">Submit Adoption Request?</h2>
+           <p style="margin:0 0 16px; font-size:13px; line-height:1.65; color:#52665a;">Send your adoption message to the pet owner? Your request will be marked as <strong>Pending</strong> until the owner reviews it.</p>
+           <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;">
+             <ion-button type="button" fill="outline" [disabled]="submitting"
+               (click)="cancelAdoptionConfirmation()"
+               style="margin:0; min-height:50px; --color:#2d8038; --border-color:#2d8038; --border-width:1px; --border-style:solid; --border-radius:10px; text-transform:none;">Cancel</ion-button>
+             <ion-button type="button" class="request-button" [disabled]="submitting"
+               (click)="confirmAdoptionSubmission()"
+               style="margin:0; min-height:50px; --border-radius:10px; text-transform:none; font-size:13px;">
+               <ion-spinner *ngIf="submitting" slot="start" name="crescent"></ion-spinner>
+               {{ submitting ? 'Submitting...' : 'Submit Request' }}
+             </ion-button>
+           </div>
+         </section>
+       </div>
 
-          <ion-icon
-            name="heart-outline"
-          ></ion-icon>
-
-          <div>
-
-            <h2>Interested in Adopting?</h2>
-
-            <p>
-              Send an adoption request to
-              express your interest in giving
-              this pet a loving home.
-            </p>
-
-          </div>
-
-        </div>
-
-        <!-- REQUEST FORM -->
-
-        <form
-          class="adoption-request-form"
-          #requestForm="ngForm"
-          (ngSubmit)="sendRequest()"
-        >
-
-          <div class="form-group">
-
-            <label for="adoptionMessage">
-              Adoption Message
-              <span class="required">*</span>
-            </label>
-
-            <textarea
-              id="adoptionMessage"
-              name="adoptionMessage"
-              [(ngModel)]="message"
-              rows="6"
-              minlength="10"
-              maxlength="2000"
-              required
-              [disabled]="submitting"
-              placeholder="Introduce yourself and explain why you would like to adopt this pet..."
-            ></textarea>
-
-            <small>
-              Minimum 10 characters.
-              Maximum 2,000 characters.
-            </small>
-
-          </div>
-
-          <!-- REMINDER -->
-
-          <div class="adoption-reminder">
-
-            <ion-icon
-              name="information-circle-outline"
-            ></ion-icon>
-
-            <p>
-              Submitting a request does not
-              automatically approve the adoption.
-              The pet owner will review your
-              application before deciding.
-            </p>
-
-          </div>
-
-          <!-- SUBMIT BUTTON -->
-
-          <ion-button
-            type="submit"
-            expand="block"
-            class="request-button"
-            [disabled]="
-              submitting ||
-              !requestForm.valid ||
-              message.trim().length < 10
-            "
-          >
-
-            <ion-spinner
-              *ngIf="submitting"
-              name="crescent"
-              slot="start"
-            ></ion-spinner>
-
-            <ion-icon
-              *ngIf="!submitting"
-              name="heart-outline"
-              slot="start"
-            ></ion-icon>
-
-            {{ submitting
-              ? 'Submitting Request...'
-              : 'Submit Adoption Request' }}
-
-          </ion-button>
-
-        </form>
-
-      </section>
-
-      <!-- =====================================
+<!-- =====================================
            EXISTING ADOPTION REQUEST
            The TypeScript checks sent requests on page entry.
            A resident who already applied cannot apply twice.
@@ -803,12 +755,15 @@
       class="viewer-body"
       (touchstart)="onTouchStart($event)"
       (touchend)="onTouchEnd($event)"
-      (click)="$event.stopPropagation()"
+      (click)="viewerOpen = false"
+      style="display: flex; align-items: center; justify-content: center;"
     >
 
       <img
         *ngIf="photoUrl as enlargedPhoto"
         class="viewer-image"
+        style="width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain;"
+        (click)="$event.stopPropagation()"
         [src]="enlargedPhoto"
         [alt]="post.pet_name || 'Pet photo'"
       />
@@ -819,7 +774,7 @@
         type="button"
         class="viewer-arrow previous"
         *ngIf="photos.length > 1"
-        (click)="movePhoto(-1)"
+        (click)="movePhoto(-1); $event.stopPropagation()"
         aria-label="Previous photo"
       >
 
@@ -835,7 +790,7 @@
         type="button"
         class="viewer-arrow next"
         *ngIf="photos.length > 1"
-        (click)="movePhoto(1)"
+        (click)="movePhoto(1); $event.stopPropagation()"
         aria-label="Next photo"
       >
 
