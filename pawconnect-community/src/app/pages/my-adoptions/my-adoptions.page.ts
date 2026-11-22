@@ -86,10 +86,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   private readonly adoption = inject(PetAdoptionService);
   private readonly router = inject(Router);
-<<<<<<< HEAD:pawconnect-community/src/app/pages/my-adoptions/my-adoptions.page.ts
-=======
   private readonly activatedRoute = inject(ActivatedRoute);
->>>>>>> af5cb12 (Update pet adoption request management):pawrescue-community/src/app/pages/my-adoptions/my-adoptions.page.ts
   private readonly haptics = inject(HapticsService);
   private readonly zone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -154,6 +151,16 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   successMessage = '';
   viewerPost: AdoptionPost | null = null;
 
+  // Currently opened Requests Received details modal.
+  detailRequest: AdoptionRequest | null = null;
+
+  // Custom confirmation modal state (rendered by the next HTML update).
+  confirmationOpen = false;
+  confirmationTitle = '';
+  confirmationMessage = '';
+  confirmationActionLabel = 'Confirm';
+  private confirmationResolver: ((confirmed: boolean) => void) | null = null;
+
   // The owner must provide pickup arrangements before an approval is sent.
   // The existing Approve button opens this form; the next HTML update
   // will display it using the fields and methods below.
@@ -175,6 +182,54 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   };
   rescheduleReason = '';
   rescheduleError = '';
+
+  // Ask for confirmation without using a native browser dialog.
+  // No API mutation runs until the user explicitly confirms in the modal.
+  private requestConfirmation(title: string, message: string, actionLabel: string): Promise<boolean> {
+    if (this.destroyed || this.busy || this.confirmationOpen) {
+      return Promise.resolve(false);
+    }
+    void this.haptics.light();
+    this.updateUI(() => {
+      this.confirmationTitle = title;
+      this.confirmationMessage = message;
+      this.confirmationActionLabel = actionLabel;
+      this.confirmationOpen = true;
+    });
+    return new Promise<boolean>(resolve => {
+      this.confirmationResolver = resolve;
+    });
+  }
+
+  confirmModalAction(): void {
+    this.resolveConfirmation(true);
+  }
+
+  cancelConfirmation(): void {
+    this.resolveConfirmation(false);
+  }
+
+  private resolveConfirmation(confirmed: boolean): void {
+    if (!this.confirmationOpen) return;
+    const resolve = this.confirmationResolver;
+    this.confirmationResolver = null;
+    this.updateUI(() => {
+      this.confirmationOpen = false;
+      this.confirmationTitle = '';
+      this.confirmationMessage = '';
+      this.confirmationActionLabel = 'Confirm';
+    });
+    if (confirmed) {
+      void this.haptics.medium();
+    } else {
+      void this.haptics.light();
+    }
+    resolve?.(confirmed);
+  }
+
+  private dismissConfirmationOnExit(): void {
+    if (this.confirmationOpen) this.resolveConfirmation(false);
+  }
 
   // Philippines uses UTC+08:00 year-round. Build date/time strings in
   // Philippine local time regardless of the device's configured zone.
@@ -273,7 +328,9 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
     this.requestVersions.received++;
     this.requestVersions.sent++;
     this.photoIndexes.clear();
+    this.dismissConfirmationOnExit();
     this.viewerPost = null;
+    this.detailRequest = null;
     this.errorMessage = '';
     this.successMessage = '';
     this.resetPickupForm();
@@ -288,8 +345,6 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.restoreSnapshot();
-<<<<<<< HEAD:pawconnect-community/src/app/pages/my-adoptions/my-adoptions.page.ts
-=======
 
     // Handle both initial notification opens and subsequent taps while
     // Ionic keeps this page alive. Invalid/missing tabs retain the default.
@@ -310,7 +365,6 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       void this.loadTab(requestedTab, true);
     });
 
->>>>>>> af5cb12 (Update pet adoption request management):pawrescue-community/src/app/pages/my-adoptions/my-adoptions.page.ts
     void this.loadAll(false, false);
   }
 
@@ -326,7 +380,10 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave(): void {
+    this.dismissConfirmationOnExit();
+    this.dismissConfirmationOnExit();
     this.viewerPost = null;
+    this.detailRequest = null;
     if (!this.busy) {
       this.resetPickupForm();
       this.resetRescheduleForm();
@@ -384,6 +441,12 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
         this.updateUI(() => {
           if (tab === 'received') {
             this.received = response.requests;
+            // Keep the open modal in sync with refreshed server data.
+            if (this.detailRequest) {
+              this.detailRequest = response.requests.find(
+                item => Number(item.id) === Number(this.detailRequest?.id)
+              ) ?? null;
+            }
           } else {
             this.sent = response.requests;
           }
@@ -477,7 +540,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   // =====================================
 
   setTab(tab: Tab): void {
-    if (this.selectedTab === tab) return;
+    if (this.selectedTab === tab || this.confirmationOpen) return;
     void this.haptics.light();
 
     this.updateUI(() => {
@@ -486,6 +549,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
         this.resetRescheduleForm();
       }
       this.selectedTab = tab;
+      this.detailRequest = null;
       this.successMessage = '';
       this.errorMessage = this.tabErrors[tab];
       this.updateLoading();
@@ -679,9 +743,9 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       'Other pending requests will be rejected. The pet will remain ' +
       'Reserved until its physical handover is confirmed.';
 
-    if (!window.confirm(confirmation)) return;
-    void this.haptics.medium();
+    if (!await this.requestConfirmation('Approve Adoption', confirmation, 'Confirm Approval')) return;
 
+    if (this.destroyed || this.busy || request.status !== 'pending') return;
     await this.submitDecision(request, 'approve', details);
   }
 
@@ -699,11 +763,13 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       return;
     }
 
-    if (!window.confirm(
-      `Reject ${request.requester_name}'s request for ${request.pet_name}?`
+    if (!await this.requestConfirmation(
+      'Reject Adoption Request',
+      `Reject ${request.requester_name}'s request for ${request.pet_name}?`,
+      'Reject Request'
     )) return;
-    void this.haptics.medium();
 
+    if (this.destroyed || this.busy || request.status !== 'pending') return;
     await this.submitDecision(request, 'reject');
   }
 
@@ -880,8 +946,10 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
       (reason ? `Reason: ${reason}\n` : '') +
       '\nThe adoption will remain Approved and the pet will remain Reserved.';
 
-    if (!window.confirm(confirmation)) return;
-    void this.haptics.medium();
+    if (!await this.requestConfirmation('Reschedule Pet Pickup', confirmation, 'Save Schedule')) return;
+
+    if (this.destroyed || this.busy || request.status !== 'approved' ||
+        request.adoption_status !== 'reserved') return;
 
     this.updateUI(() => {
       this.busy = true;
@@ -951,16 +1019,30 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
   // COMPLETE ADOPTION AFTER PHYSICAL HANDOVER
   // =====================================
 
-  async finishAdoption(post: AdoptionPost): Promise<void> {
-    if (this.destroyed || this.busy || this.loading || post.status !== 'reserved') {
+  // Supports the existing Pet Listings action until the HTML is updated,
+  // and the new Confirm Handover action in Requests Received.
+  // Only an approved request for a reserved pet may trigger the new action.
+  async finishAdoption(item: AdoptionPost | AdoptionRequest): Promise<void> {
+    const isRequest = 'adoption_id' in item;
+    const adoptionId = Number(isRequest ? item.adoption_id : item.id);
+    const petName = item.pet_name || 'this pet';
+
+    if (this.destroyed || this.busy || this.loading ||
+        !Number.isFinite(adoptionId) || adoptionId <= 0) return;
+
+    if (isRequest) {
+      if (this.selectedTab !== 'received' || item.status !== 'approved' ||
+          item.adoption_status !== 'reserved') return;
+    } else if (item.status !== 'reserved') {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Has ${post.pet_name} actually been handed over to the approved adopter? Only mark adopted after a completed handover.`
+    const confirmed = await this.requestConfirmation(
+      'Confirm Pet Handover',
+      `Has ${petName} actually been handed over to the approved adopter? Only mark adopted after a completed handover.`,
+      'Confirm Handover'
     );
-    if (!confirmed) return;
-    void this.haptics.medium();
+    if (!confirmed || this.destroyed || this.busy) return;
 
     this.updateUI(() => {
       this.busy = true;
@@ -972,7 +1054,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
     try {
       const response = await firstValueFrom(
-        this.adoption.completeAdoption(post.id).pipe(timeout(20000))
+        this.adoption.completeAdoption(adoptionId).pipe(timeout(20000))
       );
 
       if (!response.success) {
@@ -982,10 +1064,21 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
 
       refreshNeeded = true;
       this.updateUI(() => {
-        this.posts = this.posts.map((item): AdoptionPost =>
-          Number(item.id) === Number(post.id)
-            ? { ...item, status: 'adopted' }
-            : item
+        this.posts = this.posts.map((post): AdoptionPost =>
+          Number(post.id) === adoptionId
+            ? { ...post, status: 'adopted' }
+            : post
+        );
+        // Update the approved request immediately; the server remains the
+        // source of truth when the Received tab refreshes in the background.
+        this.received = this.received.map((request): AdoptionRequest =>
+          Number(request.adoption_id) === adoptionId
+            ? {
+                ...request,
+                adoption_status: 'adopted',
+                status: request.status === 'approved' ? 'completed' : request.status
+              }
+            : request
         );
         this.successMessage = response.message || 'Adoption completed successfully.';
         this.saveSnapshot();
@@ -999,7 +1092,7 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
         this.errorMessage = error?.error?.message ||
           (error?.name === 'TimeoutError'
             ? 'Unable to confirm completion. Check the latest adoption status before trying again.'
-            : 'Unable to confirm completion. Refresh the post before trying again.');
+            : 'Unable to confirm completion. Refresh the request before trying again.');
       });
     } finally {
       if (!this.destroyed) {
@@ -1007,6 +1100,34 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
         if (refreshNeeded) this.refreshAfterMutation();
       }
     }
+  }
+
+  // =====================================
+  // MODAL AND PHOTO VIEWER HAPTIC FEEDBACK
+  // =====================================
+
+  openRequestDetails(request: AdoptionRequest): void {
+    if (this.destroyed || this.busy) return;
+    void this.haptics.light();
+    this.detailRequest = request;
+  }
+
+  closeRequestDetails(): void {
+    if (!this.detailRequest) return;
+    void this.haptics.light();
+    this.detailRequest = null;
+  }
+
+  openPhotoViewer(post: AdoptionPost): void {
+    if (this.destroyed) return;
+    void this.haptics.light();
+    this.viewerPost = post;
+  }
+
+  closePhotoViewer(): void {
+    if (!this.viewerPost) return;
+    void this.haptics.light();
+    this.viewerPost = null;
   }
 
   // =====================================
@@ -1044,7 +1165,9 @@ export class MyAdoptionsPage implements OnInit, OnDestroy {
     this.requestVersions.posts++;
     this.requestVersions.received++;
     this.requestVersions.sent++;
+    this.dismissConfirmationOnExit();
     this.viewerPost = null;
+    this.detailRequest = null;
     this.resetPickupForm();
     this.resetRescheduleForm();
   }

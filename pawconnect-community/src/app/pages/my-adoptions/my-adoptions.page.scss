@@ -1191,3 +1191,52 @@ ion-content.my-adoptions-content div:has(> section[role="dialog"][aria-modal="tr
     font-size: 10px;
   }
 }
+
+
+/* ============================================================
+   REQUEST DETAILS MODAL — taller actions and full header dimming
+   ============================================================ */
+
+/* Match the final Lost & Found Pets modal treatment exactly:
+   the modal backdrop dims ion-content, while the sibling header
+   uses brightness instead of a second colored pseudo-overlay. */
+:host:has(#received-request-details-title) ion-header.my-adoptions-fixed-header {
+  filter: brightness(0.75) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  pointer-events: none;
+  user-select: none;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+  --border-width: 0 !important;
+}
+
+/* Disable the previous artificial header overlay. */
+:host:has(#received-request-details-title) ion-header.my-adoptions-fixed-header::before {
+  content: none !important;
+}
+
+/* Match the two actions in the request details modal. */
+ion-content.my-adoptions-content section[aria-labelledby="received-request-details-title"] ion-button {
+  height: 52px;
+  min-height: 52px;
+  --min-height: 52px;
+  --border-radius: 10px;
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: none;
+}
+
+ion-content.my-adoptions-content section[aria-labelledby="received-request-details-title"] ion-button[fill="outline"]:not([color="danger"]) {
+  --color: #2d8038;
+  --border-color: #2d8038;
+  --border-width: 1px;
+  --border-style: solid;
+}
+
+ion-content.my-adoptions-content section[aria-labelledby="received-request-details-title"] ion-button.complete-button {
+  --background: #2d8038;
+  --background-hover: #277232;
+  --background-activated: #23692e;
+  --color: #ffffff;
+}

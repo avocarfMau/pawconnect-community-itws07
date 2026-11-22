@@ -41,6 +41,34 @@
   class="my-adoptions-content"
 >
 
+  <!-- Compact links and pickup action touch feedback -->
+  <style>
+    .my-adoptions-content .request-details-link {
+      transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
+      touch-action: manipulation;
+    }
+    .my-adoptions-content .request-details-link:active {
+      background-color: #e8f4eb !important;
+      color: #23692e !important;
+      transform: scale(0.985);
+    }
+    .my-adoptions-content .request-details-link:focus-visible {
+      outline: 2px solid #2d8038;
+      outline-offset: 2px;
+    }
+    .my-adoptions-content .pickup-action-button {
+      min-height: 52px;
+      --min-height: 52px;
+      --padding-top: 12px;
+      --padding-bottom: 12px;
+      transition: transform 120ms ease, filter 120ms ease;
+    }
+    .my-adoptions-content .pickup-action-button:active {
+      transform: scale(0.98);
+      filter: brightness(0.94);
+    }
+  </style>
+
   <div class="my-adoptions-container">
 
 
@@ -258,7 +286,7 @@
             <button
               type="button"
               class="gallery-image-button"
-              (click)="viewerPost = post"
+              (click)="openPhotoViewer(post)"
               aria-label="View enlarged pet photo"
             >
               <img
@@ -364,28 +392,18 @@
 
         <div class="card-actions">
 
-          <ion-button
-            expand="block"
-            fill="outline"
+          <button
+            type="button"
+            class="request-details-link listing-details-link"
             (click)="viewPost(post)"
+            aria-label="View pet listing details"
+            style="display: flex; align-items: center; justify-content: flex-end; gap: 7px; width: 100%; min-height: 44px; padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; color: #2d8038; font-size: 13px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent;"
           >
             View Details
-          </ion-button>
+            <ion-icon name="chevron-forward-outline" aria-hidden="true" style="font-size: 17px;"></ion-icon>
+          </button>
 
-          <ion-button
-            expand="block"
-            class="complete-button"
-            *ngIf="post.status === 'reserved'"
-            (click)="finishAdoption(post)"
-            [disabled]="busy"
-          >
-            <ion-icon
-              name="checkmark-circle-outline"
-              slot="start"
-            ></ion-icon>
 
-            Confirm Handover
-          </ion-button>
 
         </div>
 
@@ -464,98 +482,30 @@
 
         </div>
 
-        <!-- REQUEST MESSAGE -->
-
-        <div class="request-body" style="padding: 14px;">
-
-          <p class="request-label" style="display: flex; align-items: center; gap: 6px; color: #315e3f;">
-            <ion-icon name="chatbubble-ellipses-outline" aria-hidden="true"></ion-icon>
-            Applicant's message
-          </p>
-
-          <p class="request-message" style="margin-bottom: 10px; border-left: 3px solid #c7decf; border-radius: 0 9px 9px 0;">
-            {{ request.message || 'No message provided.' }}
-          </p>
-
-          <p class="request-date" style="display: flex; align-items: center; gap: 5px; padding-top: 10px; border-top: 1px solid #edf1ed;">
+        <!-- COMPACT REQUEST SUMMARY -->
+        <div style="padding: 13px 14px 14px; border-top: 1px solid #edf1ed;">
+          <div style="display: flex; align-items: center; gap: 7px; color: #718078; font-size: 12px; margin-bottom: 10px;">
             <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
-            Requested {{ request.created_at | date:'mediumDate' }}
-          </p>
-
-        </div>
-
-        <!-- APPROVE / REJECT -->
-
-        <div
-          class="request-actions"
-          *ngIf="request.status === 'pending'"
-        >
-
-          <ion-button
-            expand="block"
-            fill="outline"
-            color="danger"
-            (click)="actOnRequest(request, 'reject')"
-            [disabled]="busy"
-          >
-            Reject
-          </ion-button>
-
-          <ion-button
-            expand="block"
-            class="approve-button"
-            (click)="actOnRequest(request, 'approve')"
-            [disabled]="busy"
-          >
-            Approve
-          </ion-button>
-
-        </div>
-
-        <!-- APPROVED APPLICANT: PICKUP ARRANGEMENTS -->
-        <div *ngIf="request.status === 'approved' || request.status === 'completed'">
-          <p class="approved-note" *ngIf="request.status === 'approved'">
-            Applicant approved. The pet is reserved until you confirm the
-            physical handover.
-          </p>
-
-          <section
-            *ngIf="request.meeting_location && request.pickup_date && request.pickup_time"
-            aria-label="Approved pet pickup details"
-            style="margin: 0 14px 14px; padding: 14px; border: 1px solid #cfe6d3; border-radius: 11px; background: #f3faf4;"
-          >
-            <h4 style="margin: 0 0 10px; color: #1b4332; font-size: 14px; font-weight: 700;">
-              Scheduled Pet Pickup
-            </h4>
-            <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere;">
-              <strong>Meeting Location:</strong> {{ request.meeting_location }}
-            </p>
-            <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6;">
-              <strong>Pickup Date:</strong> {{ request.pickup_date | date:'mediumDate' }}
-            </p>
-            <p style="margin: 0; color: #415449; font-size: 12px; line-height: 1.6;">
-              <strong>Pickup Time:</strong> {{ request.pickup_time.slice(0, 5) }} (Philippine time)
-            </p>
-          </section>
-
-          <!-- Owner can reschedule only an approved request for a reserved pet. -->
-          <div
-            class="request-actions"
-            *ngIf="request.status === 'approved' && request.adoption_status === 'reserved'"
-            style="margin: 0 14px 14px;"
-          >
-            <ion-button
-              expand="block"
-              fill="outline"
-              color="success"
-              (click)="openRescheduleForm(request)"
-              [disabled]="busy"
-              style="width: 100%; margin: 0; --border-radius: 10px; text-transform: none;"
-            >
-              <ion-icon name="refresh-outline" slot="start"></ion-icon>
-              Reschedule Pickup
-            </ion-button>
+            <span>Requested {{ request.created_at | date:'mediumDate' }}</span>
           </div>
+
+          <div *ngIf="(request.status === 'approved' || request.status === 'completed') && request.pickup_date && request.pickup_time"
+               style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; margin-bottom: 12px; border-radius: 10px; background: #f2f8f3; border: 1px solid #e0eee3;">
+            <ion-icon name="calendar-outline" style="font-size: 20px; color: #2d8038; flex-shrink: 0;"></ion-icon>
+            <div style="min-width: 0;">
+              <div style="font-size: 11px; color: #637368; margin-bottom: 3px;">Scheduled Pickup</div>
+              <div style="font-size: 13px; font-weight: 700; color: #234b31;">
+                {{ request.pickup_date | date:'mediumDate' }} · {{ request.pickup_time.slice(0, 5) }} (PH time)
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="request-details-link" (click)="openRequestDetails(request)"
+                  aria-label="View adoption request details"
+                  style="display: flex; align-items: center; justify-content: flex-end; gap: 7px; width: 100%; min-height: 44px; padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; color: #2d8038; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent;">
+            View Request Details
+            <ion-icon name="chevron-forward-outline" aria-hidden="true" style="font-size: 17px;"></ion-icon>
+          </button>
         </div>
 
       </article>
@@ -639,87 +589,127 @@
 
         </div>
 
-        <div class="request-body" style="padding: 14px;">
-
-          <div class="pet-tags" style="margin-bottom: 10px;">
-            <span class="pet-tag">
-              {{ request.animal_type | titlecase }}
-            </span>
-
-            <span class="pet-tag">
-              Pet status: {{ statusLabel(request.adoption_status) }}
-            </span>
-          </div>
-
-          <p class="request-label" style="display: flex; align-items: center; gap: 6px; color: #315e3f;">
-            <ion-icon name="chatbubble-ellipses-outline" aria-hidden="true"></ion-icon>
-            Your message
-          </p>
-
-          <p class="request-message" style="margin-bottom: 10px; border-left: 3px solid #c7decf; border-radius: 0 9px 9px 0;">
-            {{ request.message || 'No message provided.' }}
-          </p>
-
-          <p class="request-date" style="display: flex; align-items: center; gap: 5px; padding-top: 10px; border-top: 1px solid #edf1ed;">
+        <!-- COMPACT SENT REQUEST SUMMARY -->
+        <div style="padding: 13px 14px 14px; border-top: 1px solid #edf1ed;">
+          <div style="display: flex; align-items: center; gap: 7px; color: #718078; font-size: 12px; margin-bottom: 10px;">
             <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
-            Requested {{ request.created_at | date:'mediumDate' }}
-          </p>
-
-          <!-- APPROVED ADOPTER: PICKUP SCHEDULE -->
-          <ng-container *ngIf="request.status === 'approved' || request.status === 'completed'">
-            <p class="approved-note" *ngIf="request.status === 'approved'">
-              Your adoption request has been approved! Please follow the
-              agreed pickup arrangements below.
-            </p>
-
-            <section
-              *ngIf="request.meeting_location && request.pickup_date && request.pickup_time; else pickupNotAvailable"
-              aria-label="Your pet pickup schedule"
-              style="margin-top: 12px; padding: 14px; border: 1px solid #cfe6d3; border-radius: 11px; background: #f3faf4;"
-            >
-              <h4 style="margin: 0 0 10px; color: #1b4332; font-size: 14px; font-weight: 700;">
-                Your Pet Pickup Schedule
-              </h4>
-              <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere;">
-                <strong>Meeting Location:</strong> {{ request.meeting_location }}
-              </p>
-              <p style="margin: 0 0 8px; color: #415449; font-size: 12px; line-height: 1.6;">
-                <strong>Pickup Date:</strong> {{ request.pickup_date | date:'mediumDate' }}
-              </p>
-              <p style="margin: 0; color: #415449; font-size: 12px; line-height: 1.6;">
-                <strong>Pickup Time:</strong> {{ request.pickup_time.slice(0, 5) }} (Philippine time)
-              </p>
-            </section>
-
-            <ng-template #pickupNotAvailable>
-              <p style="margin: 10px 0 0; color: #637368; font-size: 12px; line-height: 1.6;">
-                The pickup schedule is not available in this view yet.
-                Please refresh the request details.
-              </p>
-            </ng-template>
-
-            <p *ngIf="request.status === 'completed'"
-               style="margin: 12px 0 0; color: #246e37; font-size: 12px; font-weight: 700;">
-              Adoption completed. Thank you for giving this pet a new home!
-            </p>
-          </ng-container>
-
-          <!-- ANOTHER RESIDENT HAS ALREADY BEEN APPROVED -->
-          <p
-            *ngIf="request.status === 'rejected' &&
-                   (request.adoption_status === 'reserved' || request.adoption_status === 'adopted')"
-            style="margin: 12px 0 0; padding: 12px; border-radius: 9px; background: #fff4e8; color: #83521c; font-size: 12px; line-height: 1.6;"
-          >
-            Another applicant has already been approved to adopt this pet.
-            Thank you for your interest.
-          </p>
-
+            <span>Requested {{ request.created_at | date:'mediumDate' }}</span>
+          </div>
+          <div *ngIf="(request.status === 'approved' || request.status === 'completed') && request.pickup_date && request.pickup_time"
+               style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; margin-bottom: 12px; border-radius: 10px; background: #f2f8f3; border: 1px solid #e0eee3;">
+            <ion-icon name="calendar-outline" aria-hidden="true" style="font-size: 20px; color: #2d8038; flex-shrink: 0;"></ion-icon>
+            <div style="min-width: 0;">
+              <div style="font-size: 11px; color: #637368; margin-bottom: 3px;">Scheduled Pickup</div>
+              <div style="font-size: 13px; font-weight: 700; color: #234b31;">
+                {{ request.pickup_date | date:'mediumDate' }} · {{ request.pickup_time.slice(0, 5) }} (PH time)
+              </div>
+            </div>
+          </div>
+          <button type="button" class="request-details-link" (click)="openRequestDetails(request)"
+                  aria-label="View sent adoption request details"
+                  style="display: flex; align-items: center; justify-content: flex-end; gap: 7px; width: 100%; min-height: 44px; padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; color: #2d8038; font-size: 13px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+            View Request Details
+            <ion-icon name="chevron-forward-outline" aria-hidden="true" style="font-size: 17px;"></ion-icon>
+          </button>
         </div>
-
-      </article>
+</article>
 
     </section>
 
+  </div>
+
+  <!-- =====================================
+       RECEIVED REQUEST DETAILS MODAL
+       Uses detailRequest state (added in the next TS update).
+  ===================================== -->
+  <div *ngIf="detailRequest as request"
+       (click)="closeRequestDetails()"
+       role="presentation"
+       style="position: fixed; inset: 0; z-index: 9998; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(14, 36, 25, 0.38);">
+    <section role="dialog"
+             aria-modal="true"
+             aria-labelledby="received-request-details-title"
+             (click)="$event.stopPropagation()"
+             style="width: 100%; max-width: 500px; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; padding: 18px; border-radius: 17px; background: #ffffff; box-shadow: 0 18px 60px rgba(0,0,0,.22);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
+        <div>
+          <h2 id="received-request-details-title" style="margin: 0 0 4px; color: #1b4332; font-size: 19px; font-weight: 750;">{{ selectedTab === 'sent' ? 'Sent Adoption Request Details' : 'Adoption Request Details' }}</h2>
+          <p style="margin: 0; font-size: 12px; color: #6b7a70;">{{ selectedTab === 'sent' ? 'Your application for ' : 'Applicant for ' }}{{ request.pet_name }}</p>
+        </div>
+        <button type="button" aria-label="Close request details" (click)="closeRequestDetails()"
+                style="display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border: 0; border-radius: 9px; background: #f0f4f1; color: #315640; cursor: pointer;">
+          <ion-icon name="close-outline" style="font-size: 21px;"></ion-icon>
+        </button>
+      </div>
+
+      <div style="padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid #edf1ed;">
+        <div style="font-size: 15px; font-weight: 750; color: #1b4332; overflow-wrap: anywhere;">{{ request.requester_name }}</div>
+        <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 7px;">
+          <span class="request-status" [class.pending]="request.status === 'pending'"
+                [class.approved]="request.status === 'approved'" [class.rejected]="request.status === 'rejected'">
+            {{ statusLabel(request.status) }}
+          </span>
+          <span style="font-size: 11px; color: #78867d;">Requested {{ request.created_at | date:'mediumDate' }}</span>
+        </div>
+      </div>
+
+      <div style="padding: 13px; margin-bottom: 14px; background: #f6f9f6; border-radius: 10px; border: 1px solid #e7eee8;">
+        <div style="font-size: 12px; font-weight: 700; color: #315e3f; margin-bottom: 7px;">{{ selectedTab === 'sent' ? 'Your Message' : "Applicant's Message" }}</div>
+        <p style="margin: 0; font-size: 13px; color: #4a5c50; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere;">{{ request.message || 'No message provided.' }}</p>
+      </div>
+
+      <div *ngIf="selectedTab === 'sent'" style="margin-bottom: 14px; padding: 11px 12px; border-radius: 10px; background: #f6f9f6; color: #415449; font-size: 12px; line-height: 1.6;">
+        <div><strong>Pet type:</strong> {{ request.animal_type | titlecase }}</div>
+        <div><strong>Pet status:</strong> {{ statusLabel(request.adoption_status) }}</div>
+      </div>
+      <p class="approved-note" *ngIf="selectedTab === 'sent' && request.status === 'approved'" style="margin: 0 0 14px;">
+        Your adoption request has been approved! Please follow the agreed pickup arrangements below.
+      </p>
+      <p *ngIf="selectedTab === 'sent' && request.status === 'completed'" style="margin: 0 0 14px; color: #246e37; font-size: 12px; font-weight: 700;">
+        Adoption completed. Thank you for giving this pet a new home!
+      </p>
+      <p *ngIf="selectedTab === 'sent' && request.status === 'rejected' && (request.adoption_status === 'reserved' || request.adoption_status === 'adopted')"
+         style="margin: 0 0 14px; padding: 12px; border-radius: 9px; background: #fff4e8; color: #83521c; font-size: 12px; line-height: 1.6;">
+        Another applicant has already been approved to adopt this pet. Thank you for your interest.
+      </p>
+      <p class="approved-note" *ngIf="selectedTab === 'received' && request.status === 'approved'" style="margin: 0 0 14px;">
+        Applicant approved. The pet is reserved until you confirm the physical handover.
+      </p>
+
+      <section *ngIf="(request.status === 'approved' || request.status === 'completed') && request.meeting_location && request.pickup_date && request.pickup_time"
+               aria-label="Approved pet pickup details"
+               style="padding: 14px; margin-bottom: 15px; border: 1px solid #cfe6d3; border-radius: 11px; background: #f3faf4;">
+        <h3 style="margin: 0 0 12px; font-size: 14px; color: #1b4332;">Scheduled Pet Pickup</h3>
+        <p style="margin: 0 0 9px; font-size: 12px; color: #415449; line-height: 1.5; overflow-wrap: anywhere;"><strong>Meeting Location:</strong> {{ request.meeting_location }}</p>
+        <p style="margin: 0 0 9px; font-size: 12px; color: #415449;"><strong>Pickup Date:</strong> {{ request.pickup_date | date:'mediumDate' }}</p>
+        <p style="margin: 0; font-size: 12px; color: #415449;"><strong>Pickup Time:</strong> {{ request.pickup_time.slice(0, 5) }} (Philippine time)</p>
+      </section>
+
+      <div *ngIf="selectedTab === 'received' && request.status === 'pending'" style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px;">
+        <ion-button expand="block" fill="outline" color="danger" [disabled]="busy"
+                    (click)="detailRequest = null; actOnRequest(request, 'reject')"
+                    style="margin: 0; --border-radius: 10px; text-transform: none;">Reject</ion-button>
+        <ion-button expand="block" class="approve-button" [disabled]="busy"
+                    (click)="detailRequest = null; actOnRequest(request, 'approve')"
+                    style="margin: 0; --border-radius: 10px; text-transform: none;">Approve</ion-button>
+      </div>
+
+      <div *ngIf="selectedTab === 'received' && request.status === 'approved' && request.adoption_status === 'reserved'"
+           style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px;">
+        <ion-button expand="block" class="pickup-action-button" fill="outline" [disabled]="busy"
+                    (click)="detailRequest = null; openRescheduleForm(request)"
+                    style="margin: 0; --color: #2d8038; --border-color: #2d8038; --border-width: 1px; --border-style: solid; --border-radius: 10px; text-transform: none; font-size: 12px;">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Reschedule Pickup
+        </ion-button>
+        <ion-button expand="block" class="complete-button pickup-action-button" [disabled]="busy"
+                    (click)="detailRequest = null; finishAdoption(request)"
+                    style="margin: 0; --background: #2d8038; --background-hover: #277232; --color: #ffffff; --border-radius: 10px; text-transform: none; font-size: 12px;">
+          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+          Confirm Handover
+        </ion-button>
+      </div>
+    </section>
   </div>
 
   <!-- =====================================
@@ -875,7 +865,7 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="reschedule-dialog-title"
-      style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; padding: 20px; border-radius: 17px; background: #ffffff; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);"
+      style="width: 100%; max-width: 500px; max-height: min(88vh, 760px); overflow-y: auto; overscroll-behavior: contain; padding: 20px; border-radius: 17px; background: #ffffff; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);"
     >
       <h2
         id="reschedule-dialog-title"
@@ -927,7 +917,7 @@
           </small>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px;">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px;">
           <div>
             <label
               for="reschedule-date"
@@ -1004,10 +994,9 @@
           <ion-button
             type="button"
             fill="outline"
-            color="medium"
             (click)="cancelRescheduleForm()"
             [disabled]="busy"
-            style="margin: 0; min-height: 44px; --border-radius: 10px; text-transform: none;"
+            style="margin: 0; height: 52px; min-height: 52px; --height: 52px; --color: #2d8038; --border-color: #2d8038; --border-width: 1px; --border-style: solid; --border-radius: 10px; --padding-start: 8px; --padding-end: 8px; font-size: 13px; font-weight: 700; text-transform: none;"
           >
             Cancel
           </ion-button>
@@ -1016,13 +1005,70 @@
             type="submit"
             class="approve-button"
             [disabled]="busy || !rescheduleFormRef.valid"
-            style="margin: 0; min-height: 44px; --border-radius: 10px; text-transform: none;"
+            style="margin: 0; height: 52px; min-height: 52px; --height: 52px; --background: #2d8038; --background-hover: #277232; --color: #ffffff; --border-radius: 10px; --padding-start: 8px; --padding-end: 8px; font-size: 13px; font-weight: 700; text-transform: none;"
           >
             <ion-spinner *ngIf="busy" slot="start" name="crescent"></ion-spinner>
-            {{ busy ? 'Saving...' : 'Save New Schedule' }}
+            {{ busy ? 'Saving...' : 'Save Schedule' }}
           </ion-button>
         </div>
       </form>
+    </section>
+  </div>
+
+  <!-- =====================================
+       CUSTOM ACTION CONFIRMATION MODAL
+       Shared by approval, rejection, rescheduling and handover.
+       API actions proceed only after explicit confirmation.
+  ===================================== -->
+  <div
+    *ngIf="confirmationOpen"
+    role="presentation"
+    (click)="cancelConfirmation()"
+    style="position: fixed; inset: 0; z-index: 10010; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(11, 29, 18, 0.68);"
+  >
+    <section
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="adoption-confirmation-title"
+      aria-describedby="adoption-confirmation-message"
+      (click)="$event.stopPropagation()"
+      style="width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 22px 20px 20px; border-radius: 17px; background: #ffffff; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.24);"
+    >
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+        <h2
+          id="adoption-confirmation-title"
+          style="margin: 0; color: #1b4332; font-size: 20px; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere;"
+        >{{ confirmationTitle }}</h2>
+        <button
+          type="button"
+          (click)="cancelConfirmation()"
+          aria-label="Close confirmation"
+          style="display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border: 0; border-radius: 9px; background: #f0f4f1; color: #315640; cursor: pointer;"
+        >
+          <ion-icon name="close-outline" style="font-size: 21px;"></ion-icon>
+        </button>
+      </div>
+
+      <p
+        id="adoption-confirmation-message"
+        style="margin: 0 0 20px; padding: 13px 14px; border: 1px solid #e0eee3; border-radius: 10px; background: #f6faf7; color: #415449; font-size: 13px; line-height: 1.65; white-space: pre-line; overflow-wrap: anywhere;"
+      >{{ confirmationMessage }}</p>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+        <ion-button
+          type="button"
+          expand="block"
+          fill="outline"
+          (click)="cancelConfirmation()"
+          style="margin: 0; height: 52px; --color: #2d8038; --border-color: #2d8038; --border-width: 1px; --border-style: solid; --border-radius: 10px; --padding-start: 6px; --padding-end: 6px; font-size: 13px; font-weight: 700; text-transform: none;"
+        >Cancel</ion-button>
+        <ion-button
+          type="button"
+          expand="block"
+          (click)="confirmModalAction()"
+          style="margin: 0; height: 52px; --background: #2d8038; --background-hover: #277232; --color: #ffffff; --border-radius: 10px; --padding-start: 6px; --padding-end: 6px; font-size: 13px; font-weight: 700; text-transform: none;"
+        >{{ confirmationActionLabel }}</ion-button>
+      </div>
     </section>
   </div>
 
@@ -1036,7 +1082,7 @@
     role="dialog"
     aria-modal="true"
     aria-label="Adoption photo viewer"
-    (click)="viewerPost = null"
+    (click)="closePhotoViewer()"
   >
 
     <div class="viewer-header">
@@ -1057,7 +1103,7 @@
         type="button"
         class="viewer-close"
         aria-label="Close photo viewer"
-        (click)="viewerPost = null; $event.stopPropagation()"
+        (click)="closePhotoViewer(); $event.stopPropagation()"
       >
         <ion-icon name="close-outline"></ion-icon>
       </button>
@@ -1068,21 +1114,23 @@
       class="viewer-body"
       (touchstart)="touchStart($event)"
       (touchend)="touchEnd($event, post)"
-      (click)="$event.stopPropagation()"
+      (click)="closePhotoViewer()"
     >
 
       <img
         *ngIf="currentUrl(post) as imageUrl"
         class="viewer-image"
+        style="width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain;"
         [src]="imageUrl"
         [alt]="post.pet_name"
+        (click)="$event.stopPropagation()"
       />
 
       <button
         type="button"
         class="viewer-arrow previous"
         *ngIf="photoUrls(post).length > 1"
-        (click)="movePhoto(post, -1)"
+        (click)="movePhoto(post, -1); $event.stopPropagation()"
         aria-label="Previous photo"
       >
         <ion-icon
@@ -1094,7 +1142,7 @@
         type="button"
         class="viewer-arrow next"
         *ngIf="photoUrls(post).length > 1"
-        (click)="movePhoto(post, 1)"
+        (click)="movePhoto(post, 1); $event.stopPropagation()"
         aria-label="Next photo"
       >
         <ion-icon
