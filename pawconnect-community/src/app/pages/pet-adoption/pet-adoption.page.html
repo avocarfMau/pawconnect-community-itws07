@@ -20,20 +20,9 @@
 
       <div class="header-title">
         <h1>Pet Adoption</h1>
-        <p>PawConnect</p>
+        <p>Help pets find loving homes</p>
       </div>
 
-      <button
-        type="button"
-        class="refresh-button"
-        (click)="refreshPosts()"
-        [disabled]="loading"
-        aria-label="Refresh adoption listings"
-      >
-        <ion-icon
-          name="refresh-outline"
-        ></ion-icon>
-      </button>
 
     </div>
 </ion-header>
@@ -46,17 +35,11 @@
   <div class="adoption-container">
 
     <!-- =====================================
-         HEADER
-    ===================================== -->
-
-
-
-    <!-- =====================================
          QUICK ACTIONS
          One posting entry point on this page.
     ===================================== -->
 
-    <div class="adoption-actions">
+    <div class="adoption-actions" aria-label="Adoption actions">
 
       <ion-button
         class="post-adoption-button"
@@ -93,20 +76,31 @@
 
     <div class="feed-heading">
       <div>
-        <h2>Pets Looking for Homes</h2>
-        <p>Browse pets shared by residents in your community.</p>
+        <h2>Community Adoptions</h2>
+        <p>Meet pets looking for a new family.</p>
       </div>
+      <button
+        type="button"
+        class="refresh-button"
+        (click)="refreshPosts()"
+        [disabled]="loading"
+        aria-label="Refresh adoption listings"
+      >
+        <ion-icon name="refresh-outline"></ion-icon>
+      </button>
     </div>
 
     <!-- =====================================
          ANIMAL FILTERS
     ===================================== -->
 
-    <div
-      class="adoption-filters"
-      role="group"
-      aria-label="Filter adoption pets"
-    >
+    <section class="adoption-filter-panel" aria-label="Filter adoption listings">
+      <h3 class="adoption-filter-heading">Filter Pets</h3>
+      <div
+        class="adoption-filters"
+        role="group"
+        aria-label="Filter adoption pets"
+      >
 
       <button
         type="button"
@@ -138,7 +132,11 @@
         Cats
       </button>
 
-    </div>
+      </div>
+      <p class="adoption-filter-hint" *ngIf="!loading && !errorMessage">
+        {{ posts.length }} {{ posts.length === 1 ? 'pet' : 'pets' }} found
+      </p>
+    </section>
 
     <!-- =====================================
          LOADING STATE
@@ -245,81 +243,6 @@
           trackBy: trackPost
         "
       >
-
-        <!-- =====================================
-             POST HEADER
-        ===================================== -->
-
-        <div class="post-header">
-
-          <div class="owner-avatar">
-            <ion-icon
-              name="paw-outline"
-            ></ion-icon>
-          </div>
-
-          <div class="owner-information">
-
-            <h3>
-              {{ post.owner_name || 'Resident' }}
-            </h3>
-
-            <p>
-              {{ post.created_at | date:'MMM d, y' }}
-            </p>
-
-          </div>
-
-          <span class="adoption-badge">
-            {{ post.status === 'available'
-              ? 'Available'
-              : (post.status | titlecase) }}
-          </span>
-
-        </div>
-
-        <!-- =====================================
-             PET NAME / INFORMATION
-        ===================================== -->
-
-        <div class="post-information">
-
-          <h2>
-            {{ post.pet_name || 'Unnamed Pet' }}
-          </h2>
-
-          <div class="pet-tags">
-
-            <span class="pet-tag">
-              {{ post.animal_type | titlecase }}
-            </span>
-
-            <span
-              class="pet-tag"
-              *ngIf="post.sex"
-            >
-              {{ post.sex | titlecase }}
-            </span>
-
-            <span
-              class="pet-tag"
-              *ngIf="post.age_months !== null"
-            >
-              {{ post.age_months }}
-              month{{ post.age_months === 1 ? '' : 's' }}
-              old
-            </span>
-
-          </div>
-
-          <p
-            class="pet-description"
-            *ngIf="post.description"
-          >
-            {{ post.description }}
-          </p>
-
-        </div>
 
         <!-- =====================================
              MULTIPLE PHOTO GALLERY
@@ -444,6 +367,82 @@
 
         </div>
 
+
+        <!-- =====================================
+             POST HEADER
+        ===================================== -->
+
+        <div class="post-header">
+
+          <div class="owner-avatar">
+            <ion-icon
+              name="paw-outline"
+            ></ion-icon>
+          </div>
+
+          <div class="owner-information">
+
+            <h3>
+              {{ post.owner_name || 'Resident' }}
+            </h3>
+
+            <p>
+              Posted {{ post.created_at | date:'MMM d, y' }}
+            </p>
+
+          </div>
+
+          <span class="adoption-badge">
+            {{ post.status === 'available'
+              ? 'Available'
+              : (post.status | titlecase) }}
+          </span>
+
+        </div>
+
+        <!-- =====================================
+             PET NAME / INFORMATION
+        ===================================== -->
+
+        <div class="post-information">
+
+          <h2>
+            {{ post.pet_name || 'Unnamed Pet' }}
+          </h2>
+
+          <div class="pet-tags">
+
+            <span class="pet-tag">
+              {{ post.animal_type | titlecase }}
+            </span>
+
+            <span
+              class="pet-tag"
+              *ngIf="post.sex"
+            >
+              {{ post.sex | titlecase }}
+            </span>
+
+            <span
+              class="pet-tag"
+              *ngIf="post.age_months !== null"
+            >
+              {{ post.age_months }}
+              month{{ post.age_months === 1 ? '' : 's' }}
+              old
+            </span>
+
+          </div>
+
+          <p
+            class="pet-description"
+            *ngIf="post.description"
+          >
+            {{ post.description }}
+          </p>
+
+        </div>
+
         <!-- =====================================
              PET LOCATION
         ===================================== -->
@@ -480,15 +479,11 @@
           >
 
             <ion-icon
-              [name]="post.is_owner
-                ? 'list-outline'
-                : 'heart-outline'"
+              name="eye-outline"
               slot="start"
             ></ion-icon>
 
-            {{ post.is_owner
-              ? 'View My Pet Listing'
-              : 'View Details & Adopt' }}
+            View Pet Details
 
           </ion-button>
 
@@ -544,7 +539,7 @@
       class="viewer-body"
       (touchstart)="touchStart($event)"
       (touchend)="touchEnd($event, post)"
-      (click)="$event.stopPropagation()"
+      (click)="closeViewer()"
     >
 
       <img
@@ -552,6 +547,8 @@
         [src]="viewerUrl"
         [alt]="post.pet_name || 'Pet photo'"
         class="viewer-image"
+        style="width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain;"
+        (click)="$event.stopPropagation()"
       />
 
       <button
@@ -559,7 +556,7 @@
         class="viewer-arrow previous"
         *ngIf="urls(post).length > 1"
         aria-label="Previous photo"
-        (click)="movePhoto(post, -1)"
+        (click)="movePhoto(post, -1); $event.stopPropagation()"
       >
         <ion-icon
           name="chevron-back-outline"
@@ -571,7 +568,7 @@
         class="viewer-arrow next"
         *ngIf="urls(post).length > 1"
         aria-label="Next photo"
-        (click)="movePhoto(post, 1)"
+        (click)="movePhoto(post, 1); $event.stopPropagation()"
       >
         <ion-icon
           name="chevron-forward-outline"

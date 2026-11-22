@@ -364,11 +364,14 @@ export class PetAdoptionPage implements OnInit, OnDestroy {
   // =====================================
 
   private applyCurrentFilter(): void {
-    const allPosts = this.allPosts || [];
+    // The community adoption feed is for other residents' listings only.
+    // Owners manage their own posts separately in My Adoptions.
+    // The API's is_owner flag is scoped to the authenticated resident.
+    const communityPosts = (this.allPosts || []).filter(post => post.is_owner !== true);
 
     this.posts = this.selectedFilter === 'all'
-      ? allPosts
-      : allPosts.filter(post => post.animal_type === this.selectedFilter);
+      ? communityPosts
+      : communityPosts.filter(post => post.animal_type === this.selectedFilter);
   }
 
   changeFilter(filter: AnimalFilter): void {
