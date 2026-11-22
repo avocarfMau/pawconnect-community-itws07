@@ -1254,9 +1254,9 @@
 
             <div class="claims-action-row">
 
-              <button class="claims-button claims-button--primary" type="button" (click)="respondFinderReschedule(claim, 'accept')">Accept Change</button>
+              <button class="claims-button claims-button--primary" type="button" (click)="respondFinderReschedule(claim, 'accept')" [disabled]="isClaimActionBusy">Accept Change</button>
 
-              <button class="claims-button claims-button--outline" type="button" (click)="respondFinderReschedule(claim, 'reject')">Keep Original</button>
+              <button class="claims-button claims-button--outline" type="button" (click)="respondFinderReschedule(claim, 'reject')" [disabled]="isClaimActionBusy">Keep Original</button>
 
             </div>
 
@@ -1394,9 +1394,9 @@
 
             <div class="claims-action-row">
 
-              <button class="claims-button claims-button--primary" type="button" (click)="respondSentReschedule(claim, 'accept')">Accept Change</button>
+              <button class="claims-button claims-button--primary" type="button" (click)="respondSentReschedule(claim, 'accept')" [disabled]="isClaimActionBusy">Accept Change</button>
 
-              <button class="claims-button claims-button--outline" type="button" (click)="respondSentReschedule(claim, 'reject')">Keep Original</button>
+              <button class="claims-button claims-button--outline" type="button" (click)="respondSentReschedule(claim, 'reject')" [disabled]="isClaimActionBusy">Keep Original</button>
 
             </div>
 

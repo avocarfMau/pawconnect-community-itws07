@@ -956,22 +956,27 @@ ion-content {
   line-height: 1.55;
 }
 
-.recoveries-card-button {
-  min-height: 45px;
-  border: 1.5px solid #2d8038;
-  background: #fff;
+.recoveries-card-button,
+.recoveries-card-button.is-primary {
+  justify-content: flex-end;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: #2d8038;
   font-weight: 750;
+  text-align: right;
 }
 
-.recoveries-card-button.is-primary {
-  border-color: #2d8038;
-  background: #2d8038;
-  color: #fff;
+.recoveries-card-button:active,
+.recoveries-card-button.is-primary:active {
+  background: transparent;
+  color: #205d2a;
+  opacity: .8;
 }
-
-.recoveries-card-button:not(.is-primary):active { background: #f0f9f2; }
-.recoveries-card-button.is-primary:active { background: #23692e; }
 .recoveries-load-more button { border-color: #bcdcc5; color: #2d8038; }
 
 .recoveries-overlay {
@@ -1995,4 +2000,23 @@ ion-content::part(scroll) {
   .recoveries-action-body .recoveries-dialog-section--action {
     padding: 11px;
   }
+}
+
+
+/* ==========================================================
+   MY RECOVERIES — Match My Claims modal backdrop
+   Recovery overlays sit outside ion-content and already cover
+   the header. Do not darken the header a second time.
+   ========================================================== */
+:host:has(.recoveries-overlay) ion-header.recoveries-fixed-header,
+:host:has(.recoveries-action-overlay) ion-header.recoveries-fixed-header {
+  filter: none !important;
+  pointer-events: none;
+}
+
+.recoveries-overlay,
+.recoveries-action-overlay {
+  background: rgba(14, 36, 25, 0.38) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }

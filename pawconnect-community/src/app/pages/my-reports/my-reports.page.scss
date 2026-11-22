@@ -6019,3 +6019,45 @@ ion-content.pawrescue-my-reports .delete-confirm-overlay {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
+
+
+/* =============================================================
+   MY REPORTS — BORDERLESS VIEW DETAILS (MATCH MY ADOPTIONS)
+   Scoped to report preview cards; other buttons are unchanged.
+   ============================================================= */
+.pawrescue-my-reports .report-preview-bottom .report-preview-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: #2d8038;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.pawrescue-my-reports .report-preview-bottom .report-preview-action ion-icon {
+  font-size: 17px;
+}
+.pawrescue-my-reports .report-preview-bottom .report-preview-action:active {
+  background: #e8f4eb;
+  color: #23692e;
+  transform: scale(0.985);
+}
+.pawrescue-my-reports .report-preview-bottom .report-preview-action:focus-visible {
+  outline: 2px solid #2d8038;
+  outline-offset: 2px;
+}
