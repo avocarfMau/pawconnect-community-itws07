@@ -675,80 +675,47 @@ ion-content {
 
 
 .claims-card-action {
-
   display: inline-flex;
-
   align-items: center;
-
-  justify-content: center;
-
-  gap: 7px;
-
+  justify-content: flex-end;
+  gap: 6px;
   width: 100%;
-
   min-height: 44px;
-
   margin-top: auto;
-
-  padding: 10px 14px;
-
-  border: 1.5px solid var(--claims-green);
-
-  border-radius: 11px;
-
-  background: #fff;
-
+  padding: 10px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--claims-green);
-
   font-family: inherit;
-
   font-size: 13px;
-
   font-weight: 750;
-
   line-height: 1.3;
-
+  text-align: right;
   cursor: pointer;
-
   -webkit-tap-highlight-color: transparent;
-
 }
-
-
 
 .claims-card-action ion-icon {
-
   font-size: 18px;
-
 }
-
-
 
 .claims-card-action:active {
-
-  background: #edf8f0;
-
+  background: transparent;
+  color: var(--claims-green-dark);
 }
 
-
-
-.claims-card-action--primary {
-
-  background: var(--claims-green);
-
-  color: #fff;
-
+/* Review Claim uses the same borderless action style. */
+.claims-card-action--primary,
+.claims-card-action--primary:active {
+  border: 0;
+  background: transparent;
+  color: var(--claims-green);
 }
-
-
 
 .claims-card-action--primary:active {
-
-  background: var(--claims-green-dark);
-
+  color: var(--claims-green-dark);
 }
-
-
 
 /* STATUSES */
 
